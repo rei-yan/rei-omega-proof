@@ -20,6 +20,7 @@ jobs:
       - name: Build and independently recheck Lean declarations
         uses: leanprover/lean-action@v1
         with:
+          auto-config: false
           build: true
           leanchecker: true
           nanoda: true
