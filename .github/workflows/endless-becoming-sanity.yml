@@ -1,0 +1,24 @@
+name: Endless Becoming Sanity
+
+on:
+  push:
+    paths:
+      - 'research/ENDLESS_BECOMING_KERNEL.md'
+      - 'research/endless_becoming_sanity.py'
+      - '.github/workflows/endless-becoming-sanity.yml'
+  pull_request:
+    paths:
+      - 'research/ENDLESS_BECOMING_KERNEL.md'
+      - 'research/endless_becoming_sanity.py'
+      - '.github/workflows/endless-becoming-sanity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  endless-becoming:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded Endless Becoming sanity suite
+        run: python research/endless_becoming_sanity.py
