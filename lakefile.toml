@@ -1,0 +1,6 @@
+name = "rei_omega_proof"
+version = "0.1.0"
+defaultTargets = ["REI_Omega_G2_Critical_Invariants"]
+
+[[lean_lib]]
+name = "REI_Omega_G2_Critical_Invariants"
