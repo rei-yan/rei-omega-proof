@@ -1,0 +1,27 @@
+name: Primitive Genesis I
+
+on:
+  push:
+    branches: ["main", "rei-primitive-genesis-i"]
+    paths:
+      - "research/PRIMITIVE_GENESIS_I.md"
+      - "research/primitive_genesis_i.py"
+      - ".github/workflows/primitive-genesis-i.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/PRIMITIVE_GENESIS_I.md"
+      - "research/primitive_genesis_i.py"
+      - ".github/workflows/primitive-genesis-i.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  primitive-forge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded Primitive Genesis I crucible
+        run: python3 research/primitive_genesis_i.py
