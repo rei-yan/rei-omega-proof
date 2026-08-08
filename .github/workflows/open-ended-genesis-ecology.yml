@@ -1,0 +1,27 @@
+name: Open-Ended Genesis Ecology
+
+on:
+  push:
+    branches: ["main", "rei-open-ended-genesis-ecology"]
+    paths:
+      - "research/OPEN_ENDED_GENESIS_ECOLOGY.md"
+      - "research/open_ended_genesis_ecology.py"
+      - ".github/workflows/open-ended-genesis-ecology.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/OPEN_ENDED_GENESIS_ECOLOGY.md"
+      - "research/open_ended_genesis_ecology.py"
+      - ".github/workflows/open-ended-genesis-ecology.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ecology:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded Open-Ended Genesis Ecology crucible
+        run: python3 research/open_ended_genesis_ecology.py
