@@ -1,0 +1,27 @@
+name: Boundless Horizon Sanity
+
+on:
+  push:
+    branches: ["main", "rei-boundless-horizon"]
+    paths:
+      - "research/BOUNDLESS_HORIZON_KERNEL.md"
+      - "research/boundless_horizon_sanity.py"
+      - ".github/workflows/boundless-horizon-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/BOUNDLESS_HORIZON_KERNEL.md"
+      - "research/boundless_horizon_sanity.py"
+      - ".github/workflows/boundless-horizon-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  boundless:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded Boundless Horizon sanity suite
+        run: python3 research/boundless_horizon_sanity.py
