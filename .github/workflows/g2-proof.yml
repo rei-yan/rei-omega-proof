@@ -17,6 +17,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Bootstrap Lean 4.32.2 and generate Lake manifest
+        shell: bash
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install leanprover/lean4:v4.32.2
+          elan override set leanprover/lean4:v4.32.2
+          lean --version
+          lake --version
+          lake update
+
       - name: Build and independently recheck Lean declarations
         uses: leanprover/lean-action@v1
         with:
