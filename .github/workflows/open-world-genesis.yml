@@ -1,0 +1,27 @@
+name: Open-World Genesis Crucible
+
+on:
+  push:
+    branches: ["main", "rei-open-world-genesis"]
+    paths:
+      - "research/OPEN_WORLD_GENESIS_CRUCIBLE.md"
+      - "research/open_world_genesis_crucible.py"
+      - ".github/workflows/open-world-genesis.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/OPEN_WORLD_GENESIS_CRUCIBLE.md"
+      - "research/open_world_genesis_crucible.py"
+      - ".github/workflows/open-world-genesis.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  crucible:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run deterministic Open-World Genesis crucible
+        run: python3 research/open_world_genesis_crucible.py
