@@ -1,0 +1,27 @@
+name: Primordial Wuxiang Sanity
+
+on:
+  push:
+    branches: ["main", "rei-primordial-wuxiang"]
+    paths:
+      - "research/PRIMORDIAL_WUXIANG_KERNEL.md"
+      - "research/primordial_wuxiang_sanity.py"
+      - ".github/workflows/primordial-wuxiang-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/PRIMORDIAL_WUXIANG_KERNEL.md"
+      - "research/primordial_wuxiang_sanity.py"
+      - ".github/workflows/primordial-wuxiang-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  primordial:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded Primordial Wuxiang sanity suite
+        run: python3 research/primordial_wuxiang_sanity.py
