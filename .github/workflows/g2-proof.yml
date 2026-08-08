@@ -29,14 +29,13 @@ jobs:
           lake --version
           lake update
 
-      - name: Build and independently recheck Lean declarations
+      - name: Build and Lean-kernel replay
         uses: leanprover/lean-action@v1
         with:
           auto-config: false
           build: true
           leanchecker: true
-          nanoda: true
-          nanoda-allow-sorry: false
+          nanoda: false
           use-github-cache: false
 
       - name: Direct trust-zero elaboration
@@ -44,3 +43,32 @@ jobs:
 
       - name: Fresh Lean kernel replay
         run: lake env leanchecker --fresh Rei_omega_proof
+
+      - name: External nanoda type check with explicit root module
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _lean4export _nanoda_lib _nanoda_export.txt _nanoda_config.json
+
+          git clone --depth 1 https://github.com/leanprover/lean4export.git _lean4export
+          cp lean-toolchain _lean4export/
+          (cd _lean4export && lake build)
+
+          git clone --depth 1 --branch debug https://github.com/ammkrn/nanoda_lib.git _nanoda_lib
+          (cd _nanoda_lib && cargo build --release)
+
+          lake env _lean4export/.lake/build/bin/lean4export Rei_omega_proof > _nanoda_export.txt
+
+          cat > _nanoda_config.json <<'EOF'
+          {
+            "export_file_path": "_nanoda_export.txt",
+            "use_stdin": false,
+            "permitted_axioms": ["propext", "Classical.choice", "Quot.sound", "Lean.trustCompiler"],
+            "unpermitted_axiom_hard_error": true,
+            "nat_extension": true,
+            "string_extension": true,
+            "print_success_message": true
+          }
+          EOF
+
+          _nanoda_lib/target/release/nanoda_bin _nanoda_config.json
