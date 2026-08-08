@@ -1,0 +1,18 @@
+name: Sovereignless Epistemic Ecology Sanity
+
+on:
+  pull_request:
+    paths:
+      - "research/SOVEREIGNLESS_EPISTEMIC_ECOLOGY.md"
+      - "research/sovereignless_epistemic_ecology_sanity.py"
+      - ".github/workflows/sovereignless-epistemic-ecology-sanity.yml"
+  workflow_dispatch:
+
+jobs:
+  sovereignless-ecology:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded Sovereignless Epistemic Ecology sanity suite
+        run: python3 research/sovereignless_epistemic_ecology_sanity.py
