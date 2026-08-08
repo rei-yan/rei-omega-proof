@@ -1,0 +1,27 @@
+name: G6 Comparative Frontier Gate Integrity
+
+on:
+  push:
+    branches: ["main", "rei-g6-comparative-frontier"]
+    paths:
+      - "research/G6_COMPARATIVE_FRONTIER_GATE.md"
+      - "research/g6_comparative_frontier_gate.py"
+      - ".github/workflows/g6-comparative-frontier-gate.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/G6_COMPARATIVE_FRONTIER_GATE.md"
+      - "research/g6_comparative_frontier_gate.py"
+      - ".github/workflows/g6-comparative-frontier-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g6-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run G6 comparative-frontier integrity dry run
+        run: python3 research/g6_comparative_frontier_gate.py
