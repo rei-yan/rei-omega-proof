@@ -1,0 +1,27 @@
+name: Reality Guardian Sanity
+
+on:
+  push:
+    branches: ["main", "rei-world-genesis-guardian"]
+    paths:
+      - "research/REALITY_GUARDIAN_KERNEL.md"
+      - "research/reality_guardian_sanity.py"
+      - ".github/workflows/reality-guardian-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/REALITY_GUARDIAN_KERNEL.md"
+      - "research/reality_guardian_sanity.py"
+      - ".github/workflows/reality-guardian-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guardian:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded Reality Guardian sanity suite
+        run: python3 research/reality_guardian_sanity.py

@@ -1,0 +1,27 @@
+name: G4 Future Reality Gate Integrity
+
+on:
+  push:
+    branches: ["main", "rei-world-genesis-guardian"]
+    paths:
+      - "research/G4_FUTURE_REALITY_GATE.md"
+      - "research/g4_future_reality_gate.py"
+      - ".github/workflows/g4-future-reality-gate.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/G4_FUTURE_REALITY_GATE.md"
+      - "research/g4_future_reality_gate.py"
+      - ".github/workflows/g4-future-reality-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g4-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run G4 preregistration integrity dry run
+        run: python3 research/g4_future_reality_gate.py
