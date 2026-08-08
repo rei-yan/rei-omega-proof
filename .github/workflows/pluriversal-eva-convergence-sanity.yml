@@ -1,0 +1,21 @@
+name: Pluriversal EVA Convergence Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/PLURIVERSAL_EVA_CONVERGENCE_KERNEL.md'
+      - 'research/pluriversal_eva_convergence_sanity.py'
+      - '.github/workflows/pluriversal-eva-convergence-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pluriversal-eva-convergence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded Pluriversal EVA Convergence sanity suite
+        run: python3 research/pluriversal_eva_convergence_sanity.py
