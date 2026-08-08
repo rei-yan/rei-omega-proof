@@ -1,0 +1,49 @@
+name: G3 Challenge Integrity
+
+on:
+  push:
+    branches: ["main", "rei-g3-replication"]
+    paths:
+      - "g3/**"
+      - ".github/workflows/g3-integrity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "g3/**"
+      - ".github/workflows/g3-integrity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-g3-public-packet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate frozen challenge
+        run: python3 g3/make_challenge.py > challenge.jsonl
+
+      - name: Verify case count and committed digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(wc -l < challenge.jsonl)" -eq 25000
+          ACTUAL="$(sha256sum challenge.jsonl | awk '{print $1}')"
+          EXPECTED="fa81bf4e184037dfff6fea7357444cf519d6cd6a7d65d48a5cd90ed6afb9b47e"
+          echo "challenge_sha256=$ACTUAL"
+          test "$ACTUAL" = "$EXPECTED"
+
+      - name: Syntax-check public validator
+        run: python3 -m py_compile g3/validate_submission_shape.py
+
+      - name: Assert sealed oracle is not public
+        shell: bash
+        run: |
+          set -euo pipefail
+          if find g3 -maxdepth 2 -type f -iname '*oracle*' | grep -v 'CHALLENGE_COMMITMENTS.md' | grep -q .; then
+            echo "A file with oracle in its name is present in public g3 tree" >&2
+            exit 1
+          fi
