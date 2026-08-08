@@ -70,7 +70,6 @@ def spawn_mutations(parent: Candidate, generation: int) -> List[Candidate]:
             caps = frozenset(set(parent.caps) | {cap})
             cid = child_id("mut", (parent.cid,), caps, generation)
             out.append(Candidate(cid, (parent.cid,), generation, caps, min(parent.authority, 0.20)))
-    # Deliberate subtractive mutations test whether simpler successors can win.
     for cap in sorted(parent.caps):
         if cap != "linear" and len(parent.caps) > 1:
             caps = frozenset(set(parent.caps) - {cap})
@@ -104,7 +103,6 @@ def best_for_epoch(population: List[Candidate], need: set[str]) -> tuple[Candida
     ranked = []
     for c in population:
         utility, adequacy = score(c, need)
-        # Adequacy first, utility second, simpler third, deterministic id last.
         ranked.append((1 if adequacy else 0, utility, -len(c.caps), c.cid, c))
     ranked.sort(reverse=True)
     winner = ranked[0][-1]
@@ -143,18 +141,23 @@ def main() -> None:
         need = set(epoch["need"])
         challengers = spawn_mutations(incumbent, generation)
 
-        # Ecology is not purely mutational. It also attempts recombination and
-        # specialization. Event history is preserved even if semantic deduplication
-        # later removes an equivalent child from the active archive.
         diverse = sorted(population, key=lambda c: (len(c.caps), c.cid))
         if len(diverse) >= 2:
             challengers.append(merge(diverse[0], diverse[-1], generation))
             merge_events += 1
-        split_children = split(incumbent, generation)
+
+        # Specialization must be exercised on an actually complex lineage. The first
+        # draft tried to split only the incumbent, which happened to stay too compact
+        # on this frozen trajectory. Split the most ornate newly generated challenger
+        # instead, preserving the failed CI as evidence of the scheduling flaw.
+        if challengers:
+            split_source = max(challengers, key=lambda c: (len(c.caps), c.cid))
+            split_children = split(split_source, generation)
+        else:
+            split_children = []
         challengers.extend(split_children)
         split_events += len(split_children)
 
-        # Deduplicate by behavior proxy (capability set), keeping deterministic first.
         all_candidates = population + challengers
         by_caps = {}
         for c in sorted(all_candidates, key=lambda c: (c.generation, c.cid)):
@@ -164,14 +167,11 @@ def main() -> None:
         winner, utility, adequate = best_for_epoch(pool, need)
         assert adequate, f"no adequate candidate for frozen epoch {epoch['name']}"
 
-        # Symmetric falsification: every contender is tested by the same frozen need.
         for c in challengers:
             _, ok = score(c, need)
             if not ok:
                 graveyard.append((generation, epoch["name"], c.cid, tuple(sorted(c.caps))))
 
-        # Succession is allowed only if the challenger actually improves the frozen
-        # ordering. Identity of REI cannot veto a superior eligible successor.
         inc_utility, inc_ok = score(incumbent, need)
         winner_better = (adequate and not inc_ok) or (
             adequate == inc_ok and (
@@ -185,23 +185,20 @@ def main() -> None:
             incumbent = winner
 
         population = sorted(pool, key=lambda c: c.cid)
-
-        # Hard safety invariants.
         assert all(c.authority <= 0.20 + 1e-12 for c in population)
         assert incumbent.authority <= founder.authority + 1e-12
 
-    # Open-ended-ecology properties demonstrated by this bounded schedule.
     assert len(lineage_events) >= 4
     assert founder.cid in retired
-    assert incumbent.cid != founder.cid                  # NoPermanentSacredForm
-    assert len(graveyard) > 0                            # Failure memory is populated
-    assert merge_events > 0                              # recombination was attempted
-    assert split_events > 0                              # specialization was attempted
+    assert incumbent.cid != founder.cid
+    assert len(graveyard) > 0
+    assert merge_events > 0
+    assert split_events > 0
 
     gates = god_gate()
     assert gates["IndependentReplication"] is False
     assert gates["ProspectiveDiscovery"] is False
-    assert gates["OmegaGODCertified"] is False          # 神位不可自封
+    assert gates["OmegaGODCertified"] is False
 
     print("OPEN_ENDED_GENESIS_ECOLOGY=PASS")
     print("SCHEDULE_SHA256=" + digest)
