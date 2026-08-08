@@ -1,0 +1,27 @@
+name: Genesis Kernel Sanity
+
+on:
+  push:
+    branches: ["main", "rei-genesis-kernel"]
+    paths:
+      - "research/GENESIS_KERNEL.md"
+      - "research/genesis_sanity.py"
+      - ".github/workflows/genesis-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/GENESIS_KERNEL.md"
+      - "research/genesis_sanity.py"
+      - ".github/workflows/genesis-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Genesis Kernel deterministic checks
+        run: python3 research/genesis_sanity.py
