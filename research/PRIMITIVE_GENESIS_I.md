@@ -88,7 +88,7 @@ saw_ood
 The schedule SHA-256 is:
 
 ```text
-e4acf6823251150077decdec5c2b3cb995eaf620abb9c8ac0977290ef41d29ab
+56263abd9fb4cf4624c98669e68d451987987802641d501d5943d71c4362cbb2
 ```
 
 This freezes only an internal research sanity schedule. It is not a sealed external oracle and does not satisfy G3 independence.
