@@ -1,0 +1,27 @@
+name: DeathEye Infinity Sanity
+
+on:
+  push:
+    branches: ["main", "rei-world-genesis-guardian"]
+    paths:
+      - "research/DEATHEYE_INFINITY.md"
+      - "research/deatheye_infinity_sanity.py"
+      - ".github/workflows/deatheye-infinity-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/DEATHEYE_INFINITY.md"
+      - "research/deatheye_infinity_sanity.py"
+      - ".github/workflows/deatheye-infinity-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deatheye:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run DeathEye-∞ epistemic adjudication sanity suite
+        run: python3 research/deatheye_infinity_sanity.py
