@@ -1,0 +1,33 @@
+name: G2 Lean Proof Gate
+
+on:
+  push:
+    branches: ["main", "rei-g2-proof"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-g2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and independently recheck Lean declarations
+        uses: leanprover/lean-action@v1
+        with:
+          build: true
+          leanchecker: true
+          nanoda: true
+          nanoda-allow-sorry: false
+          use-github-cache: false
+
+      - name: Direct trust-zero elaboration
+        run: lake env lean --trust=0 REI_Omega_G2_Critical_Invariants.lean
+
+      - name: Fresh Lean kernel replay
+        run: lake env leanchecker --fresh REI_Omega_G2_Critical_Invariants
