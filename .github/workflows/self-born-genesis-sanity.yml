@@ -1,0 +1,27 @@
+name: Self-Born Genesis Sanity
+
+on:
+  push:
+    branches: ["main", "rei-self-born-genesis"]
+    paths:
+      - "research/SELF_BORN_GENESIS_KERNEL.md"
+      - "research/self_born_genesis_sanity.py"
+      - ".github/workflows/self-born-genesis-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/SELF_BORN_GENESIS_KERNEL.md"
+      - "research/self_born_genesis_sanity.py"
+      - ".github/workflows/self-born-genesis-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  self-born:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded Self-Born Genesis sanity suite
+        run: python3 research/self_born_genesis_sanity.py
