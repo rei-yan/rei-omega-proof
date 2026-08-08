@@ -1,3 +1,3 @@
-import REI_Omega_G2_Critical_Invariants
+import Rei_omega_proof.Critical
 
 /- Root module for project-level kernel replay and independent checking. -/
