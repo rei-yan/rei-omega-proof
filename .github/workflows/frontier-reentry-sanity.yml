@@ -1,0 +1,27 @@
+name: Frontier Re-entry Sanity
+
+on:
+  push:
+    branches: ["main", "rei-frontier-reentry-kernel"]
+    paths:
+      - "research/FRONTIER_REENTRY_KERNEL.md"
+      - "research/frontier_reentry_sanity.py"
+      - ".github/workflows/frontier-reentry-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/FRONTIER_REENTRY_KERNEL.md"
+      - "research/frontier_reentry_sanity.py"
+      - ".github/workflows/frontier-reentry-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Frontier Re-entry deterministic checks
+        run: python3 research/frontier_reentry_sanity.py
