@@ -1,0 +1,27 @@
+name: Representation Genesis II
+
+on:
+  push:
+    branches: ["main", "rei-representation-genesis-ii"]
+    paths:
+      - "research/REPRESENTATION_GENESIS_II.md"
+      - "research/representation_genesis_ii.py"
+      - ".github/workflows/representation-genesis-ii.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/REPRESENTATION_GENESIS_II.md"
+      - "research/representation_genesis_ii.py"
+      - ".github/workflows/representation-genesis-ii.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded compositional representation forge
+        run: python3 research/representation_genesis_ii.py
