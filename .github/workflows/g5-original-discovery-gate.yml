@@ -1,0 +1,27 @@
+name: G5 Original Discovery Gate Integrity
+
+on:
+  push:
+    branches: ["main", "rei-g5-original-discovery"]
+    paths:
+      - "research/G5_ORIGINAL_DISCOVERY_GATE.md"
+      - "research/g5_original_discovery_gate.py"
+      - ".github/workflows/g5-original-discovery-gate.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/G5_ORIGINAL_DISCOVERY_GATE.md"
+      - "research/g5_original_discovery_gate.py"
+      - ".github/workflows/g5-original-discovery-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g5-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run G5 original-discovery integrity dry run
+        run: python3 research/g5_original_discovery_gate.py
