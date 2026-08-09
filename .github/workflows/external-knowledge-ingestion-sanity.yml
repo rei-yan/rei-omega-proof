@@ -1,0 +1,45 @@
+name: External Knowledge Ingestion Gate Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate registered external source manifest
+        run: python research/external_knowledge_ingestion_gate.py research/external_knowledge_sources/chatgpt-share-6a788050-b2c0-83e8-bb30-2b3c1ba6fe08.json
+
+      - name: Run ingestion gate sanity
+        run: python research/external_knowledge_ingestion_sanity.py
+
+      - name: Assert unresolved content cannot self-promote
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('research/external_knowledge_sources/chatgpt-share-6a788050-b2c0-83e8-bb30-2b3c1ba6fe08.json')
+          m = json.loads(p.read_text())
+          assert m['state'] == 'REGISTERED_UNRESOLVED'
+          assert m['content_sha256'] is None
+          assert m['snapshot_path'] is None
+          assert m['parsed_claims'] == []
+          assert m['authority'] == 0
+          assert m['certification'] == 'UNVERIFIED'
+          assert m['canonical'] is False
+          print('UNRESOLVED_SOURCE_HAS_ZERO_CLAIM_AUTHORITY')
+          PY
