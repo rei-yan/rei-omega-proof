@@ -34,6 +34,8 @@ The generated input SHA-256 is frozen as:
 
 `fa81bf4e184037dfff6fea7357444cf519d6cd6a7d65d48a5cd90ed6afb9b47e`
 
+`g3/validate_submission_shape.py` binds validation to these exact frozen challenge bytes and must reject a challenge file whose SHA-256 differs, even if its row count and JSON shape remain valid.
+
 ## Public specification
 
 ### 1. Execution gate
@@ -120,6 +122,14 @@ Example:
 ```bash
 ./g3/submissions/acme/run.sh challenge.jsonl > submission.jsonl
 ```
+
+Before oracle scoring, the public shape validator should be run against the same frozen challenge file:
+
+```bash
+python3 g3/validate_submission_shape.py challenge.jsonl submission.jsonl
+```
+
+A successful shape check confirms packet structure and the frozen challenge digest only. It does not score correctness and does not use the sealed oracle.
 
 ## Required attestation
 
