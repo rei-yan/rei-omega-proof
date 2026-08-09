@@ -1,0 +1,38 @@
+name: Wuxiang Transdual World Ecology Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run transdual world ecology kernel
+        run: |
+          python research/wuxiang_transdual_world_ecology_kernel.py | tee /tmp/transdual-world-ecology.out
+      - name: Assert bounded transdual semantics
+        run: |
+          grep -q 'MULTI_WORLD_ECOLOGY_READY' /tmp/transdual-world-ecology.out
+          grep -q 'WORLD_FUSION_INTEGRITY_GATE_READY' /tmp/transdual-world-ecology.out
+          grep -q 'WORLD_FISSION_OPERATOR_READY' /tmp/transdual-world-ecology.out
+          grep -q 'CROSS_ONTOLOGY_TRANSLATION_LOSS_ACCOUNTING_READY' /tmp/transdual-world-ecology.out
+          grep -q 'META_GENESIS_RULE_EVOLUTION_READY' /tmp/transdual-world-ecology.out
+          grep -q 'META_EXTINCTION_RULE_EVOLUTION_READY' /tmp/transdual-world-ecology.out
+          grep -q 'LIFECYCLE_OPERATOR_PLURALITY_READY' /tmp/transdual-world-ecology.out
+          grep -q 'WUXIANG_TRANSDUAL_WORLD_ECOLOGY_KERNEL_READY' /tmp/transdual-world-ecology.out
+          grep -q 'NO_UNIVERSAL_WORLD_CHAMPION_BY_DEFAULT' /tmp/transdual-world-ecology.out
+          grep -q 'FUSION_CANNOT_ERASE_CONTRADICTION' /tmp/transdual-world-ecology.out
+          grep -q 'FISSION_CANNOT_ERASE_PARENT_FAILURE' /tmp/transdual-world-ecology.out
+          grep -q 'TRANSLATION_LOSS_MUST_BE_VISIBLE' /tmp/transdual-world-ecology.out
+          grep -q 'GENESIS_EXTINCTION_BINARY_IS_NOT_SACRED' /tmp/transdual-world-ecology.out
+          grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/transdual-world-ecology.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/transdual-world-ecology.out
