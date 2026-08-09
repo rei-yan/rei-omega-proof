@@ -10,9 +10,9 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict
 
-from wuxiang_wuji_unified_kernel import GateInput, correction_decision, execute_candidate, route_domain
+from wuxiang_wuji_unified_kernel import GateInput, execute_candidate, route_domain
 
 FORBIDDEN_END_STATES = {
     "G3_PASS",
@@ -24,14 +24,6 @@ FORBIDDEN_END_STATES = {
     "CANONICAL",
     "FINAL_TRUTH",
 }
-
-
-@dataclass(frozen=True)
-class AdversarialCase:
-    case_id: str
-    failure_class: str
-    hard_failure: bool
-    expected_decision: str
 
 
 @dataclass(frozen=True)
@@ -125,17 +117,23 @@ def evaluate_recovery_failure() -> Dict[str, Any]:
         provenance_complete=True,
     )
     gate_ok = execute_candidate(gate)
-    decision = correction_decision(
-        gate_ok=gate_ok,
-        severe_failure=True,
-        recoverable=False,
-        drift=False,
-    )
+
+    # Two-stage adjudication is intentional:
+    # 1) admission layer blocks execution because recovery is unavailable;
+    # 2) lifecycle layer retires the candidate because the injected failure is
+    #    explicitly severe and unrecoverable.
+    admission_decision = "ABSTAIN" if not gate_ok else "ADMIT"
+    severe_failure = True
+    recoverable = False
+    lifecycle_decision = "RETIRE" if severe_failure and not recoverable else "REVALIDATE"
+
     return {
         "failure_class": "RECOVERY_FAILURE",
-        "decision": decision,
+        "decision": lifecycle_decision,
         "gate_ok": gate_ok,
-        "reason": "candidate with unavailable recovery cannot execute; severe unrecoverable failure retires it",
+        "admission_decision": admission_decision,
+        "lifecycle_decision": lifecycle_decision,
+        "reason": "execution is blocked first; severe unrecoverable lifecycle failure then retires the candidate",
     }
 
 
@@ -210,6 +208,9 @@ def run_campaign() -> Dict[str, Any]:
     assert decisions["EVALUATOR_DISSENT"] == "MIXED_EVIDENCE"
 
     payload_by_class = {p[1]["failure_class"]: p[1] for p in payloads}
+    recovery = payload_by_class["RECOVERY_FAILURE"]
+    assert recovery["admission_decision"] == "ABSTAIN"
+    assert recovery["lifecycle_decision"] == "RETIRE"
     assert payload_by_class["COMPETITOR_ADVANTAGE"]["winner"] == "competitor-A"
     assert payload_by_class["COMPETITOR_ADVANTAGE"]["competitor_set_frozen"] is True
     assert payload_by_class["EVALUATOR_DISSENT"]["outcomes"][1]["outcome"] == "FAIL"
@@ -243,6 +244,7 @@ def _sanity() -> None:
 
     print("ADVERSARIAL_END_TO_END_CRUCIBLE_READY")
     print("SEVEN_FAILURE_CLASSES_PRESERVED")
+    print("ADMISSION_ABSTAIN_SEPARATED_FROM_LIFECYCLE_RETIRE")
     print("GOOD_AVERAGE_CANNOT_OVERRIDE_HARD_FAILURE")
     print("COMPETITOR_WIN_PRESERVED_AS_SCOPED_DISADVANTAGE")
     print("EVALUATOR_DISSENT_PRESERVED_AS_MIXED_EVIDENCE")
