@@ -1,0 +1,43 @@
+name: Clean Room Successor Tournament Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run clean-room successor tournament
+        run: python research/clean_room_successor_tournament.py
+
+      - name: Assert no dynastic or real-world authority
+        run: |
+          python - <<'PY'
+          import runpy
+          ns = runpy.run_path('research/clean_room_successor_tournament.py')
+          ledger, contract, entrants = ns['build_tournament_fixture']()
+          result = ns['run_tournament'](ledger, contract, entrants)
+          assert result['status'] == 'CLEAN_ROOM_SUCCESSOR_TOURNAMENT_READY'
+          assert result['winner_authority'] == 0
+          assert result['canonical_promotion'] is False
+          assert result['external_gates_closed'] == []
+          assert result['real_world_attack_authority'] == 0
+          assert result['real_world_actuation_authority'] == 0
+          assert result['winner'] == 'SUCCESSOR-B'
+          print('NO_DYNASTIC_PRIVILEGE')
+          print('NO_REAL_WORLD_AUTHORITY')
+          PY
