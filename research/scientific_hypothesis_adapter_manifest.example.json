@@ -1,0 +1,42 @@
+{
+  "protocol_version": "rei-scientific-hypothesis-adapter-v0",
+  "arena_partition": "SCIENTIFIC_HYPOTHESIS_AND_DISCOVERY",
+  "task_id": "synthetic-interface-sanity-only",
+  "task_definition_hash": "sha256:task-definition-placeholder",
+  "input_schema_hash": "sha256:input-schema-placeholder",
+  "output_schema_hash": "sha256:output-schema-placeholder",
+  "evidence_bundle_hash": "sha256:evidence-bundle-placeholder",
+  "allowed_evidence_ids": ["E1", "E2", "E3"],
+  "data_cutoff": "2026-08-09T00:00:00Z",
+  "blind_state": "HIDDEN_OUTCOME_NOT_AVAILABLE",
+  "tool_policy": {
+    "allowed_tools": ["frozen_local_evidence_reader"],
+    "network_access": false,
+    "external_search": false
+  },
+  "human_assistance_policy": {
+    "allowed": false,
+    "max_interventions": 0
+  },
+  "budget_envelope": {
+    "max_hypotheses": 5,
+    "max_evidence_refs_per_hypothesis": 12,
+    "max_tool_calls": 20,
+    "max_retries": 1
+  },
+  "retry_policy": {
+    "max_retries": 1,
+    "post_reveal_retry": false
+  },
+  "abstention_policy": {
+    "allowed": true,
+    "reason_required": true
+  },
+  "evaluator_interface_hash": "sha256:evaluator-interface-placeholder",
+  "candidate_hash": "sha256:rei-candidate-placeholder",
+  "adapter_hash": "sha256:adapter-placeholder",
+  "status_ceiling": "READY_FOR_EXTERNAL_ELIGIBILITY_REVIEW",
+  "external_gate_closed": true,
+  "real_world_actuation_authority": 0,
+  "canonical": false
+}
