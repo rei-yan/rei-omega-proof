@@ -1,0 +1,31 @@
+name: Discovery Genesis Stack Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/DISCOVERY_GENESIS_STACK.md'
+      - 'research/discovery_genesis_stack.py'
+      - '.github/workflows/discovery-genesis-stack-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run finite discovery genesis crucible
+        run: python research/discovery_genesis_stack.py
+      - name: Enforce candidate and G5 boundaries
+        run: |
+          grep -F 'InternalHiddenSyntheticWin != G5_PASS' research/DISCOVERY_GENESIS_STACK.md
+          grep -F 'G5 = OPEN' research/DISCOVERY_GENESIS_STACK.md
+          grep -F 'real_world_execution = FORBIDDEN_BY_DEFAULT' research/DISCOVERY_GENESIS_STACK.md
+          grep -F 'MeasurementProposal != ExperimentAuthorization' research/DISCOVERY_GENESIS_STACK.md
+          grep -F 'UNRESOLVED_UNKNOWN' research/DISCOVERY_GENESIS_STACK.md
+          grep -F 'PosthocRetune != Discovery' research/DISCOVERY_GENESIS_STACK.md
