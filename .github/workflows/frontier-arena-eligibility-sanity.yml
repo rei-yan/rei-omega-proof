@@ -1,0 +1,34 @@
+name: Frontier Arena Eligibility Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/FRONTIER_ARENA_ELIGIBILITY_CONTRACT.md'
+      - 'research/frontier_arena_eligibility.example.json'
+      - 'research/frontier_arena_eligibility_sanity.py'
+      - '.github/workflows/frontier-arena-eligibility-sanity.yml'
+  workflow_dispatch:
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate arena eligibility contract
+        run: python research/frontier_arena_eligibility_sanity.py
+      - name: Prevent eligibility self-certification
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('research/frontier_arena_eligibility.example.json').read_text())
+          assert d['g6']=='OPEN'
+          assert d['world_best']=='UNVERIFIED'
+          assert d['world_unique']=='UNVERIFIED'
+          assert all(not a['rei_status'].startswith('ELIGIBLE') for a in d['arenas'])
+          assert d['real_world_actuation_authority']==0
+          print('anti-eligibility-laundering: PASS')
+          PY
