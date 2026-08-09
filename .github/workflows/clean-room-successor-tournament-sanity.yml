@@ -28,6 +28,8 @@ jobs:
         run: |
           python - <<'PY'
           import runpy
+          import sys
+          sys.path.insert(0, 'research')
           ns = runpy.run_path('research/clean_room_successor_tournament.py')
           ledger, contract, entrants = ns['build_tournament_fixture']()
           result = ns['run_tournament'](ledger, contract, entrants)
