@@ -27,14 +27,10 @@ jobs:
       - name: Assert package cannot self-pass G4 or G5
         run: |
           python - <<'PY'
-          import importlib.util
-          from pathlib import Path
+          import runpy
 
-          path = Path('research/g4_g5_external_challenge_package.py')
-          spec = importlib.util.spec_from_file_location('challenge_package', path)
-          mod = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(mod)
-          result = mod.run_sanity()
+          mod = runpy.run_path('research/g4_g5_external_challenge_package.py', run_name='challenge_package_test')
+          result = mod['run_sanity']()
           assert result['package_status'] == 'G4_G5_EXTERNAL_CHALLENGE_PACKAGE_READY'
           assert result['g4_status'] == 'OPEN'
           assert result['g5_status'] == 'OPEN'
