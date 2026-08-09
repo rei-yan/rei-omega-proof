@@ -5,12 +5,14 @@ on:
     branches: ["rei-reality-ascension-limit"]
     paths:
       - "research/BEYOND_LIMIT_GENESIS_FORGE.md"
+      - "research/beyond_limit_genesis_forge.py"
       - "research/beyond_limit_genesis_forge_sanity.py"
       - ".github/workflows/beyond-limit-genesis-forge-sanity.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "research/BEYOND_LIMIT_GENESIS_FORGE.md"
+      - "research/beyond_limit_genesis_forge.py"
       - "research/beyond_limit_genesis_forge_sanity.py"
       - ".github/workflows/beyond-limit-genesis-forge-sanity.yml"
   workflow_dispatch:
@@ -24,6 +26,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Run finite digital-world forge
+        run: python3 research/beyond_limit_genesis_forge.py
 
       - name: Run beyond-limit governance sanity
         run: python3 research/beyond_limit_genesis_forge_sanity.py
