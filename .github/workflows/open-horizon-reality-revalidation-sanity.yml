@@ -1,0 +1,34 @@
+name: Open Horizon Reality Revalidation Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run open-horizon reality revalidation kernel
+        run: |
+          python research/open_horizon_reality_revalidation_kernel.py | tee /tmp/open-horizon.out
+      - name: Assert bounded open-horizon semantics
+        run: |
+          grep -q 'EVIDENCE_LEASE_EXPIRY_READY' /tmp/open-horizon.out
+          grep -q 'SCOPE_NON_TRANSFER_GATE_READY' /tmp/open-horizon.out
+          grep -q 'MATERIAL_CONTRADICTION_PRESERVED' /tmp/open-horizon.out
+          grep -q 'EXTERNAL_DEFEAT_HISTORY_APPEND_ONLY' /tmp/open-horizon.out
+          grep -q 'REVIEWER_INDEPENDENCE_GRAPH_READY' /tmp/open-horizon.out
+          grep -q 'PROSPECTIVELY_FROZEN_REALITY_CHALLENGE_READY' /tmp/open-horizon.out
+          grep -q 'REALITY_DRIVEN_RETIREMENT_STATE_MACHINE_READY' /tmp/open-horizon.out
+          grep -q 'OPEN_HORIZON_REALITY_REVALIDATION_KERNEL_READY' /tmp/open-horizon.out
+          grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/open-horizon.out
+          grep -q 'NO_PERMANENT_SUPPORT' /tmp/open-horizon.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/open-horizon.out
