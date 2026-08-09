@@ -1,0 +1,41 @@
+name: Comparative Frontier Arena Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/COMPARATIVE_FRONTIER_ARENA.md'
+      - 'research/comparative_frontier_arena.py'
+      - 'research/comparative_frontier_arena.example.json'
+      - '.github/workflows/comparative-frontier-arena-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate arena example JSON
+        run: python -m json.tool research/comparative_frontier_arena.example.json >/dev/null
+      - name: Run Comparative Frontier Arena sanity
+        run: python research/comparative_frontier_arena.py
+      - name: Assert internal arena cannot self-pass G6
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'research')
+          import comparative_frontier_arena as arena
+          result = arena.run_sanity()
+          assert result['arena_status'] == 'COMPARATIVE_FRONTIER_ARENA_READY'
+          assert result['g6_status'] == 'OPEN'
+          assert result['world_best'] == 'UNVERIFIED'
+          assert result['world_unique'] == 'UNVERIFIED'
+          assert result['canonical'] is False
+          assert result['real_world_actuation_authority'] == 0
+          assert result['rei_loss_preservation_test'] == 'REI_NOT_BEST_IN_SCOPE'
+          PY
