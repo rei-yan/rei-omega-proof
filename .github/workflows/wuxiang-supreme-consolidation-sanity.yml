@@ -1,0 +1,21 @@
+name: Wuxiang Supreme Consolidation Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/WUXIANG_SUPREME_CONSOLIDATION.md'
+      - 'research/wuxiang_supreme_consolidation_sanity.py'
+      - '.github/workflows/wuxiang-supreme-consolidation-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wuxiang-supreme-consolidation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded Wuxiang Supreme Consolidation sanity suite
+        run: python3 research/wuxiang_supreme_consolidation_sanity.py
