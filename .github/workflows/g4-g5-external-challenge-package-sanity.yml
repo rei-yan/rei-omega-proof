@@ -1,0 +1,43 @@
+name: G4 G5 External Challenge Package Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/G4_G5_EXTERNAL_CHALLENGE_PACKAGE.md'
+      - 'research/g4_g5_external_challenge_package.py'
+      - 'research/g4_g5_external_challenge_manifest.example.json'
+      - '.github/workflows/g4-g5-external-challenge-package-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate example manifest JSON
+        run: python -m json.tool research/g4_g5_external_challenge_manifest.example.json >/dev/null
+      - name: Run package sanity crucible
+        run: python research/g4_g5_external_challenge_package.py
+      - name: Assert package cannot self-pass G4 or G5
+        run: |
+          python - <<'PY'
+          import importlib.util
+          from pathlib import Path
+
+          path = Path('research/g4_g5_external_challenge_package.py')
+          spec = importlib.util.spec_from_file_location('challenge_package', path)
+          mod = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+          result = mod.run_sanity()
+          assert result['package_status'] == 'G4_G5_EXTERNAL_CHALLENGE_PACKAGE_READY'
+          assert result['g4_status'] == 'OPEN'
+          assert result['g5_status'] == 'OPEN'
+          assert result['real_world_actuation_authority'] == 0
+          assert result['canonical'] is False
+          PY
