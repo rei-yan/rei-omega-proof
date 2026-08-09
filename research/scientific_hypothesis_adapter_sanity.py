@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -9,8 +10,9 @@ MODULE_PATH = ROOT / "scientific_hypothesis_adapter.py"
 MANIFEST_PATH = ROOT / "scientific_hypothesis_adapter_manifest.example.json"
 
 spec = importlib.util.spec_from_file_location("scientific_hypothesis_adapter", MODULE_PATH)
-module = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
+module = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = module
 spec.loader.exec_module(module)
 
 with MANIFEST_PATH.open("r", encoding="utf-8") as handle:
