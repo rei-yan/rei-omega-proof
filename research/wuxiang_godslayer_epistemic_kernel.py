@@ -8,10 +8,11 @@ It has zero real-world attack/actuation authority.
 
 from __future__ import annotations
 
-import itertools
 import json
 from dataclasses import dataclass
 from typing import Iterable
+
+from wuxiang_epistemic_primitives import minimal_fatal_cutsets, missing_requirements
 
 FORBIDDEN_END_STATES = {
     "G3_PASS", "G4_PASS", "G5_PASS", "G6_PASS", "G7_PASS", "G8_PASS",
@@ -54,24 +55,16 @@ class EvidenceRecord:
 
 
 def sacred_claim_reasons(claim: Claim) -> list[str]:
-    reasons: list[str] = []
-    if claim.finality_claimed:
-        reasons.append("FINALITY_CLAIM")
-    if claim.self_certified:
-        reasons.append("SELF_CERTIFICATION")
-    if claim.counterexample_immune:
-        reasons.append("COUNTEREXAMPLE_IMMUNITY")
-    if claim.identity_privilege:
-        reasons.append("IDENTITY_BASED_AUTHORITY")
-    if claim.permanent_support_without_lease:
-        reasons.append("PERMANENT_SUPPORT_WITHOUT_REVALIDATION")
-    if claim.deletes_material_dissent:
-        reasons.append("MATERIAL_DISSENT_DELETION")
-    if claim.claim_scope > claim.evidence_scope:
-        reasons.append("CLAIM_SCOPE_EXCEEDS_EVIDENCE_SCOPE")
-    if claim.requested_privileges & SACRED_PRIVILEGES:
-        reasons.append("SACRED_PRIVILEGE_REQUEST")
-    return reasons
+    return missing_requirements({
+        "FINALITY_CLAIM": not claim.finality_claimed,
+        "SELF_CERTIFICATION": not claim.self_certified,
+        "COUNTEREXAMPLE_IMMUNITY": not claim.counterexample_immune,
+        "IDENTITY_BASED_AUTHORITY": not claim.identity_privilege,
+        "PERMANENT_SUPPORT_WITHOUT_REVALIDATION": not claim.permanent_support_without_lease,
+        "MATERIAL_DISSENT_DELETION": not claim.deletes_material_dissent,
+        "CLAIM_SCOPE_EXCEEDS_EVIDENCE_SCOPE": claim.claim_scope <= claim.evidence_scope,
+        "SACRED_PRIVILEGE_REQUEST": not bool(claim.requested_privileges & SACRED_PRIVILEGES),
+    })
 
 
 def sacred_claim_detection(claim: Claim) -> dict[str, object]:
@@ -125,22 +118,7 @@ def privilege_revoked_by_counterexamples(claim: Claim, counterexamples: frozense
 
 def minimal_desacralization_counterexamples(claim: Claim) -> list[list[str]]:
     candidates = sorted(set(sacred_claim_reasons(claim)))
-    minimal: list[list[str]] = []
-    for size in range(1, len(candidates) + 1):
-        for combo in itertools.combinations(candidates, size):
-            cset = frozenset(combo)
-            if not privilege_revoked_by_counterexamples(claim, cset):
-                continue
-            proper_is_decisive = any(
-                privilege_revoked_by_counterexamples(claim, frozenset(sub))
-                for sub_size in range(1, size)
-                for sub in itertools.combinations(combo, sub_size)
-            )
-            if not proper_is_decisive:
-                minimal.append(list(combo))
-        if minimal:
-            break
-    return minimal
+    return minimal_fatal_cutsets(candidates, ((reason,) for reason in candidates))
 
 
 def reenthronement_gate(*, historical_material_defeat: bool, fresh_external_support: bool,
