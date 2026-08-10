@@ -148,6 +148,23 @@ def minimal_fatal_cutsets(
     return result
 
 
+def minimal_hitting_sets(groups: Iterable[Iterable[str]]) -> list[list[str]]:
+    normalized = tuple(frozenset(group) for group in groups)
+    if not normalized or any(not group for group in normalized):
+        return []
+    universe = sorted(set().union(*normalized))
+    result: list[list[str]] = []
+    for size in range(1, len(universe) + 1):
+        for combo in combinations(universe, size):
+            candidate = frozenset(combo)
+            if not all(candidate & group for group in normalized):
+                continue
+            if any(set(previous).issubset(candidate) for previous in result):
+                continue
+            result.append(list(combo))
+    return result
+
+
 def mapping_coverage(
     source_terms: Iterable[str], mapping: Mapping[str, str]
 ) -> tuple[dict[str, str], float, float]:
