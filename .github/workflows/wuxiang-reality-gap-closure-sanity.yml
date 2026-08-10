@@ -34,5 +34,6 @@ jobs:
           grep -q 'SCOPE_LEAK_FORCES_ABSTAIN' /tmp/reality-gap.out
           grep -q 'SYNTHETIC_RECEIPT_IS_NOT_EXTERNAL_EVIDENCE' /tmp/reality-gap.out
           grep -q 'OPEN_CRITICAL_EVIDENCE_DEBT_PREVENTS_CLAIM_EXPANSION' /tmp/reality-gap.out
+          grep -q 'COMPARATIVE_DEFEAT_BLOCKS_CLAIM_EXPANSION' /tmp/reality-gap.out
           grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/reality-gap.out
           grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/reality-gap.out
