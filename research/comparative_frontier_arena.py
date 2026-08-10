@@ -2,8 +2,8 @@
 """Finite sanity crucible for the REI Comparative Frontier Arena.
 
 This module cannot pass G6. It checks frozen comparative bookkeeping,
-budget parity, preservation of REI loss, scoped defeat debt, and bounded
-compression of repeated defeats into non-causal structural-weakness candidates.
+budget parity, preservation of REI loss, scoped defeat debt, bounded defeat
+compression, and internally frozen prospective weakness predictions.
 """
 
 from __future__ import annotations
@@ -19,6 +19,8 @@ REI_NOT_BEST = "REI_NOT_BEST_IN_SCOPE"
 TIE = "TIE_OR_INCONCLUSIVE"
 ABSTAIN = "ABSTAIN"
 INVALID = "INVALID_PROTOCOL"
+PREDICTION_SURVIVES = "PROSPECTIVE_WEAKNESS_PREDICTION_SURVIVES_FOR_NOW"
+PREDICTION_FALSIFIED = "PROSPECTIVE_WEAKNESS_PREDICTION_FALSIFIED"
 
 
 @dataclass(frozen=True)
@@ -65,6 +67,17 @@ class DefeatObservation:
     winner: str
     hidden_test_commitment: str
     failure_modes: Tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class WeaknessPrediction:
+    prediction_id: str
+    candidate: Tuple[str, ...]
+    protocol_id: str
+    scope: str
+    metric: str
+    hidden_test_commitment: str
+    predicted_failure_modes: Tuple[str, ...]
 
 
 def equal_budget(a: Budget, b: Budget) -> bool:
@@ -177,6 +190,44 @@ def weakness_candidates(observations: Tuple[DefeatObservation, ...]) -> Dict[str
             "candidates": candidates, "causal_status": "UNPROVEN", "defeat_count": len(observations)}
 
 
+def freeze_weakness_prediction(
+    candidate: Tuple[str, ...], manifest: ArenaManifest, predicted_failure_modes: Tuple[str, ...]
+) -> WeaknessPrediction | None:
+    candidate = tuple(sorted(set(candidate)))
+    modes = tuple(sorted(set(predicted_failure_modes)))
+    if not candidate or not modes or not manifest.hidden_test_commitment:
+        return None
+    payload = {
+        "candidate": candidate,
+        "protocol_id": manifest.protocol_id,
+        "scope": manifest.scope,
+        "metric": manifest.metric,
+        "hidden_test_commitment": manifest.hidden_test_commitment,
+        "predicted_failure_modes": modes,
+    }
+    return WeaknessPrediction(canonical_digest(payload)[:16], candidate, manifest.protocol_id,
+                              manifest.scope, manifest.metric, manifest.hidden_test_commitment, modes)
+
+
+def adjudicate_weakness_prediction(
+    prediction: WeaknessPrediction,
+    manifest: ArenaManifest,
+    evaluation: Dict[str, object],
+    observed_failure_modes: Tuple[str, ...],
+) -> Dict[str, object]:
+    expected = freeze_weakness_prediction(prediction.candidate, manifest, prediction.predicted_failure_modes)
+    if expected is None or expected.prediction_id != prediction.prediction_id:
+        status = "INVALID_PREDICTION_COMMITMENT"
+    elif evaluation.get("outcome") != REI_NOT_BEST:
+        status = PREDICTION_FALSIFIED
+    elif set(prediction.predicted_failure_modes).issubset(set(observed_failure_modes)):
+        status = PREDICTION_SURVIVES
+    else:
+        status = PREDICTION_FALSIFIED
+    return {"status": status, "causal_truth": False, "external_validation": False,
+            "timestamp_independence_verified": False, "g6_status": "OPEN"}
+
+
 def fresh_rechallenge_admissible(
     prior_manifest: ArenaManifest, prior_evaluation: Dict[str, object],
     fresh_manifest: ArenaManifest, fresh_evaluation: Dict[str, object],
@@ -257,6 +308,19 @@ def run_sanity() -> Dict[str, object]:
     assert compressed["status"] == "STRUCTURAL_WEAKNESS_CANDIDATES_READY"
     assert ("SCOPE_TRANSFER",) in compressed["candidates"] and compressed["causal_status"] == "UNPROVEN"
 
+    prospective_manifest = demo_manifest("sha256-prospective-hidden-arena")
+    prediction = freeze_weakness_prediction(("SCOPE_TRANSFER",), prospective_manifest, ("SCOPE_TRANSFER",))
+    wrong_prediction = freeze_weakness_prediction(("SCOPE_TRANSFER",), prospective_manifest, ("CALIBRATION",))
+    prospective_loss = evaluate(prospective_manifest, (Result("REI", .42), Result("BASELINE_A", .19), Result("BASELINE_B", .31)))
+    assert prediction is not None and wrong_prediction is not None
+    prediction_result = adjudicate_weakness_prediction(prediction, prospective_manifest, prospective_loss,
+                                                       ("SCOPE_TRANSFER", "ROBUSTNESS"))
+    wrong_result = adjudicate_weakness_prediction(wrong_prediction, prospective_manifest, prospective_loss,
+                                                  ("SCOPE_TRANSFER", "ROBUSTNESS"))
+    assert prediction_result["status"] == PREDICTION_SURVIVES
+    assert wrong_result["status"] == PREDICTION_FALSIFIED
+    assert prediction_result["timestamp_independence_verified"] is False
+
     same_challenge_win = evaluate(manifest, (Result("REI", .10), Result("BASELINE_A", .20), Result("BASELINE_B", .30)))
     assert resolve_comparative_defeat(
         defeat_debt, prior_manifest=manifest, prior_evaluation=rei_loss,
@@ -294,6 +358,9 @@ def run_sanity() -> Dict[str, object]:
         "cluster_is_not_causality": compressed["causal_status"] == "UNPROVEN",
         "intervention_supported_candidate": support["status"],
         "root_cause_truth_claimed": support["causal_truth"],
+        "prospective_prediction_survives": prediction_result["status"],
+        "prospective_wrong_prediction_is_falsified": wrong_result["status"],
+        "prediction_timestamp_independence_verified": prediction_result["timestamp_independence_verified"],
         "g6_status": "OPEN", "world_best": "UNVERIFIED", "world_unique": "UNVERIFIED",
         "canonical": False, "real_world_actuation_authority": 0,
     }
