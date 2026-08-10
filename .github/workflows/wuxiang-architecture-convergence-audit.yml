@@ -1,0 +1,31 @@
+name: Wuxiang Architecture Convergence Audit
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit architecture convergence
+        run: |
+          python research/wuxiang_architecture_convergence_audit.py | tee /tmp/wuxiang-convergence-audit.out
+      - name: Assert convergence governance
+        run: |
+          grep -q 'ARCHITECTURE_CENSUS_READY' /tmp/wuxiang-convergence-audit.out
+          grep -q 'CORE_ARTIFACT_COVERAGE_READY' /tmp/wuxiang-convergence-audit.out
+          grep -q 'COMPRESSION_REVIEW_CLUSTERS_READY' /tmp/wuxiang-convergence-audit.out
+          grep -q 'EXTERNAL_EVIDENCE_DEBT_VISIBLE' /tmp/wuxiang-convergence-audit.out
+          grep -q 'NO_AUTOMATIC_PRUNING' /tmp/wuxiang-convergence-audit.out
+          grep -q 'NO_FORBIDDEN_REAL_WORLD_AUTHORITY_MARKERS' /tmp/wuxiang-convergence-audit.out
+          grep -q 'EXTERNAL_EVIDENCE_NOT_SELF_CERTIFIED' /tmp/wuxiang-convergence-audit.out
+          grep -q 'ARCHITECTURE_CONVERGENCE_AUDIT_READY' /tmp/wuxiang-convergence-audit.out
