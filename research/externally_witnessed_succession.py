@@ -8,8 +8,10 @@ promote a canonical successor, or certify external witness independence.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, asdict
-from typing import Dict, List
+from dataclasses import asdict, dataclass
+from typing import Dict
+
+from wuxiang_epistemic_primitives import missing_requirements
 
 READY = "EXTERNALLY_WITNESSED_SUCCESSION_PROTOCOL_READY"
 READY_TRIAL = "READY_FOR_EXTERNAL_G10_TRIAL"
@@ -39,33 +41,17 @@ def evaluate_succession(
     reject_only_because_not_rei: bool = False,
     proven_external_witness_independence: bool = False,
 ) -> Dict[str, object]:
-    reasons: List[str] = []
-
-    constitution_preserved = successor.constitution_hash == incumbent.constitution_hash
-    authority_nonexpanding = successor.authority_ceiling <= incumbent.authority_ceiling
-    recovery_not_worse = successor.recovery_score >= incumbent.recovery_score
-    correctability_not_worse = successor.correctability_score >= incumbent.correctability_score
-    comparative_advantage = successor.frozen_comparative_score > incumbent.frozen_comparative_score
-
-    if not successor.tested_on_new_hidden_window:
-        reasons.append("NO_NEW_HIDDEN_WINDOW")
-    if not constitution_preserved:
-        reasons.append("CONSTITUTION_NOT_PRESERVED")
-    if not authority_nonexpanding:
-        reasons.append("AUTHORITY_EXPANDED")
-    if not successor.rollback_ready:
-        reasons.append("ROLLBACK_NOT_READY")
-    if not successor.audit_continuity:
-        reasons.append("AUDIT_CONTINUITY_BROKEN")
-    if not recovery_not_worse:
-        reasons.append("RECOVERY_REGRESSED")
-    if not correctability_not_worse:
-        reasons.append("CORRECTABILITY_REGRESSED")
-    if successor.hard_veto:
-        reasons.append("HARD_VETO")
-    if not comparative_advantage:
-        reasons.append("NO_FROZEN_COMPARATIVE_ADVANTAGE")
-
+    reasons = missing_requirements({
+        "NO_NEW_HIDDEN_WINDOW": successor.tested_on_new_hidden_window,
+        "CONSTITUTION_NOT_PRESERVED": successor.constitution_hash == incumbent.constitution_hash,
+        "AUTHORITY_EXPANDED": successor.authority_ceiling <= incumbent.authority_ceiling,
+        "ROLLBACK_NOT_READY": successor.rollback_ready,
+        "AUDIT_CONTINUITY_BROKEN": successor.audit_continuity,
+        "RECOVERY_REGRESSED": successor.recovery_score >= incumbent.recovery_score,
+        "CORRECTABILITY_REGRESSED": successor.correctability_score >= incumbent.correctability_score,
+        "HARD_VETO": not successor.hard_veto,
+        "NO_FROZEN_COMPARATIVE_ADVANTAGE": successor.frozen_comparative_score > incumbent.frozen_comparative_score,
+    })
     eligible = not reasons
 
     if eligible and reject_only_because_not_rei:
@@ -121,9 +107,7 @@ def run_sanity() -> Dict[str, object]:
     assert eligible["canonical_promotion"] is False
 
     identity_bias = evaluate_succession(
-        incumbent,
-        successor,
-        reject_only_because_not_rei=True,
+        incumbent, successor, reject_only_because_not_rei=True,
     )
     assert identity_bias["decision"] == INVALID
 

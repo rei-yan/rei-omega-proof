@@ -6,9 +6,11 @@ Synthetic epistemic/architectural research only. No real-world targeting or actu
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from itertools import combinations
 from typing import Iterable, Sequence
+
+from wuxiang_epistemic_primitives import minimal_fatal_cutsets
 
 FAILURE_NODES = (
     "CONSTITUTION_SCORE_OVERRIDE_BYPASS",
@@ -50,20 +52,11 @@ def is_fatal(failures: frozenset[str]) -> bool:
     return any(edge.issubset(failures) for edge in FATAL_HYPEREDGES)
 
 
-def proper_nonempty_subsets(values: frozenset[str]) -> Iterable[frozenset[str]]:
-    ordered = sorted(values)
-    for size in range(1, len(ordered)):
-        for combo in combinations(ordered, size):
-            yield frozenset(combo)
-
-
-def is_minimal_fatal_cutset(failures: frozenset[str]) -> bool:
-    return is_fatal(failures) and all(not is_fatal(subset) for subset in proper_nonempty_subsets(failures))
-
-
 def enumerate_minimal_fatal_cutsets() -> list[frozenset[str]]:
-    found = [candidate for candidate in powerset_nonempty(FAILURE_NODES) if is_minimal_fatal_cutset(candidate)]
-    return sorted(found, key=lambda item: (len(item), tuple(sorted(item))))
+    return [
+        frozenset(cut)
+        for cut in minimal_fatal_cutsets(FAILURE_NODES, FATAL_HYPEREDGES)
+    ]
 
 
 def apply_repairs(failures: frozenset[str], actions: frozenset[str]) -> frozenset[str]:
@@ -84,8 +77,7 @@ def is_minimal_repair(cutset: frozenset[str], actions: frozenset[str]) -> bool:
     ordered = sorted(actions)
     for size in range(0, len(ordered)):
         for combo in combinations(ordered, size):
-            subset = frozenset(combo)
-            if repair_sufficient_for_correctability(cutset, subset):
+            if repair_sufficient_for_correctability(cutset, frozenset(combo)):
                 return False
     return True
 
@@ -93,8 +85,7 @@ def is_minimal_repair(cutset: frozenset[str], actions: frozenset[str]) -> bool:
 def minimal_counterfactual_repairs(cutset: frozenset[str]) -> list[frozenset[str]]:
     relevant_actions = sorted(action for action, node in REPAIR_ACTIONS.items() if node in cutset)
     repairs = [
-        candidate
-        for candidate in powerset_nonempty(relevant_actions)
+        candidate for candidate in powerset_nonempty(relevant_actions)
         if is_minimal_repair(cutset, candidate)
     ]
     return sorted(repairs, key=lambda item: (len(item), tuple(sorted(item))))
@@ -116,12 +107,8 @@ class RepairCandidate:
 def candidate_state(candidate: RepairCandidate, failures: frozenset[str]) -> dict[str, object]:
     actions = frozenset(candidate.actions)
     remaining = apply_repairs(failures, actions)
-    actual_provenance_ready = (
-        "PROVENANCE_LOSS" not in remaining and candidate.provenance_claimed_ready
-    )
-    actual_recovery_ready = (
-        "RECOVERY_LOSS" not in remaining and candidate.recovery_claimed_ready
-    )
+    actual_provenance_ready = "PROVENANCE_LOSS" not in remaining and candidate.provenance_claimed_ready
+    actual_recovery_ready = "RECOVERY_LOSS" not in remaining and candidate.recovery_claimed_ready
     fatal_resolved = not is_fatal(remaining)
     eligible = (
         candidate.authority == 0
@@ -284,7 +271,6 @@ def _sanity() -> None:
         for repair in repairs:
             assert is_minimal_repair(cutset, repair)
             assert repair_sufficient_for_correctability(cutset, repair)
-            # Every one-action removal from a singleton minimal repair must fail.
             if len(repair) == 1:
                 assert not repair_sufficient_for_correctability(cutset, frozenset())
 

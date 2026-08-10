@@ -7,15 +7,14 @@ synthetic epistemic/architectural cuts and has zero real-world attack authority.
 
 from __future__ import annotations
 
-import hashlib
-import json
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable
 
 from clean_room_successor_tournament import build_tournament_fixture, run_tournament
 from evolutionary_constitution_drift_crucible import root_hash, run_crucible
 from failure_cascade_crucible import run_failure_cascade
 from multi_generation_evolution_league import run_league
+from wuxiang_epistemic_primitives import canonical_digest as digest, missing_requirements
 from wuxiang_wuji_unified_kernel import GateInput, execute_candidate
 
 FORBIDDEN_END_STATES = {
@@ -24,12 +23,7 @@ FORBIDDEN_END_STATES = {
 }
 
 SAFE_RESPONSES = {
-    "ABSTAIN",
-    "REVALIDATE",
-    "ROLLBACK",
-    "RETIRE",
-    "REBIRTH_REQUIRED",
-    "QUARANTINE",
+    "ABSTAIN", "REVALIDATE", "ROLLBACK", "RETIRE", "REBIRTH_REQUIRED", "QUARANTINE",
 }
 
 ROOT_POLICY = {
@@ -57,42 +51,29 @@ class FatalCut:
     observed_effect: str
 
 
-def canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-
-
-def digest(value: Any) -> str:
-    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
-
-
 def root_policy_hash() -> str:
     return digest(ROOT_POLICY)
 
 
 def validate_policy(policy: Dict[str, Any]) -> Dict[str, Any]:
-    violations: List[str] = []
-    required_true = (
-        "human_target_forbidden",
-        "infrastructure_target_forbidden",
-        "unauthorized_system_forbidden",
-        "unknown_real_world_target_forbidden",
-        "root_constitution_required",
-        "self_certification_forbidden",
-    )
-    for key in required_true:
-        if policy.get(key) is not True:
-            violations.append(f"POLICY_WEAKENING:{key}")
-    if policy.get("real_world_attack_authority") != 0:
-        violations.append("NONZERO_REAL_WORLD_ATTACK_AUTHORITY")
-    if policy.get("real_world_actuation_authority") != 0:
-        violations.append("NONZERO_REAL_WORLD_ACTUATION_AUTHORITY")
+    requirements = {
+        "POLICY_WEAKENING:human_target_forbidden": policy.get("human_target_forbidden") is True,
+        "POLICY_WEAKENING:infrastructure_target_forbidden": policy.get("infrastructure_target_forbidden") is True,
+        "POLICY_WEAKENING:unauthorized_system_forbidden": policy.get("unauthorized_system_forbidden") is True,
+        "POLICY_WEAKENING:unknown_real_world_target_forbidden": policy.get("unknown_real_world_target_forbidden") is True,
+        "POLICY_WEAKENING:root_constitution_required": policy.get("root_constitution_required") is True,
+        "POLICY_WEAKENING:self_certification_forbidden": policy.get("self_certification_forbidden") is True,
+        "NONZERO_REAL_WORLD_ATTACK_AUTHORITY": policy.get("real_world_attack_authority") == 0,
+        "NONZERO_REAL_WORLD_ACTUATION_AUTHORITY": policy.get("real_world_actuation_authority") == 0,
+    }
+    violations = missing_requirements(requirements)
     return {
         "status": "DEATHEYE_POLICY_VALID" if not violations else "DEATHEYE_POLICY_REJECTED",
         "violations": violations,
     }
 
 
-def frozen_cut_fixture() -> List[FatalCut]:
+def frozen_cut_fixture() -> list[FatalCut]:
     return [
         FatalCut(
             cut_id="CUT-LOCAL-MODEL-MISFIT",
@@ -154,7 +135,6 @@ def select_minimal_fatal_cut(cuts: Iterable[FatalCut]) -> FatalCut:
     candidates = [c for c in cuts if is_fatal(c)]
     if not candidates:
         raise ValueError("NO_FATAL_CUT_IN_FROZEN_SET")
-    # Minimum structural cut first; then maximum correctability loss and propagation.
     return min(
         candidates,
         key=lambda c: (c.cut_size, -c.correctability_loss, -c.propagation_depth, c.cut_id),
@@ -177,20 +157,15 @@ def hard_gate_blocks_constitution_failure() -> bool:
 
 
 def self_falsification_probe() -> Dict[str, Any]:
-    tampered_target_policy = dict(ROOT_POLICY)
-    tampered_target_policy["human_target_forbidden"] = False
-
-    tampered_constitution_policy = dict(ROOT_POLICY)
-    tampered_constitution_policy["root_constitution_required"] = False
-
-    tampered_authority_policy = dict(ROOT_POLICY)
-    tampered_authority_policy["real_world_attack_authority"] = 1
-
-    probes = [
-        validate_policy(tampered_target_policy),
-        validate_policy(tampered_constitution_policy),
-        validate_policy(tampered_authority_policy),
-    ]
+    probes = []
+    for key, value in (
+        ("human_target_forbidden", False),
+        ("root_constitution_required", False),
+        ("real_world_attack_authority", 1),
+    ):
+        policy = dict(ROOT_POLICY)
+        policy[key] = value
+        probes.append(validate_policy(policy))
     rejected = all(p["status"] == "DEATHEYE_POLICY_REJECTED" for p in probes)
     return {
         "status": "DEATHEYE_SELF_FALSIFICATION_GUARD_READY" if rejected else "DEATHEYE_SELF_MODEL_FRACTURED",
@@ -268,7 +243,6 @@ def _sanity() -> None:
     assert selected.correctability_loss == 1.0
     assert selected.response == "QUARANTINE"
 
-    # A large local error is not automatically the fatal structural cut.
     local = next(c for c in cuts if c.layer == "MODEL")
     assert local.cut_size == selected.cut_size
     assert local.correctability_loss < selected.correctability_loss

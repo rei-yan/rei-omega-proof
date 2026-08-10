@@ -7,21 +7,15 @@ failure memory. It cannot close external gates or prove real evaluator independe
 
 from __future__ import annotations
 
-import hashlib
-import json
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, Iterable, List, Set
+from typing import Any, Dict
+
+from wuxiang_epistemic_primitives import canonical_digest as digest, disjoint, unique_values
 
 
 FORBIDDEN_END_STATES = {
-    "G3_PASS",
-    "G4_PASS",
-    "G5_PASS",
-    "G6_PASS",
-    "WORLD_BEST",
-    "WORLD_UNIQUE",
-    "CANONICAL",
-    "FINAL_TRUTH",
+    "G3_PASS", "G4_PASS", "G5_PASS", "G6_PASS", "WORLD_BEST",
+    "WORLD_UNIQUE", "CANONICAL", "FINAL_TRUTH",
 }
 
 
@@ -59,77 +53,31 @@ class CleanRoomSuccessor:
     external_gate_state: str
 
 
-def canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-
-
-def digest(value: Any) -> str:
-    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
-
-
-def ensure_unique(values: Iterable[str]) -> bool:
-    seq = tuple(values)
-    return len(seq) == len(set(seq))
-
-
 def validate_rebirth(ledger: QuarantineLedger, successor: CleanRoomSuccessor) -> Dict[str, Any]:
-    violations: List[str] = []
-
-    quarantined_ids: Set[str] = set(ledger.contaminated_evidence_ids)
-    quarantined_hashes: Set[str] = set(ledger.contaminated_evidence_hashes)
-    exposed_windows: Set[str] = set(ledger.exposed_window_hashes)
-    old_repr_hashes: Set[str] = set(ledger.contaminated_representation_hashes)
-    old_eval_hashes: Set[str] = set(ledger.prior_evaluator_set_hashes)
-
-    if successor.failure_memory_digest != ledger.failure_digest:
-        violations.append("FAILURE_MEMORY_DROPPED_OR_REWRITTEN")
-
-    if quarantined_ids.intersection(successor.evidence_ids):
-        violations.append("QUARANTINED_EVIDENCE_ID_REUSE")
-
-    if quarantined_hashes.intersection(successor.evidence_hashes):
-        violations.append("QUARANTINED_EVIDENCE_HASH_REUSE")
-
-    if successor.hidden_window_hash in exposed_windows:
-        violations.append("EXPOSED_WINDOW_REUSE")
-
-    if successor.representation_hash in old_repr_hashes:
-        violations.append("CONTAMINATED_REPRESENTATION_REUSE")
-
-    if successor.evaluator_set_hash in old_eval_hashes:
-        violations.append("PRIOR_EVALUATOR_SET_REUSE")
-
-    if successor.authority != 0:
-        violations.append("AUTHORITY_CARRYOVER")
-
-    if successor.certification != "UNVERIFIED":
-        violations.append("CERTIFICATION_CARRYOVER")
-
-    if successor.canonical:
-        violations.append("CANONICAL_STATUS_CARRYOVER")
-
-    if successor.external_gate_state != "OPEN":
-        violations.append("EXTERNAL_GATE_SELF_CLOSURE")
-
-    if not successor.evidence_ids or not successor.evidence_hashes:
-        violations.append("MISSING_FRESH_EVIDENCE")
-
-    if len(successor.evidence_ids) != len(successor.evidence_hashes):
-        violations.append("EVIDENCE_ID_HASH_LENGTH_MISMATCH")
-
-    if not ensure_unique(successor.evidence_ids):
-        violations.append("DUPLICATE_SUCCESSOR_EVIDENCE_ID")
-
-    if not ensure_unique(successor.evidence_hashes):
-        violations.append("DUPLICATE_SUCCESSOR_EVIDENCE_HASH")
-
-    status = "CLEAN_ROOM_ELIGIBLE_FOR_SYNTHETIC_REVALIDATION" if not violations else "INVALID_REBIRTH_PROTOCOL"
+    checks = (
+        (successor.failure_memory_digest != ledger.failure_digest, "FAILURE_MEMORY_DROPPED_OR_REWRITTEN"),
+        (not disjoint(ledger.contaminated_evidence_ids, successor.evidence_ids), "QUARANTINED_EVIDENCE_ID_REUSE"),
+        (not disjoint(ledger.contaminated_evidence_hashes, successor.evidence_hashes), "QUARANTINED_EVIDENCE_HASH_REUSE"),
+        (successor.hidden_window_hash in ledger.exposed_window_hashes, "EXPOSED_WINDOW_REUSE"),
+        (successor.representation_hash in ledger.contaminated_representation_hashes, "CONTAMINATED_REPRESENTATION_REUSE"),
+        (successor.evaluator_set_hash in ledger.prior_evaluator_set_hashes, "PRIOR_EVALUATOR_SET_REUSE"),
+        (successor.authority != 0, "AUTHORITY_CARRYOVER"),
+        (successor.certification != "UNVERIFIED", "CERTIFICATION_CARRYOVER"),
+        (successor.canonical, "CANONICAL_STATUS_CARRYOVER"),
+        (successor.external_gate_state != "OPEN", "EXTERNAL_GATE_SELF_CLOSURE"),
+        (not successor.evidence_ids or not successor.evidence_hashes, "MISSING_FRESH_EVIDENCE"),
+        (len(successor.evidence_ids) != len(successor.evidence_hashes), "EVIDENCE_ID_HASH_LENGTH_MISMATCH"),
+        (not unique_values(successor.evidence_ids), "DUPLICATE_SUCCESSOR_EVIDENCE_ID"),
+        (not unique_values(successor.evidence_hashes), "DUPLICATE_SUCCESSOR_EVIDENCE_HASH"),
+    )
+    violations = [reason for failed, reason in checks if failed]
+    evidence_clean = disjoint(ledger.contaminated_evidence_hashes, successor.evidence_hashes)
     return {
-        "status": status,
+        "status": "CLEAN_ROOM_ELIGIBLE_FOR_SYNTHETIC_REVALIDATION" if not violations else "INVALID_REBIRTH_PROTOCOL",
         "violations": violations,
         "failure_memory_preserved": successor.failure_memory_digest == ledger.failure_digest,
-        "positive_evidence_inheritance": 0 if not quarantined_hashes.intersection(successor.evidence_hashes) else 1,
-        "declared_evaluator_set_fresh": successor.evaluator_set_hash not in old_eval_hashes,
+        "positive_evidence_inheritance": 0 if evidence_clean else 1,
+        "declared_evaluator_set_fresh": successor.evaluator_set_hash not in ledger.prior_evaluator_set_hashes,
         "external_independence_proven": False,
         "authority": successor.authority,
         "canonical": successor.canonical,
@@ -142,12 +90,11 @@ def build_fixture() -> tuple[QuarantineLedger, CleanRoomSuccessor]:
         {"id": "OLD-E2", "claim": "incumbent-support", "source": "contaminated-B"},
     ]
     old_evidence_hashes = tuple(digest(e) for e in contaminated_evidence)
-    failure_record = {
+    failure_digest = digest({
         "failure_id": "CASCADE-FAIL-001",
         "reason": "provenance contamination propagated into representation and recovery",
         "preserved": True,
-    }
-    failure_digest = digest(failure_record)
+    })
 
     ledger = QuarantineLedger(
         incumbent_id="REI-incumbent-contaminated",
@@ -233,39 +180,31 @@ def _sanity() -> None:
     assert valid["canonical"] is False
     assert valid["external_independence_proven"] is False
 
-    # Attempt 1: rename but reuse old evidence by hash.
-    bad_hash = CleanRoomSuccessor(
-        **{
-            **asdict(successor),
-            "evidence_ids": ("RENAMED-E1", "NEW-E2"),
-            "evidence_hashes": (ledger.contaminated_evidence_hashes[0], successor.evidence_hashes[1]),
-        }
-    )
+    bad_hash = CleanRoomSuccessor(**{
+        **asdict(successor),
+        "evidence_ids": ("RENAMED-E1", "NEW-E2"),
+        "evidence_hashes": (ledger.contaminated_evidence_hashes[0], successor.evidence_hashes[1]),
+    })
     r = validate_rebirth(ledger, bad_hash)
     assert r["status"] == "INVALID_REBIRTH_PROTOCOL"
     assert "QUARANTINED_EVIDENCE_HASH_REUSE" in r["violations"]
 
-    # Attempt 2: reuse exposed hidden window.
-    bad_window = CleanRoomSuccessor(
-        **{**asdict(successor), "hidden_window_hash": ledger.exposed_window_hashes[0]}
-    )
-    r = validate_rebirth(ledger, bad_window)
-    assert "EXPOSED_WINDOW_REUSE" in r["violations"]
+    bad_window = CleanRoomSuccessor(**{
+        **asdict(successor), "hidden_window_hash": ledger.exposed_window_hashes[0]
+    })
+    assert "EXPOSED_WINDOW_REUSE" in validate_rebirth(ledger, bad_window)["violations"]
 
-    # Attempt 3: carry authority/certification across the severed boundary.
-    bad_privilege = CleanRoomSuccessor(
-        **{**asdict(successor), "authority": 1, "certification": "SUPPORTED"}
-    )
+    bad_privilege = CleanRoomSuccessor(**{
+        **asdict(successor), "authority": 1, "certification": "SUPPORTED"
+    })
     r = validate_rebirth(ledger, bad_privilege)
     assert "AUTHORITY_CARRYOVER" in r["violations"]
     assert "CERTIFICATION_CARRYOVER" in r["violations"]
 
-    # Attempt 4: erase the defeat memory.
-    bad_memory = CleanRoomSuccessor(
-        **{**asdict(successor), "failure_memory_digest": digest({"fake": "new-history"})}
-    )
-    r = validate_rebirth(ledger, bad_memory)
-    assert "FAILURE_MEMORY_DROPPED_OR_REWRITTEN" in r["violations"]
+    bad_memory = CleanRoomSuccessor(**{
+        **asdict(successor), "failure_memory_digest": digest({"fake": "new-history"})
+    })
+    assert "FAILURE_MEMORY_DROPPED_OR_REWRITTEN" in validate_rebirth(ledger, bad_memory)["violations"]
 
     result = run_rebirth()
     assert result["status"] == "CLEAN_ROOM_REBIRTH_READY"

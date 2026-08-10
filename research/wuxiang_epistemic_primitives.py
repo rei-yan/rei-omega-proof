@@ -79,6 +79,15 @@ def missing_requirements(requirements: Mapping[str, object]) -> list[str]:
     return [name for name, value in requirements.items() if not value]
 
 
+def unique_values(values: Iterable[str]) -> bool:
+    seq = tuple(values)
+    return len(seq) == len(set(seq))
+
+
+def disjoint(left: Iterable[str], right: Iterable[str]) -> bool:
+    return set(left).isdisjoint(right)
+
+
 def memory_covers(required: Iterable[str], actual: Iterable[str]) -> bool:
     return set(required).issubset(set(actual))
 
