@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, is_dataclass, replace
 from hashlib import sha256
 from itertools import combinations
 import json
@@ -73,6 +73,38 @@ def canonical_digest(value: object) -> str:
         value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
     ).encode("utf-8")
     return sha256(raw).hexdigest()
+
+
+def verify_chained_records(
+    records: Iterable[object],
+    *,
+    genesis: str = "GENESIS",
+    id_field: str = "event_id",
+    predecessor_field: str = "predecessor_hash",
+    hash_field: str = "record_hash",
+) -> bool:
+    seq = tuple(records)
+    if not seq:
+        return False
+    expected, seen = genesis, set()
+    for record in seq:
+        if is_dataclass(record) and not isinstance(record, type):
+            data = asdict(record)
+        elif isinstance(record, Mapping):
+            data = dict(record)
+        else:
+            return False
+        record_id = data.get(id_field)
+        record_hash = data.get(hash_field)
+        if not record_id or record_id in seen or data.get(predecessor_field) != expected or not record_hash:
+            return False
+        payload = dict(data)
+        payload.pop(hash_field, None)
+        if canonical_digest(payload) != record_hash:
+            return False
+        seen.add(record_id)
+        expected = record_hash
+    return True
 
 
 def missing_requirements(requirements: Mapping[str, object]) -> list[str]:
