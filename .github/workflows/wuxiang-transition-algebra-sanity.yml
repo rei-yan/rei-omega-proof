@@ -1,0 +1,32 @@
+name: Wuxiang Transition Algebra Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run transition algebra
+        run: |
+          python research/wuxiang_transition_algebra.py | tee /tmp/transition-algebra.out
+      - name: Assert event-sourced bounded transition semantics
+        run: |
+          grep -q 'WUXIANG_TRANSITION_ALGEBRA_READY' /tmp/transition-algebra.out
+          grep -q 'APPEND_ONLY_TRANSITION_LEDGER_READY' /tmp/transition-algebra.out
+          grep -q 'DETERMINISTIC_TRANSITION_REPLAY_READY' /tmp/transition-algebra.out
+          grep -q 'FAILURE_MEMORY_MONOTONE' /tmp/transition-algebra.out
+          grep -q 'AUTHORITY_NONEXPANSION_ENFORCED' /tmp/transition-algebra.out
+          grep -q 'NO_RETIRED_STATE_RESURRECTION' /tmp/transition-algebra.out
+          grep -q 'CLAIM_WORLD_CROSS_PROFILE_AUDIT_EQUIVALENCE_READY' /tmp/transition-algebra.out
+          grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/transition-algebra.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/transition-algebra.out
