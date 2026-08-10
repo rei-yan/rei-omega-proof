@@ -230,8 +230,12 @@ def scope_transfer_allowed(
 
 
 def open_critical_debt(debts: Tuple[EvidenceDebt, ...], critical_ids: Iterable[str]) -> bool:
-    critical = set(critical_ids)
-    return any(d.debt_id in critical and d.status == "OPEN" for d in debts)
+    critical = tuple(critical_ids)
+    return any(
+        d.status == "OPEN"
+        and any(d.debt_id == c or d.debt_id.startswith(f"{c}:") for c in critical)
+        for d in debts
+    )
 
 
 def compile_external_challenge(
