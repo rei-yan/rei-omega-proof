@@ -30,6 +30,7 @@ jobs:
           import sys
           sys.path.insert(0, 'research')
           import comparative_frontier_arena as arena
+          from wuxiang_epistemic_primitives import EvidenceDebt, open_critical_debt
           result = arena.run_sanity()
           assert result['arena_status'] == 'COMPARATIVE_FRONTIER_ARENA_READY'
           assert result['g6_status'] == 'OPEN'
@@ -38,7 +39,9 @@ jobs:
           assert result['canonical'] is False
           assert result['real_world_actuation_authority'] == 0
           assert result['rei_loss_preservation_test'] == 'REI_NOT_BEST_IN_SCOPE'
-          assert result['comparative_defeat_debt_test'].startswith('COMPARATIVE_DEFEAT:')
+          debt_id = result['comparative_defeat_debt_test']
+          assert debt_id.startswith('COMPARATIVE_DEFEAT:')
+          assert open_critical_debt((EvidenceDebt(debt_id, 'CRITICAL', 'OPEN', 'sanity'),), ('COMPARATIVE_DEFEAT',))
           assert result['same_exposed_challenge_cannot_clear_debt'] is True
           assert result['fresh_hidden_challenge_can_resolve_current_debt'] is True
           PY
