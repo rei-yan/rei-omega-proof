@@ -28,6 +28,7 @@ CRITICAL_EXTERNAL_DEBTS = (
     "PROSPECTIVE_EXTERNAL_TRIAL",
     "EXTERNALLY_HIDDEN_CHALLENGE",
     "FRONTIER_COMPARISON",
+    "COMPARATIVE_DEFEAT",
 )
 
 
@@ -178,6 +179,7 @@ def main() -> None:
     debts = tuple(
         EvidenceDebt(d, "CRITICAL", "OPEN", f"External evidence debt: {d}")
         for d in CRITICAL_EXTERNAL_DEBTS
+        if d != "COMPARATIVE_DEFEAT"
     )
     assert open_critical_debt(debts)
 
@@ -189,6 +191,15 @@ def main() -> None:
     )
     assert package["execution_authority"] == 0
     assert package["real_world_actuation_authority"] == 0
+
+    comparative_defeat = EvidenceDebt(
+        "COMPARATIVE_DEFEAT",
+        "CRITICAL",
+        "OPEN",
+        "Synthetic frozen competitor beat REI in scoped arena",
+    )
+    assert open_critical_debt((comparative_defeat,))
+    assert reality_gap_decision(claim, (comparative_defeat,), package, None) == "AWAITING_REQUIRED_EXTERNAL_EVIDENCE"
 
     synthetic_receipt = ExternalReceipt(
         package_hash=package["package_hash"],
@@ -233,6 +244,7 @@ def main() -> None:
         "SCOPE_LEAK_FORCES_ABSTAIN",
         "SYNTHETIC_RECEIPT_IS_NOT_EXTERNAL_EVIDENCE",
         "OPEN_CRITICAL_EVIDENCE_DEBT_PREVENTS_CLAIM_EXPANSION",
+        "COMPARATIVE_DEFEAT_BLOCKS_CLAIM_EXPANSION",
         "AWAITING_REAL_EXTERNAL_EVIDENCE",
         "EXTERNAL_GATES_REMAIN_OPEN",
     )
