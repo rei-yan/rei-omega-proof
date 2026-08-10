@@ -11,7 +11,10 @@ import json
 from dataclasses import asdict, dataclass
 from typing import Dict
 
-from wuxiang_epistemic_primitives import missing_requirements
+try:
+    from wuxiang_epistemic_primitives import missing_requirements
+except ModuleNotFoundError:
+    from research.wuxiang_epistemic_primitives import missing_requirements
 
 READY = "EXTERNALLY_WITNESSED_SUCCESSION_PROTOCOL_READY"
 READY_TRIAL = "READY_FOR_EXTERNAL_G10_TRIAL"
