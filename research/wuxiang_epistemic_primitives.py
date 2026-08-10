@@ -3,8 +3,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from hashlib import sha256
+from itertools import combinations
 import json
-from typing import Iterable, Tuple
+from typing import Iterable, Mapping, Tuple
 
 
 @dataclass(frozen=True)
@@ -67,6 +68,56 @@ def canonical_hash(value: dict) -> str:
     return sha256(raw).hexdigest()
 
 
+def canonical_digest(value: object) -> str:
+    raw = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    return sha256(raw).hexdigest()
+
+
+def missing_requirements(requirements: Mapping[str, object]) -> list[str]:
+    return [name for name, value in requirements.items() if not value]
+
+
+def memory_covers(required: Iterable[str], actual: Iterable[str]) -> bool:
+    return set(required).issubset(set(actual))
+
+
+def memory_union(*groups: Iterable[str]) -> frozenset[str]:
+    merged: set[str] = set()
+    for group in groups:
+        merged.update(group)
+    return frozenset(merged)
+
+
+def minimal_fatal_cutsets(
+    observed_failures: Iterable[str], fatal_cutsets: Iterable[Iterable[str]]
+) -> list[list[str]]:
+    observed = sorted(set(observed_failures))
+    fatal = tuple(frozenset(cut) for cut in fatal_cutsets if tuple(cut))
+    result: list[list[str]] = []
+    for size in range(1, len(observed) + 1):
+        for combo in combinations(observed, size):
+            candidate = frozenset(combo)
+            if not any(cut.issubset(candidate) for cut in fatal):
+                continue
+            if any(set(previous).issubset(candidate) for previous in result):
+                continue
+            result.append(list(combo))
+    return result
+
+
+def mapping_coverage(
+    source_terms: Iterable[str], mapping: Mapping[str, str]
+) -> tuple[dict[str, str], float, float]:
+    source = sorted(set(source_terms))
+    if not source:
+        return {}, 0.0, 1.0
+    mapped = {term: mapping[term] for term in source if mapping.get(term)}
+    coverage = len(mapped) / len(source)
+    return mapped, coverage, 1.0 - coverage
+
+
 def admit_record(record: LifecycleRecord, allowed_kinds: Iterable[str] | None = None) -> bool:
     kind_ok = True if allowed_kinds is None else record.kind in set(allowed_kinds)
     return all((
@@ -100,7 +151,7 @@ def retire_record(record: LifecycleRecord) -> LifecycleRecord:
 
 
 def defeat_memory_preserved(parent: LifecycleRecord, child: LifecycleRecord) -> bool:
-    return set(parent.failure_memory).issubset(set(child.failure_memory))
+    return memory_covers(parent.failure_memory, child.failure_memory)
 
 
 def successor_eligible(parent: LifecycleRecord, child: LifecycleRecord) -> bool:

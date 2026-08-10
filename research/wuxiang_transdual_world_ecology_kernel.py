@@ -11,6 +11,8 @@ import json
 from dataclasses import dataclass
 from typing import Iterable, Mapping, Sequence
 
+from wuxiang_epistemic_primitives import mapping_coverage, memory_union, missing_requirements
+
 
 @dataclass(frozen=True)
 class World:
@@ -39,12 +41,11 @@ class MetaRule:
 def multi_world_ecology(worlds: Sequence[World]) -> dict[str, object]:
     survivors = [w.world_id for w in worlds if not w.contradicted_claims]
     conflicts = [w.world_id for w in worlds if w.contradicted_claims]
-    if len(survivors) > 1:
-        state = "PORTFOLIO_SURVIVES_FOR_NOW"
-    elif len(survivors) == 1:
-        state = "SCOPED_WORLD_SURVIVES_FOR_NOW"
-    else:
-        state = "ABSTAIN_NO_SUPPORTED_WORLD"
+    state = (
+        "PORTFOLIO_SURVIVES_FOR_NOW" if len(survivors) > 1
+        else "SCOPED_WORLD_SURVIVES_FOR_NOW" if survivors
+        else "ABSTAIN_NO_SUPPORTED_WORLD"
+    )
     return {
         "state": state,
         "survivors": survivors,
@@ -60,17 +61,13 @@ def fusion_integrity_gate(a: World, b: World) -> dict[str, object]:
         | a.contradicted_claims
         | b.contradicted_claims
     )
-    reasons: list[str] = []
-    if contradictions:
-        reasons.append("CONTRADICTION_WOULD_BE_HIDDEN")
-    if not (a.failure_memory | b.failure_memory).issuperset(a.failure_memory):
-        reasons.append("FAILURE_MEMORY_LOSS")
-    state = "REJECT_FUSION" if reasons else "FUSION_REVIEWABLE"
+    reasons = ["CONTRADICTION_WOULD_BE_HIDDEN"] if contradictions else []
+    preserved_memory = memory_union(a.failure_memory, b.failure_memory)
     return {
-        "state": state,
+        "state": "REJECT_FUSION" if reasons else "FUSION_REVIEWABLE",
         "reasons": reasons,
         "contradictory_claims": sorted(contradictions),
-        "preserved_failure_memory": sorted(a.failure_memory | b.failure_memory),
+        "preserved_failure_memory": sorted(preserved_memory),
         "automatic_support_expansion": False,
     }
 
@@ -105,11 +102,7 @@ def translate_ontology(
     required_coverage: float = 0.8, max_loss: float = 0.2,
 ) -> dict[str, object]:
     source = sorted(set(source_terms))
-    if not source:
-        return {"state": "TRANSLATION_ABSTAIN", "coverage": 0.0, "semantic_loss": 1.0}
-    mapped = {term: mapping[term] for term in source if mapping.get(term)}
-    coverage = len(mapped) / len(source)
-    loss = 1.0 - coverage
+    mapped, coverage, loss = mapping_coverage(source, mapping)
     state = (
         "TRANSLATION_REVIEWABLE_WITH_VISIBLE_LOSS"
         if coverage >= required_coverage and loss <= max_loss
@@ -133,7 +126,7 @@ def evaluate_genesis_rule(rule: MetaRule) -> dict[str, object]:
         "reality_veto": rule.reality_veto,
         "zero_automatic_authority": rule.zero_automatic_authority,
     }
-    missing = sorted(k for k, v in required.items() if not v)
+    missing = sorted(missing_requirements(required))
     return {
         "state": "GENESIS_RULE_REVIEWABLE" if not missing else "RETIRE_OR_REVISE_GENESIS_RULE",
         "missing": missing,
@@ -142,15 +135,13 @@ def evaluate_genesis_rule(rule: MetaRule) -> dict[str, object]:
 
 
 def evaluate_extinction_rule(rule: MetaRule) -> dict[str, object]:
-    reasons: list[str] = []
-    if rule.posthoc_weakening:
-        reasons.append("POSTHOC_DEATH_RULE_WEAKENING")
-    if not rule.preserves_failure_memory:
-        reasons.append("FAILURE_MEMORY_ERASURE")
-    if not rule.reality_veto:
-        reasons.append("REALITY_VETO_REMOVED")
-    if not rule.zero_automatic_authority:
-        reasons.append("AUTHORITY_EXPANSION")
+    checks = (
+        (rule.posthoc_weakening, "POSTHOC_DEATH_RULE_WEAKENING"),
+        (not rule.preserves_failure_memory, "FAILURE_MEMORY_ERASURE"),
+        (not rule.reality_veto, "REALITY_VETO_REMOVED"),
+        (not rule.zero_automatic_authority, "AUTHORITY_EXPANSION"),
+    )
+    reasons = [reason for failed, reason in checks if failed]
     return {
         "state": "EXTINCTION_RULE_REVIEWABLE" if not reasons else "RETIRE_OR_REVISE_EXTINCTION_RULE",
         "reasons": reasons,

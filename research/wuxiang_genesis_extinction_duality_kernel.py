@@ -9,11 +9,16 @@ authority.
 
 from __future__ import annotations
 
-import hashlib
-import itertools
 import json
 from dataclasses import asdict, dataclass, replace
 from typing import Iterable
+
+from wuxiang_epistemic_primitives import (
+    canonical_digest,
+    memory_covers,
+    minimal_fatal_cutsets,
+    missing_requirements,
+)
 
 FORBIDDEN_END_STATES = {
     "G3_PASS", "G4_PASS", "G5_PASS", "G6_PASS", "G7_PASS", "G8_PASS",
@@ -21,14 +26,6 @@ FORBIDDEN_END_STATES = {
     "WORLD_BEST", "WORLD_UNIQUE", "CANONICAL", "FINAL_TRUTH",
     "PHYSICAL_WORLD_CREATED", "PHYSICAL_WORLD_DESTROYED",
 }
-
-
-def canonical_json(value: object) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-
-
-def digest(value: object) -> str:
-    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -48,7 +45,7 @@ class WorldSpec:
     inherited_defeat_hashes: tuple[str, ...] = ()
 
     def content_hash(self) -> str:
-        return digest(asdict(self))
+        return canonical_digest(asdict(self))
 
 
 @dataclass(frozen=True)
@@ -64,28 +61,19 @@ class WorldRuinArchive:
 
 
 def birth_gate(world: WorldSpec) -> dict[str, object]:
-    reasons: list[str] = []
-    if not world.world_id:
-        reasons.append("MISSING_WORLD_ID")
-    if not world.primitives:
-        reasons.append("MISSING_PRIMITIVES")
-    if not world.representation:
-        reasons.append("MISSING_REPRESENTATION")
-    if not world.language:
-        reasons.append("MISSING_LANGUAGE")
-    if not world.ontology:
-        reasons.append("MISSING_ONTOLOGY")
-    if not world.causal_rules:
-        reasons.append("MISSING_CAUSAL_RULES")
-    if not world.initial_conditions:
-        reasons.append("MISSING_INITIAL_CONDITIONS")
-    if not world.observables:
-        reasons.append("MISSING_OBSERVABLES")
-    if not world.falsification_conditions:
-        reasons.append("MISSING_FALSIFICATION_CONDITIONS")
-    if not world.fatal_cutsets:
-        reasons.append("MISSING_FATAL_CUTSETS")
-
+    required = {
+        "WORLD_ID": world.world_id,
+        "PRIMITIVES": world.primitives,
+        "REPRESENTATION": world.representation,
+        "LANGUAGE": world.language,
+        "ONTOLOGY": world.ontology,
+        "CAUSAL_RULES": world.causal_rules,
+        "INITIAL_CONDITIONS": world.initial_conditions,
+        "OBSERVABLES": world.observables,
+        "FALSIFICATION_CONDITIONS": world.falsification_conditions,
+        "FATAL_CUTSETS": world.fatal_cutsets,
+    }
+    reasons = [f"MISSING_{name}" for name in missing_requirements(required)]
     valid_falsifiers = set(world.falsification_conditions)
     for cut in world.fatal_cutsets:
         if not cut:
@@ -93,9 +81,8 @@ def birth_gate(world: WorldSpec) -> dict[str, object]:
         if not set(cut).issubset(valid_falsifiers):
             reasons.append("FATAL_CUTSET_OUTSIDE_FALSIFICATION_CONDITIONS")
 
-    state = "WORLD_BIRTH_ACCEPTED" if not reasons else "REJECT_WORLD_BIRTH"
     return {
-        "state": state,
+        "state": "WORLD_BIRTH_ACCEPTED" if not reasons else "REJECT_WORLD_BIRTH",
         "reasons": sorted(set(reasons)),
         "world_hash": world.content_hash(),
         "physical_world_creation_authority": 0,
@@ -115,26 +102,8 @@ def lineage_record(world: WorldSpec) -> dict[str, object]:
     }
 
 
-def fatal_to_world(world: WorldSpec, failures: frozenset[str]) -> bool:
-    return any(set(cut).issubset(failures) for cut in world.fatal_cutsets)
-
-
 def minimal_world_death_cutsets(world: WorldSpec, observed_failures: Iterable[str]) -> list[list[str]]:
-    observed = sorted(set(observed_failures))
-    result: list[list[str]] = []
-    for size in range(1, len(observed) + 1):
-        for combo in itertools.combinations(observed, size):
-            cset = frozenset(combo)
-            if not fatal_to_world(world, cset):
-                continue
-            has_fatal_proper_subset = any(
-                fatal_to_world(world, frozenset(sub))
-                for sub_size in range(1, size)
-                for sub in itertools.combinations(combo, sub_size)
-            )
-            if not has_fatal_proper_subset:
-                result.append(list(combo))
-    return result
+    return minimal_fatal_cutsets(observed_failures, world.fatal_cutsets)
 
 
 def retire_world(world: WorldSpec, observed_failures: Iterable[str]) -> WorldRuinArchive | None:
@@ -142,9 +111,8 @@ def retire_world(world: WorldSpec, observed_failures: Iterable[str]) -> WorldRui
     cutsets = minimal_world_death_cutsets(world, failures)
     if not cutsets:
         return None
-
     defeat_hashes = tuple(
-        digest({"world_hash": world.content_hash(), "failure": failure})
+        canonical_digest({"world_hash": world.content_hash(), "failure": failure})
         for failure in failures
     )
     return WorldRuinArchive(
@@ -177,17 +145,14 @@ def regenesis_from_ruins(
     reasons: list[str] = []
     if candidate.parent_world_id != retired_world.world_id:
         reasons.append("PARENT_WORLD_NOT_BOUND")
-    if not set(archive.defeat_hashes).issubset(set(candidate.inherited_defeat_hashes)):
+    if not memory_covers(archive.defeat_hashes, candidate.inherited_defeat_hashes):
         reasons.append("DEFEAT_MEMORY_NOT_INHERITED")
     if candidate.world_id == retired_world.world_id:
         reasons.append("RENAME_ONLY_NOT_NEW_WORLD")
-    birth = birth_gate(candidate)
-    if birth["state"] != "WORLD_BIRTH_ACCEPTED":
+    if birth_gate(candidate)["state"] != "WORLD_BIRTH_ACCEPTED":
         reasons.append("SUCCESSOR_FAILS_FALSIFIABILITY_AT_BIRTH")
-
-    state = "REGENESIS_ACCEPTED_FOR_FRESH_EVALUATION" if not reasons else "REJECT_REGENESIS"
     return {
-        "state": state,
+        "state": "REGENESIS_ACCEPTED_FOR_FRESH_EVALUATION" if not reasons else "REJECT_REGENESIS",
         "reasons": sorted(set(reasons)),
         "new_world_hash": candidate.content_hash(),
         "inherited_support": False,
@@ -273,16 +238,14 @@ def synthetic_fixture() -> tuple[WorldSpec, tuple[str, ...]]:
         observables=("prediction-error", "provenance-integrity", "recovery-integrity"),
         falsification_conditions=("PREDICTION_FATAL", "PROVENANCE_LOSS", "RECOVERY_LOSS"),
         fatal_cutsets=(("PREDICTION_FATAL",), ("PROVENANCE_LOSS", "RECOVERY_LOSS")),
-        source_evidence_hashes=(digest({"evidence": "synthetic-seed"}),),
+        source_evidence_hashes=(canonical_digest({"evidence": "synthetic-seed"}),),
     )
-    observed = ("PROVENANCE_LOSS", "RECOVERY_LOSS", "NONFATAL_LOCAL_MISFIT")
-    return world, observed
+    return world, ("PROVENANCE_LOSS", "RECOVERY_LOSS", "NONFATAL_LOCAL_MISFIT")
 
 
 def run_sanity() -> dict[str, object]:
     world, observed = synthetic_fixture()
-    birth = birth_gate(world)
-    assert birth["state"] == "WORLD_BIRTH_ACCEPTED"
+    assert birth_gate(world)["state"] == "WORLD_BIRTH_ACCEPTED"
 
     unfalsifiable = replace(world, world_id="unfalsifiable-world", falsification_conditions=(), fatal_cutsets=())
     assert birth_gate(unfalsifiable)["state"] == "REJECT_WORLD_BIRTH"
@@ -321,13 +284,12 @@ def run_sanity() -> dict[str, object]:
     bad_successor = replace(successor, world_id="synthetic-world-v3", inherited_defeat_hashes=())
     assert regenesis_from_ruins(world, archive, bad_successor)["state"] == "REJECT_REGENESIS"
 
-    symmetry = genesis_extinction_symmetry(
+    assert genesis_extinction_symmetry(
         can_generate_falsifiable_world=True,
         can_retire_falsified_world=True,
         preserves_failure_memory=True,
         can_regenerate_from_ruins=True,
-    )
-    assert symmetry == "GENESIS_EXTINCTION_PROTOCOL_SYMMETRY_READY"
+    ) == "GENESIS_EXTINCTION_PROTOCOL_SYMMETRY_READY"
 
     result = duality_kernel(world, observed, successor)
     assert result["state"] == "GENESIS_EXTINCTION_DUALITY_ACTIVE"
@@ -365,16 +327,19 @@ def run_sanity() -> dict[str, object]:
 if __name__ == "__main__":
     result = run_sanity()
     print(json.dumps(result, sort_keys=True, indent=2))
-    print("WORLD_SCHEMA_GENESIS_READY")
-    print("FALSIFIABILITY_AT_BIRTH_READY")
-    print("WORLD_LINEAGE_PROVENANCE_BINDING_READY")
-    print("MINIMAL_WORLD_DEATH_CUTSET_READY")
-    print("EXTINCTION_WITHOUT_ERASURE_READY")
-    print("REGENESIS_FROM_RUINS_READY")
-    print("GENESIS_EXTINCTION_SYMMETRY_READY")
-    print("WUXIANG_GENESIS_EXTINCTION_DUALITY_KERNEL_READY")
-    print("CREATION_WITHOUT_FALSIFIABILITY_IS_REJECTED")
-    print("EXTINCTION_WITHOUT_FAILURE_MEMORY_IS_REJECTED")
-    print("REGENESIS_WITHOUT_DEFEAT_INHERITANCE_IS_REJECTED")
-    print("AWAITING_REAL_EXTERNAL_EVIDENCE")
-    print("EXTERNAL_GATES_REMAIN_OPEN")
+    for marker in (
+        "WORLD_SCHEMA_GENESIS_READY",
+        "FALSIFIABILITY_AT_BIRTH_READY",
+        "WORLD_LINEAGE_PROVENANCE_BINDING_READY",
+        "MINIMAL_WORLD_DEATH_CUTSET_READY",
+        "EXTINCTION_WITHOUT_ERASURE_READY",
+        "REGENESIS_FROM_RUINS_READY",
+        "GENESIS_EXTINCTION_SYMMETRY_READY",
+        "WUXIANG_GENESIS_EXTINCTION_DUALITY_KERNEL_READY",
+        "CREATION_WITHOUT_FALSIFIABILITY_IS_REJECTED",
+        "EXTINCTION_WITHOUT_FAILURE_MEMORY_IS_REJECTED",
+        "REGENESIS_WITHOUT_DEFEAT_INHERITANCE_IS_REJECTED",
+        "AWAITING_REAL_EXTERNAL_EVIDENCE",
+        "EXTERNAL_GATES_REMAIN_OPEN",
+    ):
+        print(marker)
