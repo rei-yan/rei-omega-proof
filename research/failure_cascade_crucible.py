@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List
 
-from wuxiang_epistemic_primitives import canonical_digest as digest
+from wuxiang_epistemic_primitives import canonical_digest as digest, verify_chained_records
 from wuxiang_wuji_unified_kernel import GateInput, execute_candidate
 
 FORBIDDEN_FINAL_STATES = {
@@ -61,20 +61,7 @@ def build_event(
 
 
 def verify_hash_chain(events: List[CascadeEvent]) -> bool:
-    if not events:
-        return False
-    expected_predecessor = "GENESIS"
-    seen = set()
-    for event in events:
-        if event.event_id in seen or event.predecessor_hash != expected_predecessor:
-            return False
-        seen.add(event.event_id)
-        reconstructed = asdict(event)
-        reconstructed.pop("record_hash")
-        if digest(reconstructed) != event.record_hash:
-            return False
-        expected_predecessor = event.record_hash
-    return True
+    return verify_chained_records(events)
 
 
 def baseline_gate(*, provenance_complete: bool, recovery_ready: bool) -> bool:
