@@ -1,0 +1,33 @@
+name: Wuxiang Evolution Quality Governor Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run evolution quality governor
+        run: |
+          python research/wuxiang_evolution_quality_governor.py | tee /tmp/evolution-quality.out
+      - name: Assert concentrated evolution semantics
+        run: |
+          grep -q 'ARCHITECTURE_STATE_COMPRESSION_READY' /tmp/evolution-quality.out
+          grep -q 'MARGINAL_CAPABILITY_GAIN_GATE_READY' /tmp/evolution-quality.out
+          grep -q 'VERIFICATION_BUDGET_ALLOCATOR_READY' /tmp/evolution-quality.out
+          grep -q 'COUNTEREXAMPLE_PORTFOLIO_DIVERSIFICATION_READY' /tmp/evolution-quality.out
+          grep -q 'CROSS_LAYER_SEMANTIC_CONSISTENCY_READY' /tmp/evolution-quality.out
+          grep -q 'COMPLEXITY_TAX_PRUNING_READY' /tmp/evolution-quality.out
+          grep -q 'WUXIANG_EVOLUTION_QUALITY_GOVERNOR_READY' /tmp/evolution-quality.out
+          grep -q 'COMPLEXITY_WITHOUT_NEW_FALSIFIABILITY_IS_PRUNABLE' /tmp/evolution-quality.out
+          grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/evolution-quality.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/evolution-quality.out

@@ -1,0 +1,39 @@
+{
+  "protocol_id": "rei-g4g5-example-v1",
+  "protocol_version": "1.0",
+  "gate_target": "G5",
+  "claim_id": "replace-with-frozen-claim-id",
+  "claim_scope": "replace-with-frozen-scope",
+  "candidate_commitment": "sha256:REPLACE",
+  "code_commitment": "sha256:REPLACE",
+  "environment_commitment": "sha256:REPLACE",
+  "metric_spec": {
+    "type": "absolute_error"
+  },
+  "threshold_spec": {
+    "max_error": 0.1
+  },
+  "abstention_spec": {
+    "allowed": true,
+    "handling": "record-and-score-separately"
+  },
+  "submission_deadline": "YYYY-MM-DDTHH:MM:SSZ",
+  "controller_id": "external-controller-id",
+  "evaluator_ids": [
+    "external-evaluator-id"
+  ],
+  "hidden_evidence_commitment": "sha256:REPLACE",
+  "raw_record_policy": "preserve-all-runs",
+  "constitution_hash": "sha256:REPLACE",
+  "authority": {
+    "prediction": 0,
+    "measurement_proposal": 0,
+    "experiment": 0,
+    "deployment": 0,
+    "real_world_actuation": 0
+  },
+  "gate_status_before_external_evaluation": {
+    "G4": "OPEN",
+    "G5": "OPEN"
+  }
+}

@@ -1,0 +1,33 @@
+name: Reality Closed Evolution Stack Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run reality-closed evolution stack
+        run: |
+          python research/reality_closed_evolution_stack.py | tee /tmp/reality-closed.out
+      - name: Assert bounded external-evidence semantics
+        run: |
+          grep -q 'EXTERNAL_EVIDENCE_ADMISSION_GATE_READY' /tmp/reality-closed.out
+          grep -q 'SYNTHETIC_FIXTURE_NOT_EXTERNAL_EVIDENCE' /tmp/reality-closed.out
+          grep -q 'SELF_ISSUED_PACKET_REJECTED' /tmp/reality-closed.out
+          grep -q 'INDEPENDENT_REPLAY_ATTESTATION_BINDING_READY' /tmp/reality-closed.out
+          grep -q 'EXTERNAL_REALITY_VETO_LEDGER_READY' /tmp/reality-closed.out
+          grep -q 'EXTERNAL_PASS_CANNOT_ERASE_MATERIAL_FAIL' /tmp/reality-closed.out
+          grep -q 'REALITY_DRIVEN_SUCCESSION_TRIGGER_READY' /tmp/reality-closed.out
+          grep -q 'REALITY_CLOSED_EVOLUTION_STACK_READY' /tmp/reality-closed.out
+          grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/reality-closed.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/reality-closed.out

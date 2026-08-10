@@ -1,0 +1,40 @@
+name: External Witness Network Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/EXTERNAL_WITNESS_NETWORK.md'
+      - 'research/external_witness_network.py'
+      - 'research/external_witness_network.example.json'
+      - '.github/workflows/external-witness-network-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate witness network JSON example
+        run: python -m json.tool research/external_witness_network.example.json >/dev/null
+      - name: Run witness network sanity
+        run: python research/external_witness_network.py
+      - name: Assert witness network cannot self-pass G9
+        run: |
+          python - <<'PY'
+          import runpy
+          ns = runpy.run_path('research/external_witness_network.py')
+          result = ns['run_sanity']()
+          assert result['network_status'] == 'EXTERNAL_WITNESS_NETWORK_READY'
+          assert result['g9_status'] == 'OPEN'
+          assert result['proven_external_independence'] is False
+          assert result['correlated_effective_weight'] < 3.0
+          assert result['dissent_preservation_test'] == 'MIXED_EVIDENCE'
+          assert result['real_world_actuation_authority'] == 0
+          assert result['canonical'] is False
+          PY

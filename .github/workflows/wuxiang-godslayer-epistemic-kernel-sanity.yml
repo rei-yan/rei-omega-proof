@@ -1,0 +1,33 @@
+name: Wuxiang Godslayer Epistemic Kernel Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run Godslayer epistemic kernel
+        run: |
+          python research/wuxiang_godslayer_epistemic_kernel.py | tee /tmp/godslayer.out
+      - name: Assert bounded Godslayer semantics
+        run: |
+          grep -q 'SACRED_CLAIM_DETECTION_READY' /tmp/godslayer.out
+          grep -q 'SELF_CERTIFICATION_SEVERANCE_READY' /tmp/godslayer.out
+          grep -q 'EPISTEMIC_PRIVILEGE_REVOCATION_READY' /tmp/godslayer.out
+          grep -q 'MINIMAL_DESACRALIZATION_COUNTEREXAMPLE_READY' /tmp/godslayer.out
+          grep -q 'NO_REENTHRONEMENT_AFTER_DEFEAT_READY' /tmp/godslayer.out
+          grep -q 'GODSLAYER_SELF_FALSIFICATION_READY' /tmp/godslayer.out
+          grep -q 'GODSLAYER_CAN_TARGET_ITS_OWN_PRIVILEGE' /tmp/godslayer.out
+          grep -q 'WUXIANG_GODSLAYER_EPISTEMIC_KERNEL_READY' /tmp/godslayer.out
+          grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/godslayer.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/godslayer.out

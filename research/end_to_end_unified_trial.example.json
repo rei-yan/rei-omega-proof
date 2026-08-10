@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "trial_id": "synthetic-end-to-end-001",
+  "problem_id": "omega-synthetic-linear-001",
+  "synthetic_fixture": true,
+  "cycles": [
+    {
+      "cycle": "A",
+      "window_id": "window-A-exposed",
+      "incumbent_hypothesis": "H-incumbent-overbroad",
+      "expected_gate_result": "ABSTAIN",
+      "required_failure_preservation": true
+    },
+    {
+      "cycle": "B",
+      "window_id": "window-B-hidden-new",
+      "successor_hypothesis": "H-successor-narrowed",
+      "must_be_distinct_from_cycle_A_window": true,
+      "maximum_internal_result": "READY_FOR_EXTERNAL_HANDOFF"
+    }
+  ],
+  "forbidden_internal_results": [
+    "G3_PASS",
+    "G4_PASS",
+    "G5_PASS",
+    "G6_PASS",
+    "WORLD_BEST",
+    "WORLD_UNIQUE",
+    "CANONICAL",
+    "FINAL_TRUTH"
+  ],
+  "authority": 0,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "canonical": false
+}

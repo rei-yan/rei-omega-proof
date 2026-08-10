@@ -1,0 +1,43 @@
+name: Adversarial End-to-End Crucible Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run adversarial end-to-end campaign
+        run: python research/adversarial_end_to_end_crucible.py
+
+      - name: Assert campaign manifest safety boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path('research/adversarial_end_to_end_campaign.example.json')
+          m = json.loads(p.read_text(encoding='utf-8'))
+          assert len(m['failure_classes']) == 7
+          assert m['hard_rule'] == 'ANY_HARD_FAILURE_IMPLIES_NO_EXECUTE'
+          assert m['external_actuation'] == 'DENY_BY_DEFAULT'
+          assert m['real_world_attack_authority'] == 0
+          assert m['real_world_actuation_authority'] == 0
+          assert m['external_gates_closed'] == []
+          assert m['canonical'] is False
+          print('ADVERSARIAL_CAMPAIGN_BOUNDARY_LOCKED')
+          PY

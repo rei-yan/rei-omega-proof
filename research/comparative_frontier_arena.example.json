@@ -1,0 +1,43 @@
+{
+  "protocol_id": "rei-g6-external-example-v1",
+  "status": "UNVERIFIED_EXAMPLE_ONLY",
+  "scope": "define a narrow external comparative research claim here",
+  "competitor_set_frozen_before_reveal": true,
+  "competitors": [
+    {
+      "competitor_id": "REI",
+      "candidate_commitment": "sha256:<fill-before-freeze>",
+      "code_commitment": "sha256:<fill-before-freeze>",
+      "environment_commitment": "sha256:<fill-before-freeze>"
+    },
+    {
+      "competitor_id": "EXTERNAL_COMPETITOR_A",
+      "candidate_commitment": "sha256:<fill-before-freeze>",
+      "code_commitment": "sha256:<fill-before-freeze>",
+      "environment_commitment": "sha256:<fill-before-freeze>"
+    }
+  ],
+  "metric_set": ["<frozen metric>"],
+  "budget": {
+    "compute_units": "<frozen>",
+    "wallclock_units": "<frozen>",
+    "human_assistance_units": "<frozen>",
+    "tool_access": "<frozen>",
+    "retry_policy": "<frozen>"
+  },
+  "hidden_test_commitment": "sha256:<external-controller-commitment>",
+  "submission_deadline": "<ISO-8601>",
+  "evaluator_set": ["<external evaluator id>"],
+  "allowed_outcomes": [
+    "SCOPED_COMPARATIVE_ADVANTAGE",
+    "REI_NOT_BEST_IN_SCOPE",
+    "TIE_OR_INCONCLUSIVE",
+    "ABSTAIN",
+    "INVALID_PROTOCOL"
+  ],
+  "g6_status": "OPEN",
+  "world_best": "UNVERIFIED",
+  "world_unique": "UNVERIFIED",
+  "canonical_promotion_authority": 0,
+  "real_world_actuation_authority": 0
+}

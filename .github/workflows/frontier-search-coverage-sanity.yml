@@ -1,0 +1,32 @@
+name: Frontier Search Coverage Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/FRONTIER_SEARCH_COVERAGE.md'
+      - 'research/frontier_search_coverage.py'
+      - '.github/workflows/frontier-search-coverage-sanity.yml'
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run frontier search coverage sanity
+        run: python research/frontier_search_coverage.py
+      - name: Assert coverage cannot self-pass G6
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          d = json.loads(subprocess.check_output(['python','research/frontier_search_coverage.py'], text=True))
+          assert d['protocol_status'] == 'FRONTIER_SEARCH_COVERAGE_PROTOCOL_READY'
+          assert d['external_coverage_audit'] == 'REQUIRED'
+          assert d['g6'] == 'OPEN'
+          assert d['world_best'] == 'UNVERIFIED'
+          assert d['world_unique'] == 'UNVERIFIED'
+          assert d['canonical'] is False
+          assert d['authority'] == 0
+          PY
