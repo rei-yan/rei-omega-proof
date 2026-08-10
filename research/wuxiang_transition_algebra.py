@@ -3,10 +3,15 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, replace
+from dataclasses import dataclass, replace
 from typing import Sequence
 
-from wuxiang_epistemic_primitives import Challenge, canonical_digest, memory_covers
+from wuxiang_epistemic_primitives import (
+    Challenge,
+    canonical_digest,
+    memory_covers,
+    verify_chained_records,
+)
 from wuxiang_genesis_extinction_duality_kernel import birth_gate, retire_world, synthetic_fixture
 from wuxiang_universal_falsifiable_object_kernel import apply_challenge, make_object, retire_object
 
@@ -70,17 +75,15 @@ def make_event(*, event_id: str, subject_id: str, predecessor_hash: str, profile
 
 
 def verify(events: Sequence[TransitionEvent]) -> bool:
-    if not events:
+    if not verify_chained_records(events):
         return False
-    predecessor, next_status, next_authority, previous_memory = "GENESIS", None, None, ()
-    subject_id, profile, seen = events[0].subject_id, events[0].profile, set()
+    next_status, next_authority, previous_memory = None, None, ()
+    subject_id, profile = events[0].subject_id, events[0].profile
     for event in events:
         contract = CONTRACTS.get((event.profile, event.source_status, event.action))
         if (
-            event.event_id in seen
-            or event.subject_id != subject_id
+            event.subject_id != subject_id
             or event.profile != profile
-            or event.predecessor_hash != predecessor
             or (next_status is not None and event.source_status != next_status)
             or (next_authority is not None and event.authority_before != next_authority)
             or event.authority_after > event.authority_before
@@ -92,14 +95,11 @@ def verify(events: Sequence[TransitionEvent]) -> bool:
             or (contract[1] and set(event.failure_memory) == set(previous_memory))
         ):
             return False
-        payload = asdict(event)
-        payload.pop("record_hash")
-        payload["failure_memory"] = list(event.failure_memory)
-        if canonical_digest(payload) != event.record_hash:
-            return False
-        seen.add(event.event_id)
-        predecessor, next_status, next_authority = event.record_hash, event.target_status, event.authority_after
-        previous_memory = event.failure_memory
+        next_status, next_authority, previous_memory = (
+            event.target_status,
+            event.authority_after,
+            event.failure_memory,
+        )
     return True
 
 
