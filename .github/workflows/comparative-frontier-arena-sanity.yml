@@ -6,6 +6,7 @@ on:
       - 'research/COMPARATIVE_FRONTIER_ARENA.md'
       - 'research/comparative_frontier_arena.py'
       - 'research/comparative_frontier_arena.example.json'
+      - 'research/wuxiang_epistemic_primitives.py'
       - '.github/workflows/comparative-frontier-arena-sanity.yml'
   workflow_dispatch:
 
@@ -44,4 +45,9 @@ jobs:
           assert open_critical_debt((EvidenceDebt(debt_id, 'CRITICAL', 'OPEN', 'sanity'),), ('COMPARATIVE_DEFEAT',))
           assert result['same_exposed_challenge_cannot_clear_debt'] is True
           assert result['fresh_hidden_challenge_can_resolve_current_debt'] is True
+          assert result['defeat_portfolio_compression'] == 'STRUCTURAL_WEAKNESS_CANDIDATES_READY'
+          assert result['minimal_candidate_test'] == 'SCOPE_TRANSFER'
+          assert result['cluster_is_not_causality'] is True
+          assert result['intervention_supported_candidate'] == 'INTERVENTION_SUPPORTED_CANDIDATE'
+          assert result['root_cause_truth_claimed'] is False
           PY
