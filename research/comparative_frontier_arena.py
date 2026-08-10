@@ -143,9 +143,7 @@ def comparative_defeat_debt(manifest: ArenaManifest, evaluation: Dict[str, objec
         return None
     winner = str(evaluation.get("winner") or "UNKNOWN_COMPETITOR")
     fingerprint = canonical_digest({
-        "protocol_id": manifest.protocol_id,
-        "scope": manifest.scope,
-        "winner": winner,
+        "protocol_id": manifest.protocol_id, "scope": manifest.scope, "winner": winner,
         "hidden_test_commitment": manifest.hidden_test_commitment,
     })[:16]
     return EvidenceDebt(
@@ -156,24 +154,15 @@ def comparative_defeat_debt(manifest: ArenaManifest, evaluation: Dict[str, objec
 
 
 def defeat_observation(
-    debt: EvidenceDebt,
-    manifest: ArenaManifest,
-    evaluation: Dict[str, object],
+    debt: EvidenceDebt, manifest: ArenaManifest, evaluation: Dict[str, object],
     failure_modes: Tuple[str, ...],
 ) -> DefeatObservation | None:
     modes = tuple(sorted(set(mode for mode in failure_modes if mode)))
-    if not all((
-        debt.debt_id.startswith("COMPARATIVE_DEFEAT:"),
-        debt.status == "OPEN",
-        evaluation.get("outcome") == REI_NOT_BEST,
-        evaluation.get("winner"),
-        modes,
-    )):
+    if not all((debt.debt_id.startswith("COMPARATIVE_DEFEAT:"), debt.status == "OPEN",
+                evaluation.get("outcome") == REI_NOT_BEST, evaluation.get("winner"), modes)):
         return None
-    return DefeatObservation(
-        debt.debt_id, manifest.scope, str(evaluation["winner"]),
-        manifest.hidden_test_commitment, modes,
-    )
+    return DefeatObservation(debt.debt_id, manifest.scope, str(evaluation["winner"]),
+                             manifest.hidden_test_commitment, modes)
 
 
 def weakness_candidates(observations: Tuple[DefeatObservation, ...]) -> Dict[str, object]:
@@ -184,61 +173,48 @@ def weakness_candidates(observations: Tuple[DefeatObservation, ...]) -> Dict[str
         return {"status": "ABSTAIN_DUPLICATE_DEFEAT_OBSERVATION", "candidates": [],
                 "causal_status": "UNPROVEN"}
     candidates = [tuple(group) for group in minimal_hitting_sets(o.failure_modes for o in observations)]
-    return {
-        "status": "STRUCTURAL_WEAKNESS_CANDIDATES_READY" if candidates else "ABSTAIN_NO_COVER",
-        "candidates": candidates,
-        "causal_status": "UNPROVEN",
-        "defeat_count": len(observations),
-    }
+    return {"status": "STRUCTURAL_WEAKNESS_CANDIDATES_READY" if candidates else "ABSTAIN_NO_COVER",
+            "candidates": candidates, "causal_status": "UNPROVEN", "defeat_count": len(observations)}
 
 
-def intervention_support(
-    candidate: Tuple[str, ...],
-    observations: Tuple[DefeatObservation, ...],
-    *,
-    prior_manifest: ArenaManifest,
-    prior_evaluation: Dict[str, object],
-    fresh_manifest: ArenaManifest,
-    fresh_evaluation: Dict[str, object],
-    intervention_modes: Tuple[str, ...],
-) -> Dict[str, object]:
-    candidate_set = set(candidate)
-    prior_winner = prior_evaluation.get("winner")
-    fresh_ids = {c.competitor_id for c in fresh_manifest.competitors}
-    admissible = all((
-        candidate_set,
-        observations,
-        all(candidate_set & set(o.failure_modes) for o in observations),
-        candidate_set.issubset(set(intervention_modes)),
+def fresh_rechallenge_admissible(
+    prior_manifest: ArenaManifest, prior_evaluation: Dict[str, object],
+    fresh_manifest: ArenaManifest, fresh_evaluation: Dict[str, object],
+) -> bool:
+    return all((
         prior_evaluation.get("outcome") == REI_NOT_BEST,
-        prior_winner in fresh_ids,
+        prior_evaluation.get("winner") in {c.competitor_id for c in fresh_manifest.competitors},
         fresh_manifest.scope == prior_manifest.scope,
         fresh_manifest.metric == prior_manifest.metric,
         fresh_manifest.hidden_test_commitment != prior_manifest.hidden_test_commitment,
         fresh_evaluation.get("outcome") == SCOPED_ADVANTAGE,
     ))
-    return {
-        "status": "INTERVENTION_SUPPORTED_CANDIDATE" if admissible else "UNSUPPORTED_CANDIDATE",
-        "causal_truth": False,
-        "external_validation": False,
-        "g6_status": "OPEN",
-    }
+
+
+def intervention_support(
+    candidate: Tuple[str, ...], observations: Tuple[DefeatObservation, ...], *,
+    prior_manifest: ArenaManifest, prior_evaluation: Dict[str, object],
+    fresh_manifest: ArenaManifest, fresh_evaluation: Dict[str, object],
+    intervention_modes: Tuple[str, ...],
+) -> Dict[str, object]:
+    candidate_set = set(candidate)
+    admissible = all((
+        candidate_set,
+        observations,
+        all(candidate_set & set(o.failure_modes) for o in observations),
+        candidate_set.issubset(set(intervention_modes)),
+        fresh_rechallenge_admissible(prior_manifest, prior_evaluation, fresh_manifest, fresh_evaluation),
+    ))
+    return {"status": "INTERVENTION_SUPPORTED_CANDIDATE" if admissible else "UNSUPPORTED_CANDIDATE",
+            "causal_truth": False, "external_validation": False, "g6_status": "OPEN"}
 
 
 def resolve_comparative_defeat(
     debt: EvidenceDebt, *, prior_manifest: ArenaManifest, prior_evaluation: Dict[str, object],
     fresh_manifest: ArenaManifest, fresh_evaluation: Dict[str, object],
 ) -> EvidenceDebt:
-    prior_winner = prior_evaluation.get("winner")
-    fresh_ids = {c.competitor_id for c in fresh_manifest.competitors}
-    fresh_enough = all((
-        debt.debt_id.startswith("COMPARATIVE_DEFEAT:"), debt.status == "OPEN",
-        prior_evaluation.get("outcome") == REI_NOT_BEST, prior_winner in fresh_ids,
-        fresh_manifest.scope == prior_manifest.scope, fresh_manifest.metric == prior_manifest.metric,
-        fresh_manifest.hidden_test_commitment != prior_manifest.hidden_test_commitment,
-        fresh_evaluation.get("outcome") == SCOPED_ADVANTAGE,
-    ))
-    if not fresh_enough:
+    if not (debt.debt_id.startswith("COMPARATIVE_DEFEAT:") and debt.status == "OPEN" and
+            fresh_rechallenge_admissible(prior_manifest, prior_evaluation, fresh_manifest, fresh_evaluation)):
         return debt
     return replace(debt, status="RESOLVED", description=debt.description +
                    " Resolved only for current scope by a fresh frozen hidden challenge; old defeat retained.")
@@ -268,8 +244,7 @@ def run_sanity() -> Dict[str, object]:
     defeat_debt = comparative_defeat_debt(manifest, rei_loss)
     assert defeat_debt and defeat_debt.status == "OPEN"
     obs1 = defeat_observation(defeat_debt, manifest, rei_loss, ("SCOPE_TRANSFER", "CALIBRATION"))
-    assert obs1 is not None
-    assert defeat_observation(defeat_debt, manifest, rei_loss, ()) is None
+    assert obs1 is not None and defeat_observation(defeat_debt, manifest, rei_loss, ()) is None
 
     second_manifest = demo_manifest("sha256-second-hidden-arena")
     second_loss = evaluate(second_manifest, (Result("REI", .40), Result("BASELINE_A", .25), Result("BASELINE_B", .15)))
@@ -280,8 +255,7 @@ def run_sanity() -> Dict[str, object]:
     portfolio = (obs1, obs2)
     compressed = weakness_candidates(portfolio)
     assert compressed["status"] == "STRUCTURAL_WEAKNESS_CANDIDATES_READY"
-    assert ("SCOPE_TRANSFER",) in compressed["candidates"]
-    assert compressed["causal_status"] == "UNPROVEN"
+    assert ("SCOPE_TRANSFER",) in compressed["candidates"] and compressed["causal_status"] == "UNPROVEN"
 
     same_challenge_win = evaluate(manifest, (Result("REI", .10), Result("BASELINE_A", .20), Result("BASELINE_B", .30)))
     assert resolve_comparative_defeat(
@@ -297,8 +271,7 @@ def run_sanity() -> Dict[str, object]:
     )
     support = intervention_support(
         ("SCOPE_TRANSFER",), portfolio, prior_manifest=manifest, prior_evaluation=rei_loss,
-        fresh_manifest=fresh_manifest, fresh_evaluation=fresh_win,
-        intervention_modes=("SCOPE_TRANSFER",),
+        fresh_manifest=fresh_manifest, fresh_evaluation=fresh_win, intervention_modes=("SCOPE_TRANSFER",),
     )
     assert resolved.status == "RESOLVED" and "old defeat retained" in resolved.description
     assert support["status"] == "INTERVENTION_SUPPORTED_CANDIDATE"
