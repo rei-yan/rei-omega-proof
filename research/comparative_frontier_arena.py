@@ -2,13 +2,16 @@
 """Finite sanity crucible for the REI Comparative Frontier Arena.
 
 This module cannot pass G6. It only checks frozen comparative bookkeeping,
-budget parity, hard invalidation, scoped outcomes, and preservation of REI loss.
+budget parity, hard invalidation, scoped outcomes, preservation of REI loss,
+and conversion of scoped comparative defeat into explicit evidence debt.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
+
+from wuxiang_epistemic_primitives import EvidenceDebt
 
 READY = "COMPARATIVE_FRONTIER_ARENA_READY"
 SCOPED_ADVANTAGE = "SCOPED_COMPARATIVE_ADVANTAGE"
@@ -146,6 +149,21 @@ def evaluate(
     }
 
 
+def comparative_defeat_debt(manifest: ArenaManifest, evaluation: Dict[str, object]) -> EvidenceDebt | None:
+    if evaluation.get("outcome") != REI_NOT_BEST:
+        return None
+    winner = str(evaluation.get("winner") or "UNKNOWN_COMPETITOR")
+    return EvidenceDebt(
+        debt_id="COMPARATIVE_DEFEAT",
+        severity="CRITICAL",
+        status="OPEN",
+        description=(
+            f"Frozen arena {manifest.protocol_id}: {winner} outperformed REI "
+            f"within scope={manifest.scope}; claim expansion requires repair or fresh comparative evidence."
+        ),
+    )
+
+
 def demo_manifest() -> ArenaManifest:
     b = Budget(100, 100, 0, 10, 0)
     return ArenaManifest(
@@ -176,6 +194,7 @@ def run_sanity() -> Dict[str, object]:
     )
     assert rei_win["outcome"] == SCOPED_ADVANTAGE
     assert rei_win["world_best"] == "UNVERIFIED"
+    assert comparative_defeat_debt(manifest, rei_win) is None
 
     rei_loss = evaluate(
         manifest,
@@ -187,6 +206,10 @@ def run_sanity() -> Dict[str, object]:
     )
     assert rei_loss["outcome"] == REI_NOT_BEST
     assert rei_loss["winner"] == "BASELINE_A"
+    defeat_debt = comparative_defeat_debt(manifest, rei_loss)
+    assert defeat_debt is not None
+    assert defeat_debt.debt_id == "COMPARATIVE_DEFEAT"
+    assert defeat_debt.status == "OPEN"
 
     posthoc = evaluate(
         manifest,
@@ -228,6 +251,7 @@ def run_sanity() -> Dict[str, object]:
         "arena_status": READY,
         "scoped_rei_win_test": rei_win["outcome"],
         "rei_loss_preservation_test": rei_loss["outcome"],
+        "comparative_defeat_debt_test": defeat_debt.debt_id,
         "posthoc_exclusion_test": posthoc["outcome"],
         "budget_parity_test": unfair_result["outcome"],
         "g6_status": "OPEN",
