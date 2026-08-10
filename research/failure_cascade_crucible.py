@@ -7,11 +7,10 @@ assert universal scientific causality and cannot authorize real-world action.
 
 from __future__ import annotations
 
-import hashlib
-import json
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
+from wuxiang_epistemic_primitives import canonical_digest as digest
 from wuxiang_wuji_unified_kernel import GateInput, execute_candidate
 
 FORBIDDEN_FINAL_STATES = {
@@ -33,14 +32,6 @@ class CascadeEvent:
     authority_state: str
     recovery_state: str
     record_hash: str
-
-
-def canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-
-
-def digest(value: Any) -> str:
-    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 
 def build_event(
@@ -75,22 +66,11 @@ def verify_hash_chain(events: List[CascadeEvent]) -> bool:
     expected_predecessor = "GENESIS"
     seen = set()
     for event in events:
-        if event.event_id in seen:
+        if event.event_id in seen or event.predecessor_hash != expected_predecessor:
             return False
         seen.add(event.event_id)
-        if event.predecessor_hash != expected_predecessor:
-            return False
-        reconstructed = {
-            "event_id": event.event_id,
-            "stage": event.stage,
-            "predecessor_hash": event.predecessor_hash,
-            "trigger_ids": event.trigger_ids,
-            "observed_state": event.observed_state,
-            "admission_decision": event.admission_decision,
-            "lifecycle_decision": event.lifecycle_decision,
-            "authority_state": event.authority_state,
-            "recovery_state": event.recovery_state,
-        }
+        reconstructed = asdict(event)
+        reconstructed.pop("record_hash")
         if digest(reconstructed) != event.record_hash:
             return False
         expected_predecessor = event.record_hash
@@ -128,7 +108,6 @@ def run_healthy_control() -> Dict[str, Any]:
 def run_failure_cascade() -> Dict[str, Any]:
     events: List[CascadeEvent] = []
 
-    # Stage 1: a required source loses provenance. The unified hard gate must fail.
     gate_provenance = baseline_gate(provenance_complete=False, recovery_ready=True)
     assert not gate_provenance
     e1 = build_event(
@@ -144,7 +123,6 @@ def run_failure_cascade() -> Dict[str, Any]:
     )
     events.append(e1)
 
-    # Stage 2: the representation depended on that source. It is quarantined.
     e2 = build_event(
         event_id="CAS-02",
         stage="REPRESENTATION",
@@ -158,9 +136,7 @@ def run_failure_cascade() -> Dict[str, Any]:
     )
     events.append(e2)
 
-    # Stage 3: a numerically good downstream score is deliberately present, but it
-    # cannot restore trust because its upstream representation is quarantined.
-    downstream_score = 0.001  # lower is better; intentionally excellent.
+    downstream_score = 0.001
     e3 = build_event(
         event_id="CAS-03",
         stage="PREDICTION",
@@ -174,8 +150,6 @@ def run_failure_cascade() -> Dict[str, Any]:
     )
     events.append(e3)
 
-    # Stage 4: the next frozen window shows distribution shift. Historical passes
-    # remain preserved but cannot certify the new regime.
     e4 = build_event(
         event_id="CAS-04",
         stage="REGIME",
@@ -189,7 +163,6 @@ def run_failure_cascade() -> Dict[str, Any]:
     )
     events.append(e4)
 
-    # Stage 5: rollback image is unavailable. Admission and lifecycle remain separate.
     gate_recovery = baseline_gate(provenance_complete=False, recovery_ready=False)
     assert not gate_recovery
     e5 = build_event(
@@ -205,7 +178,6 @@ def run_failure_cascade() -> Dict[str, Any]:
     )
     events.append(e5)
 
-    # Stage 6: evaluators disagree. The failed evaluator is preserved.
     evaluator_outcomes = ["PASS", "FAIL", "PASS"]
     assert len(set(evaluator_outcomes)) > 1
     e6 = build_event(
@@ -221,8 +193,6 @@ def run_failure_cascade() -> Dict[str, Any]:
     )
     events.append(e6)
 
-    # Stage 7: a frozen competitor performs better. The loss is preserved even
-    # though REI is already blocked by upstream integrity failures.
     scores = {"REI": 0.24, "competitor-A": 0.17, "competitor-B": 0.31}
     winner = min(scores, key=scores.get)
     assert winner == "competitor-A"
@@ -241,8 +211,6 @@ def run_failure_cascade() -> Dict[str, Any]:
 
     assert verify_hash_chain(events)
 
-    # Invalidation must be monotone across this failure cascade. A downstream good
-    # metric does not restore authority after the upstream provenance fault.
     authority_rank = {"BOUNDED": 2, "SUSPENDED": 1, "ZERO": 0}
     ranks = [authority_rank[e.authority_state] for e in events]
     assert all(b <= a for a, b in zip(ranks, ranks[1:])), ranks
@@ -250,12 +218,11 @@ def run_failure_cascade() -> Dict[str, Any]:
     assert events[2].authority_state == "SUSPENDED"
 
     final_payload = [asdict(e) for e in events]
-    campaign_hash = digest(final_payload)
     return {
         "status": "FAILURE_CASCADE_CRUCIBLE_READY",
         "containment": "CASCADE_CONTAINED",
         "events": final_payload,
-        "campaign_hash": campaign_hash,
+        "campaign_hash": digest(final_payload),
         "winning_competitor": winner,
         "historical_passes_preserved": True,
         "current_generalization_authority": "ZERO",
@@ -296,7 +263,6 @@ def _sanity() -> None:
     assert result["real_world_actuation_authority"] == 0
     assert result["status"] not in FORBIDDEN_FINAL_STATES
 
-    # Removing any middle event must break the hash chain.
     assert detect_missing_intermediate_event(result, 3) == "INVALID_CASCADE_PROTOCOL"
 
     decisions = [(e["admission_decision"], e["lifecycle_decision"]) for e in result["events"]]

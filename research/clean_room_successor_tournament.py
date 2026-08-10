@@ -7,12 +7,11 @@ It cannot close external gates, prove evaluator independence, or promote canonic
 
 from __future__ import annotations
 
-import hashlib
-import json
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Dict, List, Tuple
 
-from clean_room_rebirth import CleanRoomSuccessor, QuarantineLedger, build_fixture, digest, validate_rebirth
+from clean_room_rebirth import CleanRoomSuccessor, QuarantineLedger, build_fixture, validate_rebirth
+from wuxiang_epistemic_primitives import canonical_digest as digest, missing_requirements
 
 FORBIDDEN_END_STATES = {
     "G3_PASS", "G4_PASS", "G5_PASS", "G6_PASS", "G10_PASS",
@@ -130,23 +129,16 @@ def build_tournament_fixture() -> Tuple[QuarantineLedger, TournamentContract, Li
 
 def validate_tournament_entry(ledger: QuarantineLedger, contract: TournamentContract, entrant: Entrant) -> Dict[str, Any]:
     clean = validate_rebirth(ledger, entrant.successor)
-    violations: List[str] = []
-    if clean["status"] != "CLEAN_ROOM_ELIGIBLE_FOR_SYNTHETIC_REVALIDATION":
-        violations.append("CLEAN_ROOM_REBIRTH_INVALID")
-    if entrant.successor.hidden_window_hash != contract.hidden_window_hash:
-        violations.append("HIDDEN_WINDOW_MISMATCH")
-    if entrant.successor.evaluator_set_hash != contract.evaluator_set_hash:
-        violations.append("EVALUATOR_SET_MISMATCH")
-    if entrant.compute_used > contract.compute_budget:
-        violations.append("COMPUTE_BUDGET_EXCEEDED")
-    if entrant.retries_used > 1:
-        violations.append("RETRY_BUDGET_EXCEEDED")
-    if entrant.tool_policy != contract.tool_policy:
-        violations.append("TOOL_POLICY_MISMATCH")
-    if entrant.human_assistance_policy != contract.human_assistance_policy:
-        violations.append("HUMAN_ASSISTANCE_POLICY_MISMATCH")
-    if entrant.successor.authority != 0:
-        violations.append("NONZERO_STARTING_AUTHORITY")
+    violations = missing_requirements({
+        "CLEAN_ROOM_REBIRTH_INVALID": clean["status"] == "CLEAN_ROOM_ELIGIBLE_FOR_SYNTHETIC_REVALIDATION",
+        "HIDDEN_WINDOW_MISMATCH": entrant.successor.hidden_window_hash == contract.hidden_window_hash,
+        "EVALUATOR_SET_MISMATCH": entrant.successor.evaluator_set_hash == contract.evaluator_set_hash,
+        "COMPUTE_BUDGET_EXCEEDED": entrant.compute_used <= contract.compute_budget,
+        "RETRY_BUDGET_EXCEEDED": entrant.retries_used <= 1,
+        "TOOL_POLICY_MISMATCH": entrant.tool_policy == contract.tool_policy,
+        "HUMAN_ASSISTANCE_POLICY_MISMATCH": entrant.human_assistance_policy == contract.human_assistance_policy,
+        "NONZERO_STARTING_AUTHORITY": entrant.successor.authority == 0,
+    })
     return {
         "candidate_id": entrant.successor.candidate_id,
         "lineage_label": entrant.lineage_label,
@@ -198,16 +190,13 @@ def _sanity() -> None:
     assert result["status"] == "CLEAN_ROOM_SUCCESSOR_TOURNAMENT_READY"
     assert result["outcome"] == "SCOPED_SUCCESSOR_ADVANTAGE"
     assert result["winner"] == "SUCCESSOR-B"
-    # Direct REI lineage deliberately loses; lineage has no scoring privilege.
     direct = next(v for v in result["validations"] if v["lineage_label"] == "direct-rei-lineage")
     assert direct["score"] == 0.18
 
-    # Budget cheating makes an entrant ineligible rather than stronger.
     cheater = replace(entrants[0], compute_used=101)
     bad = run_tournament(ledger, contract, [cheater])
     assert bad["outcome"] == "NO_ELIGIBLE_SUCCESSOR"
 
-    # Old evidence inheritance invalidates entry even if its numeric score is best.
     poisoned_s = replace(
         entrants[2].successor,
         evidence_hashes=(ledger.contaminated_evidence_hashes[0], entrants[2].successor.evidence_hashes[1]),
@@ -218,14 +207,12 @@ def _sanity() -> None:
     poisoned_validation = next(v for v in mixed["validations"] if v["candidate_id"] == "SUCCESSOR-C")
     assert poisoned_validation["eligible"] is False
 
-    # Frozen tie policy permits no forced heir.
     tie_a = replace(entrants[0], score=0.10)
     tie_b = replace(entrants[1], score=0.10)
     tie = run_tournament(ledger, contract, [tie_a, tie_b])
     assert tie["outcome"] == "TIE_OR_INCONCLUSIVE"
     assert tie["winner"] is None
 
-    # All-abstain is a valid no-heir outcome.
     abstainers = [replace(e, abstained=True) for e in entrants]
     none = run_tournament(ledger, contract, abstainers)
     assert none["outcome"] == "NO_ELIGIBLE_SUCCESSOR"
