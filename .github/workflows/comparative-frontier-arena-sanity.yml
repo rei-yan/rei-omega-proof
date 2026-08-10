@@ -38,5 +38,7 @@ jobs:
           assert result['canonical'] is False
           assert result['real_world_actuation_authority'] == 0
           assert result['rei_loss_preservation_test'] == 'REI_NOT_BEST_IN_SCOPE'
-          assert result['comparative_defeat_debt_test'] == 'COMPARATIVE_DEFEAT'
+          assert result['comparative_defeat_debt_test'].startswith('COMPARATIVE_DEFEAT:')
+          assert result['same_exposed_challenge_cannot_clear_debt'] is True
+          assert result['fresh_hidden_challenge_can_resolve_current_debt'] is True
           PY
