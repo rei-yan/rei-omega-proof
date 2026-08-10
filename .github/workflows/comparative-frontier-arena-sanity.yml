@@ -50,4 +50,7 @@ jobs:
           assert result['cluster_is_not_causality'] is True
           assert result['intervention_supported_candidate'] == 'INTERVENTION_SUPPORTED_CANDIDATE'
           assert result['root_cause_truth_claimed'] is False
+          assert result['prospective_prediction_survives'] == 'PROSPECTIVE_WEAKNESS_PREDICTION_SURVIVES_FOR_NOW'
+          assert result['prospective_wrong_prediction_is_falsified'] == 'PROSPECTIVE_WEAKNESS_PREDICTION_FALSIFIED'
+          assert result['prediction_timestamp_independence_verified'] is False
           PY
