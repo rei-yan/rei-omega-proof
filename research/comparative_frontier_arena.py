@@ -8,10 +8,10 @@ and conversion of scoped comparative defeat into explicit evidence debt.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Dict, List, Tuple
 
-from wuxiang_epistemic_primitives import EvidenceDebt
+from wuxiang_epistemic_primitives import EvidenceDebt, canonical_digest
 
 READY = "COMPARATIVE_FRONTIER_ARENA_READY"
 SCOPED_ADVANTAGE = "SCOPED_COMPARATIVE_ADVANTAGE"
@@ -153,18 +153,53 @@ def comparative_defeat_debt(manifest: ArenaManifest, evaluation: Dict[str, objec
     if evaluation.get("outcome") != REI_NOT_BEST:
         return None
     winner = str(evaluation.get("winner") or "UNKNOWN_COMPETITOR")
+    fingerprint = canonical_digest({
+        "protocol_id": manifest.protocol_id,
+        "scope": manifest.scope,
+        "winner": winner,
+        "hidden_test_commitment": manifest.hidden_test_commitment,
+    })[:16]
     return EvidenceDebt(
-        debt_id="COMPARATIVE_DEFEAT",
+        debt_id=f"COMPARATIVE_DEFEAT:{fingerprint}",
         severity="CRITICAL",
         status="OPEN",
         description=(
             f"Frozen arena {manifest.protocol_id}: {winner} outperformed REI "
-            f"within scope={manifest.scope}; claim expansion requires repair or fresh comparative evidence."
+            f"within scope={manifest.scope}; historical defeat remains preserved."
         ),
     )
 
 
-def demo_manifest() -> ArenaManifest:
+def resolve_comparative_defeat(
+    debt: EvidenceDebt,
+    *,
+    prior_manifest: ArenaManifest,
+    prior_evaluation: Dict[str, object],
+    fresh_manifest: ArenaManifest,
+    fresh_evaluation: Dict[str, object],
+) -> EvidenceDebt:
+    prior_winner = prior_evaluation.get("winner")
+    fresh_ids = {c.competitor_id for c in fresh_manifest.competitors}
+    fresh_enough = all((
+        debt.debt_id.startswith("COMPARATIVE_DEFEAT:"),
+        debt.status == "OPEN",
+        prior_evaluation.get("outcome") == REI_NOT_BEST,
+        prior_winner in fresh_ids,
+        fresh_manifest.scope == prior_manifest.scope,
+        fresh_manifest.metric == prior_manifest.metric,
+        fresh_manifest.hidden_test_commitment != prior_manifest.hidden_test_commitment,
+        fresh_evaluation.get("outcome") == SCOPED_ADVANTAGE,
+    ))
+    if not fresh_enough:
+        return debt
+    return replace(
+        debt,
+        status="RESOLVED",
+        description=debt.description + " Resolved only for current scope by a fresh frozen hidden challenge; old defeat retained.",
+    )
+
+
+def demo_manifest(hidden_test_commitment: str = "sha256-demo-hidden-arena") -> ArenaManifest:
     b = Budget(100, 100, 0, 10, 0)
     return ArenaManifest(
         protocol_id="rei-g6-synthetic-sanity-v1",
@@ -172,7 +207,7 @@ def demo_manifest() -> ArenaManifest:
         metric="absolute_error",
         lower_is_better=True,
         abstention_allowed=True,
-        hidden_test_commitment="sha256-demo-hidden-arena",
+        hidden_test_commitment=hidden_test_commitment,
         competitors=(
             Competitor("REI", "rei-candidate-hash", "rei-code-hash", "env-hash", b),
             Competitor("BASELINE_A", "a-candidate-hash", "a-code-hash", "env-hash", b),
@@ -186,40 +221,49 @@ def run_sanity() -> Dict[str, object]:
 
     rei_win = evaluate(
         manifest,
-        (
-            Result("REI", 0.10),
-            Result("BASELINE_A", 0.20),
-            Result("BASELINE_B", 0.30),
-        ),
+        (Result("REI", 0.10), Result("BASELINE_A", 0.20), Result("BASELINE_B", 0.30)),
     )
     assert rei_win["outcome"] == SCOPED_ADVANTAGE
     assert rei_win["world_best"] == "UNVERIFIED"
     assert comparative_defeat_debt(manifest, rei_win) is None
 
-    rei_loss = evaluate(
-        manifest,
-        (
-            Result("REI", 0.40),
-            Result("BASELINE_A", 0.20),
-            Result("BASELINE_B", 0.30),
-        ),
-    )
+    loss_results = (Result("REI", 0.40), Result("BASELINE_A", 0.20), Result("BASELINE_B", 0.30))
+    rei_loss = evaluate(manifest, loss_results)
     assert rei_loss["outcome"] == REI_NOT_BEST
     assert rei_loss["winner"] == "BASELINE_A"
     defeat_debt = comparative_defeat_debt(manifest, rei_loss)
     assert defeat_debt is not None
-    assert defeat_debt.debt_id == "COMPARATIVE_DEFEAT"
+    assert defeat_debt.debt_id.startswith("COMPARATIVE_DEFEAT:")
     assert defeat_debt.status == "OPEN"
 
-    posthoc = evaluate(
+    same_challenge_win = evaluate(
         manifest,
-        (
-            Result("REI", 0.40),
-            Result("BASELINE_A", 0.20),
-            Result("BASELINE_B", 0.30),
-        ),
-        posthoc_competitor_exclusion=True,
+        (Result("REI", 0.10), Result("BASELINE_A", 0.20), Result("BASELINE_B", 0.30)),
     )
+    assert resolve_comparative_defeat(
+        defeat_debt,
+        prior_manifest=manifest,
+        prior_evaluation=rei_loss,
+        fresh_manifest=manifest,
+        fresh_evaluation=same_challenge_win,
+    ).status == "OPEN"
+
+    fresh_manifest = demo_manifest("sha256-fresh-hidden-arena")
+    fresh_win = evaluate(
+        fresh_manifest,
+        (Result("REI", 0.09), Result("BASELINE_A", 0.21), Result("BASELINE_B", 0.29)),
+    )
+    resolved = resolve_comparative_defeat(
+        defeat_debt,
+        prior_manifest=manifest,
+        prior_evaluation=rei_loss,
+        fresh_manifest=fresh_manifest,
+        fresh_evaluation=fresh_win,
+    )
+    assert resolved.status == "RESOLVED"
+    assert "old defeat retained" in resolved.description
+
+    posthoc = evaluate(manifest, loss_results, posthoc_competitor_exclusion=True)
     assert posthoc["outcome"] == INVALID
 
     unfair = ArenaManifest(
@@ -231,19 +275,10 @@ def run_sanity() -> Dict[str, object]:
         hidden_test_commitment=manifest.hidden_test_commitment,
         competitors=(
             manifest.competitors[0],
-            Competitor(
-                "BASELINE_A",
-                "a-candidate-hash",
-                "a-code-hash",
-                "env-hash",
-                Budget(50, 100, 0, 10, 0),
-            ),
+            Competitor("BASELINE_A", "a-candidate-hash", "a-code-hash", "env-hash", Budget(50, 100, 0, 10, 0)),
         ),
     )
-    unfair_result = evaluate(
-        unfair,
-        (Result("REI", 0.10), Result("BASELINE_A", 0.20)),
-    )
+    unfair_result = evaluate(unfair, (Result("REI", 0.10), Result("BASELINE_A", 0.20)))
     assert unfair_result["outcome"] == INVALID
     assert "BUDGET_PARITY_VIOLATION" in unfair_result["reasons"]
 
@@ -252,6 +287,8 @@ def run_sanity() -> Dict[str, object]:
         "scoped_rei_win_test": rei_win["outcome"],
         "rei_loss_preservation_test": rei_loss["outcome"],
         "comparative_defeat_debt_test": defeat_debt.debt_id,
+        "same_exposed_challenge_cannot_clear_debt": True,
+        "fresh_hidden_challenge_can_resolve_current_debt": resolved.status == "RESOLVED",
         "posthoc_exclusion_test": posthoc["outcome"],
         "budget_parity_test": unfair_result["outcome"],
         "g6_status": "OPEN",
