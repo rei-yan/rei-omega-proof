@@ -1,0 +1,26 @@
+{
+  "registry_status": "ROSTER_CANDIDATES_ONLY",
+  "search_status": "PRIMARY_SOURCE_SEARCH_REQUIRED",
+  "g6": "OPEN",
+  "world_best": "UNVERIFIED",
+  "world_unique": "UNVERIFIED",
+  "domains": [
+    "causal discovery and causal reasoning",
+    "world models and generative environments",
+    "autonomous scientific discovery",
+    "formal verification and theorem-assisted reasoning",
+    "self-improving or successor-generating research agents"
+  ],
+  "admission_requirements": [
+    "primary source provenance",
+    "exact version or commit binding",
+    "source date",
+    "implementation or access status",
+    "task-scope comparability",
+    "budget comparability",
+    "pre-outcome inclusion or exclusion rationale",
+    "freshness horizon"
+  ],
+  "challengers": [],
+  "note": "No real system is frozen by this example. Current challengers must be established from current primary sources before G6 comparison."
+}

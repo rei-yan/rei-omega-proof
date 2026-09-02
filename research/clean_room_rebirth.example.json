@@ -1,0 +1,35 @@
+{
+  "protocol": "Failure Containment & Clean-Room Rebirth",
+  "status": "SYNTHETIC_EXAMPLE_ONLY",
+  "incumbent": {
+    "candidate_id": "REI-incumbent-contaminated",
+    "lifecycle_state": "RETIRED_FOR_CLAIM_SUPPORT",
+    "failure_memory": "PRESERVE",
+    "positive_evidence_privilege": "QUARANTINED"
+  },
+  "rebirth_contract": {
+    "failure_memory_must_cross_boundary": true,
+    "old_evidence_may_support_successor": false,
+    "old_benchmark_win_may_support_successor": false,
+    "old_authority_may_cross_boundary": false,
+    "old_certification_may_cross_boundary": false,
+    "old_exposed_window_may_be_reused": false,
+    "fresh_representation_required": true,
+    "fresh_evidence_bundle_required": true,
+    "fresh_hidden_window_required": true,
+    "new_evaluator_set_declaration_required": true,
+    "declared_fresh_evaluators_prove_independence": false
+  },
+  "successor_initial_state": {
+    "authority": 0,
+    "certification": "UNVERIFIED",
+    "canonical": false,
+    "external_gate_state": "OPEN"
+  },
+  "maximum_internal_result": "CLEAN_ROOM_REBIRTH_READY",
+  "maximum_handoff_result": "READY_FOR_EXTERNAL_REVALIDATION_HANDOFF",
+  "external_gates_closed": [],
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

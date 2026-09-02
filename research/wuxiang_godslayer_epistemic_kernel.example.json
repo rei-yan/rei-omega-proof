@@ -1,0 +1,25 @@
+{
+  "status": "WUXIANG_GODSLAYER_EPISTEMIC_KERNEL_READY",
+  "layers": {
+    "67": "SACRED_CLAIM_DETECTION_READY",
+    "68": "SELF_CERTIFICATION_SEVERANCE_READY",
+    "69": "EPISTEMIC_PRIVILEGE_REVOCATION_READY",
+    "70": "MINIMAL_DESACRALIZATION_COUNTEREXAMPLE_READY",
+    "71": "NO_REENTHRONEMENT_AFTER_DEFEAT_READY",
+    "72": "GODSLAYER_SELF_FALSIFICATION_READY"
+  },
+  "laws": [
+    "NoClaimAboveEvidence",
+    "NoEvaluatorAboveChallenge",
+    "NoArchitectureAboveRetirement",
+    "NoIdentityAboveSuccession",
+    "NoGodslayerAboveGodslaying"
+  ],
+  "godslayer_self_status": "FALSIFIABLE_AND_RETIRABLE",
+  "external_state": "AWAITING_REAL_EXTERNAL_EVIDENCE",
+  "external_gates_closed": [],
+  "canonical_promotion": false,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

@@ -1,0 +1,20 @@
+{
+  "protocol_version": "rei-external-scientific-eligibility-review-v1",
+  "review_id": "scientific-hypothesis-eligibility-review-v1",
+  "arena_id": "SCIENTIFIC_HYPOTHESIS_AND_DISCOVERY",
+  "candidate_id": "REI-OMEGA-INFINITY-CANDIDATE",
+  "candidate_hash": "sha256:candidate-placeholder",
+  "adapter_hash": "sha256:adapter-placeholder",
+  "task_definition_hash": "sha256:task-placeholder",
+  "input_schema_hash": "sha256:input-placeholder",
+  "output_schema_hash": "sha256:output-placeholder",
+  "metric_hash": "sha256:metric-placeholder",
+  "budget_envelope_hash": "sha256:budget-placeholder",
+  "tool_policy_hash": "sha256:tools-placeholder",
+  "human_assistance_policy_hash": "sha256:human-placeholder",
+  "retry_policy_hash": "sha256:retry-placeholder",
+  "abstention_policy_hash": "sha256:abstain-placeholder",
+  "evaluator_interface_hash": "sha256:evaluator-placeholder",
+  "provenance_hash": "sha256:provenance-placeholder",
+  "review_cutoff": "2026-08-09T13:30:00Z"
+}

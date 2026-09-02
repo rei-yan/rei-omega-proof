@@ -1,0 +1,38 @@
+name: Reality Ascension Limit Sanity
+
+on:
+  push:
+    branches: ["rei-reality-ascension-limit"]
+    paths:
+      - "research/REALITY_ASCENSION_LIMIT.md"
+      - "research/reality_ascension_limit_sanity.py"
+      - ".github/workflows/reality-ascension-limit-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/REALITY_ASCENSION_LIMIT.md"
+      - "research/reality_ascension_limit_sanity.py"
+      - ".github/workflows/reality-ascension-limit-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run deterministic governance sanity checks
+        run: python3 research/reality_ascension_limit_sanity.py
+
+      - name: Assert candidate remains non-canonical and external gates remain open
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'Status: \*\*candidate research architecture / not canonical\*\*' research/REALITY_ASCENSION_LIMIT.md
+          grep -q 'G3 = OPEN' research/REALITY_ASCENSION_LIMIT.md
+          grep -q 'G10 = PROPOSED / OPEN' research/REALITY_ASCENSION_LIMIT.md
+          grep -q 'RealityLimitCanonical = false' research/REALITY_ASCENSION_LIMIT.md

@@ -1,0 +1,39 @@
+name: Wuxiang Reality Gap Closure Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run reality-gap closure kernel
+        run: |
+          python research/wuxiang_reality_gap_closure_kernel.py | tee /tmp/reality-gap.out
+      - name: Assert bounded reality-gap semantics
+        run: |
+          grep -q 'RELATION_EVENT_PROCESS_ABSTRACTION_READY' /tmp/reality-gap.out
+          grep -q 'OBSERVER_MEASUREMENT_CONTEXT_BINDING_READY' /tmp/reality-gap.out
+          grep -q 'CAUSAL_IDENTIFIABILITY_GATE_READY' /tmp/reality-gap.out
+          grep -q 'DISTRIBUTION_SHIFT_SCOPE_LEAK_DETECTOR_READY' /tmp/reality-gap.out
+          grep -q 'EVIDENCE_DEBT_BLIND_SPOT_LEDGER_READY' /tmp/reality-gap.out
+          grep -q 'EXTERNAL_CHALLENGE_COMPILER_READY' /tmp/reality-gap.out
+          grep -q 'INDEPENDENT_EVIDENCE_RECEIPT_VERIFIER_READY' /tmp/reality-gap.out
+          grep -q 'REALITY_GAP_CLOSURE_ORCHESTRATOR_READY' /tmp/reality-gap.out
+          grep -q 'CORRELATION_ONLY_CANNOT_CLAIM_CAUSALITY' /tmp/reality-gap.out
+          grep -q 'CONTEXT_CHANGE_REQUIRES_REVALIDATION' /tmp/reality-gap.out
+          grep -q 'SCOPE_LEAK_FORCES_ABSTAIN' /tmp/reality-gap.out
+          grep -q 'SYNTHETIC_RECEIPT_IS_NOT_EXTERNAL_EVIDENCE' /tmp/reality-gap.out
+          grep -q 'OPEN_CRITICAL_EVIDENCE_DEBT_PREVENTS_CLAIM_EXPANSION' /tmp/reality-gap.out
+          grep -q 'COMPARATIVE_DEFEAT_BLOCKS_CLAIM_EXPANSION' /tmp/reality-gap.out
+          grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/reality-gap.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/reality-gap.out

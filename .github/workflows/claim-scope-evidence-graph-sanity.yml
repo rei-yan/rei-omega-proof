@@ -1,0 +1,40 @@
+name: Claim Scope Evidence Graph Sanity
+
+on:
+  push:
+    branches: ["rei-reality-ascension-limit"]
+    paths:
+      - "research/CLAIM_SCOPE_EVIDENCE_GRAPH.md"
+      - "research/claim_scope_evidence_graph_sanity.py"
+      - ".github/workflows/claim-scope-evidence-graph-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/CLAIM_SCOPE_EVIDENCE_GRAPH.md"
+      - "research/claim_scope_evidence_graph_sanity.py"
+      - ".github/workflows/claim-scope-evidence-graph-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run claim-scope evidence graph sanity
+        run: python3 research/claim_scope_evidence_graph_sanity.py
+
+      - name: Assert anti-overclaim boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'Status: \*\*candidate research extension / not canonical\*\*' research/CLAIM_SCOPE_EVIDENCE_GRAPH.md
+          grep -q 'LocalSuccess != GlobalDominance' research/CLAIM_SCOPE_EVIDENCE_GRAPH.md
+          grep -q 'WorldBest = UNVERIFIED' research/CLAIM_SCOPE_EVIDENCE_GRAPH.md
+          grep -q 'WorldUnique = UNVERIFIED' research/CLAIM_SCOPE_EVIDENCE_GRAPH.md
+          grep -q 'G6 = OPEN' research/CLAIM_SCOPE_EVIDENCE_GRAPH.md
+          grep -q 'UnsupportedCertainty -> MaximumChallengePriority' research/CLAIM_SCOPE_EVIDENCE_GRAPH.md

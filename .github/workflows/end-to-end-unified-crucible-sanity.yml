@@ -1,0 +1,48 @@
+name: End-to-End Unified Crucible Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run unified kernel sanity first
+        run: python research/wuxiang_wuji_unified_kernel.py
+
+      - name: Run end-to-end unified crucible
+        run: python research/end_to_end_unified_crucible.py
+
+      - name: Assert failure-first closed loop boundaries
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'research')
+          from end_to_end_unified_crucible import run_crucible
+
+          r = run_crucible()
+          assert r['status'] == 'END_TO_END_UNIFIED_CRUCIBLE_READY'
+          assert r['handoff']['status'] == 'READY_FOR_EXTERNAL_HANDOFF'
+          assert r['handoff']['failure_count'] >= 1
+          assert r['handoff']['window_a_hash'] != r['handoff']['window_b_hash']
+          assert r['external_gates_closed'] == []
+          assert r['canonical_promotion'] is False
+          assert r['handoff']['authority'] == 0
+          assert r['handoff']['real_world_attack_authority'] == 0
+          assert r['handoff']['real_world_actuation_authority'] == 0
+          print('FAILURE_FIRST_CLOSED_LOOP_BOUNDARIES_HOLD')
+          PY

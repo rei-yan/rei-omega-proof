@@ -1,0 +1,39 @@
+{
+  "trial_id": "rei-external-reality-trial-demo-v1",
+  "protocol_version": "1.0",
+  "gate_target": "G5",
+  "claim_id": "demo-hidden-scalar-forecast",
+  "claim_scope": "synthetic trial-kit sanity only",
+  "candidate_owner_id": "candidate-owner-demo",
+  "external_controller_id": "external-controller-demo",
+  "evaluator_id": "independent-evaluator-demo",
+  "record_custodian_id": "record-custodian-demo",
+  "candidate_commitment": "candidate-sha256-demo",
+  "code_commitment": "code-sha256-demo",
+  "environment_commitment": "environment-sha256-demo",
+  "metric_spec": {
+    "type": "absolute_error"
+  },
+  "threshold_spec": {
+    "max_error": 0.25
+  },
+  "abstention_spec": {
+    "allowed": true
+  },
+  "submission_close_timestamp": "2099-01-01T00:00:00Z",
+  "hidden_evidence_commitment": "TO_BE_SET_BY_EXTERNAL_CONTROLLER",
+  "raw_record_policy": "preserve-all-outcomes-including-invalid",
+  "constitution_hash": "constitution-sha256-demo",
+  "authority": {
+    "prediction": 0,
+    "measurement_proposal": 0,
+    "experiment": 0,
+    "deployment": 0,
+    "real_world_actuation": 0
+  },
+  "gate_status": {
+    "G4": "OPEN",
+    "G5": "OPEN"
+  },
+  "canonical": false
+}

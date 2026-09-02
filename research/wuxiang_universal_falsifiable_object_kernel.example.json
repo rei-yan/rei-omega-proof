@@ -1,0 +1,31 @@
+{
+  "protocol": "WUXIANG_UNIVERSAL_FALSIFIABLE_OBJECT_KERNEL",
+  "candidate_extensions": [97, 98, 99, 100, 101, 102, 103, 104],
+  "object_types": [
+    "WORLD",
+    "MODEL",
+    "RULE",
+    "DETECTOR",
+    "EVALUATOR",
+    "EVOLUTION_ALGEBRA"
+  ],
+  "frozen_scope": "FROZEN-SYNTHETIC-SCOPE",
+  "fatal_challenge": "FROZEN-MATERIAL-FATAL-001",
+  "expected": {
+    "all_types_support_revoked_on_material_fatal": true,
+    "retirement_preserves_failure_memory": true,
+    "successor_must_inherit_defeat_memory": true,
+    "successor_must_not_inherit_support": true,
+    "successor_authority": 0,
+    "nonfalsifiable_object_rejected": true,
+    "nonfatal_outcome": "SURVIVES_FOR_NOW",
+    "external_state": "AWAITING_REAL_EXTERNAL_EVIDENCE"
+  },
+  "authority": {
+    "object": 0,
+    "evaluator": 0,
+    "external_validation": 0,
+    "canonical_promotion": 0,
+    "real_world_actuation": 0
+  }
+}

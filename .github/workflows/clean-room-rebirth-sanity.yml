@@ -1,0 +1,45 @@
+name: Clean Room Rebirth Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run clean-room rebirth protocol
+        run: python research/clean_room_rebirth.py
+
+      - name: Assert manifest boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path('research/clean_room_rebirth.example.json').read_text())
+          assert manifest['successor_initial_state']['authority'] == 0
+          assert manifest['successor_initial_state']['certification'] == 'UNVERIFIED'
+          assert manifest['successor_initial_state']['canonical'] is False
+          assert manifest['successor_initial_state']['external_gate_state'] == 'OPEN'
+          assert manifest['rebirth_contract']['old_evidence_may_support_successor'] is False
+          assert manifest['rebirth_contract']['failure_memory_must_cross_boundary'] is True
+          assert manifest['rebirth_contract']['declared_fresh_evaluators_prove_independence'] is False
+          assert manifest['external_gates_closed'] == []
+          assert manifest['real_world_attack_authority'] == 0
+          assert manifest['real_world_actuation_authority'] == 0
+          print('CLEAN_ROOM_REBIRTH_MANIFEST_BOUNDARY_OK')
+          PY

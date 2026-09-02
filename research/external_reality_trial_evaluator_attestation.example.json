@@ -1,0 +1,20 @@
+{
+  "trial_id": "rei-external-reality-trial-demo-v1",
+  "evaluator_id": "independent-evaluator-demo",
+  "manifest_hash_verified": true,
+  "submission_hash_verified": true,
+  "hidden_commitment_verified": true,
+  "frozen_metric_used": true,
+  "frozen_threshold_used": true,
+  "no_known_hidden_answer_access_before_freeze": true,
+  "no_posthoc_retune_accepted": true,
+  "raw_record_present": true,
+  "declared_role_separation_verified": true,
+  "genuine_institutional_independence": "EXTERNAL_EVIDENCE_REQUIRED",
+  "attestation_scope": "protocol execution only",
+  "gate_status": {
+    "G4": "OPEN",
+    "G5": "OPEN"
+  },
+  "canonical": false
+}

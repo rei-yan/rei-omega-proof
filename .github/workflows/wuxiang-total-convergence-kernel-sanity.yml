@@ -1,0 +1,34 @@
+name: Wuxiang Total Convergence Kernel Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run total convergence kernel
+        run: |
+          python research/wuxiang_total_convergence_kernel.py | tee /tmp/wuxiang-total-convergence.out
+      - name: Assert bounded research ceilings
+        run: |
+          grep -q 'DETECTOR_ECOLOGY_TOURNAMENT_READY' /tmp/wuxiang-total-convergence.out
+          grep -q 'NO_UNIQUE_DETECTOR_CHAMPION_IS_VALID' /tmp/wuxiang-total-convergence.out
+          grep -q 'MATERIAL_DISSENT_PRESERVATION_READY' /tmp/wuxiang-total-convergence.out
+          grep -q 'MAJORITY_PASS_CANNOT_DELETE_MATERIAL_COUNTEREXAMPLE' /tmp/wuxiang-total-convergence.out
+          grep -q 'BLIND_SPOT_CHALLENGE_GENESIS_READY' /tmp/wuxiang-total-convergence.out
+          grep -q 'PASS_ORIGINAL_WINDOW_NOT_BLIND_SPOT_FREE' /tmp/wuxiang-total-convergence.out
+          grep -q 'WUXIANG_TOTAL_CONVERGENCE_KERNEL_READY' /tmp/wuxiang-total-convergence.out
+          grep -q 'CAPABILITY_CONVERGENCE_NOT_AUTHORITY_CONVERGENCE' /tmp/wuxiang-total-convergence.out
+          grep -q 'ABSTAIN_PENDING_EXTERNAL_REALITY' /tmp/wuxiang-total-convergence.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/wuxiang-total-convergence.out
+          grep -q 'REAL_WORLD_ATTACK_AUTHORITY_ZERO' /tmp/wuxiang-total-convergence.out

@@ -1,0 +1,25 @@
+name: Unknown Unknown Genesis Sanity
+
+on:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+  pull_request:
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run finite unknown-unknown crucible
+        run: python research/unknown_unknown_genesis.py
+      - name: Check research boundaries
+        run: |
+          grep -q 'UnknownUnknownDetection != KnowingTheUnknown' research/UNKNOWN_UNKNOWN_GENESIS.md
+          grep -q 'UNRESOLVED_UNKNOWN' research/UNKNOWN_UNKNOWN_GENESIS.md
+          grep -q 'QuestionProposal.authority = 0' research/UNKNOWN_UNKNOWN_GENESIS.md
+          grep -q 'ExternalAction = FORBIDDEN_BY_DEFAULT' research/UNKNOWN_UNKNOWN_GENESIS.md
+          grep -q 'autonomous real-world intervention or attack' research/UNKNOWN_UNKNOWN_GENESIS.md
