@@ -139,7 +139,7 @@ function Invoke-OneCycle {
             return
         }
 
-        $pushCode = Invoke-PythonStep -Name "GitHubPush" -Script $GitHubPushScript -Arguments @("--home", $ReiHome, "--repo", $ReiHome)
+        $pushCode = Invoke-PythonStep -Name "GitHubPush" -Script $GitHubPushScript -Arguments @("--home", $ReiHome, "--repo", (Join-Path $ReiHome "repo"))
         if ($pushCode -ne 0) {
             $status = "RETRYABLE_GITHUB_PUSH"
             return
@@ -178,14 +178,14 @@ function Install-ReiTask {
 
     $arguments = @(
         "-NoProfile", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass",
-        "-File", ('"' + $PSCommandPath + '"'),
-        "-ReiHome", ('"' + $ReiHome + '"'),
-        "-PythonExe", ('"' + (Resolve-Python) + '"'),
-        "-ShadowScript", ('"' + $ShadowScript + '"'),
-        "-WheelPullScript", ('"' + $WheelPullScript + '"'),
-        "-BridgeScript", ('"' + $BridgeScript + '"'),
-        "-GitHubPushScript", ('"' + $GitHubPushScript + '"'),
-        "-ContextSyncScript", ('"' + $ContextSyncScript + '"'),
+        "-File", ('\"' + $PSCommandPath + '\"'),
+        "-ReiHome", ('\"' + $ReiHome + '\"'),
+        "-PythonExe", ('\"' + (Resolve-Python) + '\"'),
+        "-ShadowScript", ('\"' + $ShadowScript + '\"'),
+        "-WheelPullScript", ('\"' + $WheelPullScript + '\"'),
+        "-BridgeScript", ('\"' + $BridgeScript + '\"'),
+        "-GitHubPushScript", ('\"' + $GitHubPushScript + '\"'),
+        "-ContextSyncScript", ('\"' + $ContextSyncScript + '\"'),
         "-IntervalSeconds", $IntervalSeconds
     ) -join " "
 
