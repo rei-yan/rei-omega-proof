@@ -1,10 +1,10 @@
-# REI-Ω v1.9.1 Local Runtime Synchronization
+# REI-Ω v1.9.x Local Runtime Synchronization
 
-This directory turns the v1.9.1 synchronization contract into a local Windows runtime harness.
+This directory turns the synchronization contract into a local Windows runtime harness.
 
-## What it does
+## Runtime participants
 
-The harness creates one shared `epoch_id` and `cycle_id` for:
+One shared `epoch_id` and `cycle_id` covers:
 
 - God Wheel
 - Local Model
@@ -16,67 +16,115 @@ The harness creates one shared `epoch_id` and `cycle_id` for:
 - Recovery
 - God Line
 
-It writes per-component runtime metadata under `runtime/state/` and fails closed on compatibility metadata mismatch.
-
-It always preserves:
+The runtime fails closed on incompatible metadata or missing health evidence and preserves:
 
 ```text
 observer_only = true
-canonical_touch_allowed = false
+canonical_mainline_touched = false
 RealityValidated = FALSE
 Promotion = NO
 ```
 
-## First run: contract-only validation
+## Verified local cycle
 
-From the repository root in PowerShell:
-
-```powershell
-Copy-Item .\runtime\local-components.example.json .\runtime\local-components.json -Force
-powershell -ExecutionPolicy Bypass -File .\runtime\sync-v191.ps1
-```
-
-Expected result:
+The installed Windows pipeline writes:
 
 ```text
-Cycle finished: SUCCESS_CONTRACT_ONLY
+C:\REI-Shadow\runtime-v191\state\last-cycle.json
 ```
 
-This proves only that the local synchronization metadata contract is coherent. It does **not** prove that the actual local processes are running or healthy.
-
-## Real runtime integration
-
-Edit `runtime/local-components.json` and set a real `command` and/or `healthcheck` for each component. The harness intentionally does not guess local executable paths.
-
-Then run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\runtime\sync-v191.ps1 -StartProcesses -Strict
-```
-
-A fully verified local cycle must end with:
-
-```text
-Cycle finished: SUCCESS_RUNTIME_VERIFIED
-```
-
-If any required process cannot be started, any healthcheck fails, or the synchronization metadata becomes inconsistent, the harness writes `FAIL_CLOSED` to `runtime/state/last-cycle.json` and exits non-zero.
-
-## Required runtime evidence
-
-Do not claim local synchronization complete until `runtime/state/last-cycle.json` shows:
+A fully verified cycle must show:
 
 ```text
 cycle_status = SUCCESS_RUNTIME_VERIFIED
-```
-
-and every component record shows:
-
-```text
 heartbeat = true
 healthcheck_passed = true
 observer_only = true
 promotion_capability = false
 ```
 
-`Cycle finished: SUCCESS_RUNTIME_VERIFIED` still does not imply reality validation.
+A successful cycle still does not imply reality validation.
+
+## v1.9.3 Safe Auto-Update Gate
+
+The remaining code-deployment synchronization gap is handled by:
+
+```text
+runtime/Install-REI-SafeAutoUpdate-V193.ps1
+runtime/Safe-AutoUpdate-V193.ps1
+runtime/rei_cycle_v193.ps1
+```
+
+The updater is pinned to:
+
+```text
+origin/rei-god-wheel-fusion-v1-observer
+```
+
+and follows this guarded path:
+
+```text
+DISCOVER
+-> FETCH
+-> REQUIRE G2 Lean Proof Gate completed/success
+-> REQUIRE current SUCCESS_RUNTIME_VERIFIED
+-> CHECKPOINT
+-> STAGE candidate runtime
+-> POWERSHELL SYNTAX CHECK
+-> NON-MUTATING CANARY
+-> ATOMIC SWITCH
+-> FIRST FULL SYNCHRONIZED CYCLE
+-> VERIFY candidate SHA + all component health
+-> COMMIT ACTIVE
+```
+
+Any failure after checkpoint performs rollback to the previous runtime script and restarts the previous pipeline.
+
+Polling for a newer candidate is not permission to deploy. Pending/missing/failed CI results in WAIT/ABSTAIN and leaves the healthy runtime untouched.
+
+## Install Safe Auto-Update
+
+Only after the v1.9.3 branch head has a successful G2 CI run and the current local runtime already reports `SUCCESS_RUNTIME_VERIFIED`, run from an elevated PowerShell:
+
+```powershell
+git fetch origin
+
+git show origin/rei-god-wheel-fusion-v1-observer:runtime/Install-REI-SafeAutoUpdate-V193.ps1 |
+Set-Content -Encoding UTF8 C:\REI-Shadow\Install-REI-SafeAutoUpdate-V193.ps1
+
+powershell -ExecutionPolicy Bypass -File C:\REI-Shadow\Install-REI-SafeAutoUpdate-V193.ps1
+```
+
+Default poll interval is 15 minutes.
+
+Update evidence:
+
+```powershell
+Get-Content C:\REI-Shadow\runtime-v191\autoupdate\last-update.json
+```
+
+Runtime evidence:
+
+```powershell
+Get-Content C:\REI-Shadow\runtime-v191\state\last-cycle.json
+```
+
+Expected successful deployment state:
+
+```text
+status = DEPLOYED_VERIFIED
+cycle_status = SUCCESS_RUNTIME_VERIFIED
+observer_source_sha = candidate_sha
+```
+
+## Safety rules
+
+```text
+NewerVersion != DeployableVersion
+GreenCI != SafeDeployment
+CanaryPass != RealityValidation
+DeploymentSuccess != RealityValidation
+AutomaticUpdate != AutomaticAuthorityExpansion
+```
+
+The updater may fetch, stage, validate, checkpoint, switch the local observer runtime, restart local observer tasks, rollback, and record evidence. It may not merge canonical `main`, enable Promotion, set `RealityValidated = TRUE`, or bypass failed gates.
