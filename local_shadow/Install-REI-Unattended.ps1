@@ -15,7 +15,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-$PinnedCommit = "1af0b57767c2b1d303a784b257df5091a85aebfa"
+$PinnedCommit = "d8fcebd838bb9efcb1d7cf6e59f4b2ccacc21538"
 $RawRoot = "https://raw.githubusercontent.com/rei-yan/rei-omega-proof/$PinnedCommit/local_shadow"
 
 function Resolve-Python {
