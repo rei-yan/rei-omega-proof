@@ -16,21 +16,52 @@ $StageDir = Join-Path $UpdateDir 'stage'
 $ActiveCycle = Join-Path $RuntimeRoot 'rei_cycle_v191.ps1'
 $ActiveShaFile = Join-Path $RuntimeRoot 'deployed-sha.txt'
 $UpdaterState = Join-Path $UpdateDir 'last-update.json'
+$UpdaterLog = Join-Path $UpdateDir 'safe-auto-update.log'
 $PipelineTask = 'REI Full Pipeline v1.9.1'
 $RemoteBranch = 'rei-god-wheel-fusion-v1-observer'
 $RemoteRef = "origin/$RemoteBranch"
 $GitHubRunsApiBase = 'https://api.github.com/repos/rei-yan/rei-omega-proof/actions/runs'
 $RecoveryRoot = 'C:\REI_Resilience_Layer_v1\autoupdate'
+$candidate = ''
+$previous = ''
+$checkpoint = ''
 
 New-Item -ItemType Directory -Force -Path $UpdateDir,$StageDir,$RecoveryRoot | Out-Null
 
-function Write-State([string]$status,[string]$candidate,[string]$previous,[string]$reason,[string]$checkpoint='') {
+function Write-Log([string]$message) {
+  $line = "$(Get-Date -Format o) $message"
+  Add-Content -Encoding UTF8 -Path $UpdaterLog -Value $line
+}
+
+function Write-State([string]$status,[string]$candidateSha,[string]$previousSha,[string]$reason,[string]$checkpointPath='') {
   [ordered]@{
-    version='1.9.3'; status=$status; candidate_sha=$candidate; previous_sha=$previous;
-    reason=$reason; checkpoint_path=$checkpoint; observer_only=$true;
+    version='1.9.3'; status=$status; candidate_sha=$candidateSha; previous_sha=$previousSha;
+    reason=$reason; checkpoint_path=$checkpointPath; observer_only=$true;
     reality_validated=$false; promotion='NO'; canonical_mainline_touched=$false;
     timestamp_utc=[DateTime]::UtcNow.ToString('o')
   } | ConvertTo-Json -Depth 8 | Set-Content -Encoding UTF8 $UpdaterState
+  Write-Log ("STATE " + $status + " candidate=" + $candidateSha + " previous=" + $previousSha + " reason=" + $reason)
+}
+
+trap {
+  $msg = $_.Exception.Message
+  try { Write-State 'UPDATER_FAILED' $candidate $previous $msg $checkpoint } catch {}
+  try { Write-Log ("UNHANDLED " + $msg) } catch {}
+  exit 2
+}
+
+function Resolve-GitExe {
+  $cmd = Get-Command git.exe -ErrorAction SilentlyContinue
+  if ($cmd) { return $cmd.Source }
+  $candidates = @(
+    'C:\Program Files\Git\cmd\git.exe',
+    'C:\Program Files\Git\bin\git.exe',
+    'C:\Program Files (x86)\Git\cmd\git.exe'
+  )
+  foreach ($p in $candidates) {
+    if (Test-Path $p) { return $p }
+  }
+  throw 'git.exe not found in PATH or standard Git for Windows locations'
 }
 
 function Get-CurrentSha {
@@ -54,21 +85,29 @@ function Require-HealthyCurrentRuntime {
 }
 
 function Require-G2Success([string]$sha) {
-  $headers = @{ 'User-Agent'='REI-v1.9.3-safe-updater'; 'Accept'='application/vnd.github+json' }
-  $uri = "$GitHubRunsApiBase?head_sha=$sha&event=pull_request&per_page=50"
-  $runs = Invoke-RestMethod -Uri $uri -Headers $headers -TimeoutSec 15
-  $g2 = @($runs.workflow_runs | Where-Object {
-    $_.name -eq 'G2 Lean Proof Gate' -and $_.head_sha -eq $sha
-  } | Sort-Object run_number -Descending)
-  if ($g2.Count -eq 0) { return @{pass=$false;reason='G2 run missing'} }
-  $latest = $g2[0]
-  if ($latest.status -ne 'completed') { return @{pass=$false;reason="G2 status=$($latest.status)"} }
-  if ($latest.conclusion -ne 'success') { return @{pass=$false;reason="G2 conclusion=$($latest.conclusion)"} }
-  return @{pass=$true;reason='G2 completed/success'}
+  try {
+    try {
+      [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+    } catch {}
+    $headers = @{ 'User-Agent'='REI-v1.9.3-safe-updater'; 'Accept'='application/vnd.github+json' }
+    $uri = "$GitHubRunsApiBase?head_sha=$sha&event=pull_request&per_page=50"
+    $runs = Invoke-RestMethod -Uri $uri -Headers $headers -TimeoutSec 15
+    $g2 = @($runs.workflow_runs | Where-Object {
+      $_.name -eq 'G2 Lean Proof Gate' -and $_.head_sha -eq $sha
+    } | Sort-Object run_number -Descending)
+    if ($g2.Count -eq 0) { return @{pass=$false;reason='G2 run missing'} }
+    $latest = $g2[0]
+    if ($latest.status -ne 'completed') { return @{pass=$false;reason="G2 status=$($latest.status)"} }
+    if ($latest.conclusion -ne 'success') { return @{pass=$false;reason="G2 conclusion=$($latest.conclusion)"} }
+    return @{pass=$true;reason='G2 completed/success'}
+  }
+  catch {
+    return @{pass=$false;reason=('G2 query failed: ' + $_.Exception.Message)}
+  }
 }
 
 function Stage-File([string]$repoPath,[string]$destination) {
-  $content = & git -C $Repo show "$RemoteRef`:$repoPath"
+  $content = & $script:GitExe -C $Repo show "$RemoteRef`:$repoPath"
   if ($LASTEXITCODE -ne 0) { throw "Unable to stage $repoPath" }
   $content | Set-Content -Encoding UTF8 $destination
 }
@@ -80,15 +119,20 @@ function Test-PowerShellSyntax([string]$path) {
   if ($errors.Count -gt 0) { throw ('PowerShell syntax failed: ' + ($errors[0].Message)) }
 }
 
+Write-Log 'BEGIN safe auto-update check'
 if (-not (Test-Path $Repo)) { throw "Repo missing: $Repo" }
 if (-not (Test-Path $ActiveCycle)) { throw "Active cycle missing: $ActiveCycle" }
 if (-not (Get-ScheduledTask -TaskName $PipelineTask -ErrorAction SilentlyContinue)) { throw "Pipeline task missing: $PipelineTask" }
 
-& git -C $Repo fetch origin $RemoteBranch --quiet
+$script:GitExe = Resolve-GitExe
+Write-Log ("Using git: " + $script:GitExe)
+
+& $script:GitExe -C $Repo fetch origin $RemoteBranch --quiet
 if ($LASTEXITCODE -ne 0) { throw 'git fetch failed' }
-$candidate = (& git -C $Repo rev-parse $RemoteRef).Trim()
+$candidate = (& $script:GitExe -C $Repo rev-parse $RemoteRef).Trim()
 if ($LASTEXITCODE -ne 0 -or -not $candidate) { throw 'Cannot resolve candidate SHA' }
 $previous = Get-CurrentSha
+Write-Log ("Resolved candidate=" + $candidate + " previous=" + $previous)
 
 if (-not $Force -and $candidate -eq $previous) {
   Write-State 'NO_CHANGE' $candidate $previous 'Candidate already active'
@@ -126,7 +170,6 @@ if ($LASTEXITCODE -ne 0) {
   exit 2
 }
 
-# Atomic local switch with rollback-ready checkpoint.
 try {
   Copy-Item $stagedCycle $ActiveCycle -Force
   $candidate | Set-Content -Encoding ASCII $ActiveShaFile
