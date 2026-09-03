@@ -178,14 +178,14 @@ function Install-ReiTask {
 
     $arguments = @(
         "-NoProfile", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass",
-        "-File", ('\"' + $PSCommandPath + '\"'),
-        "-ReiHome", ('\"' + $ReiHome + '\"'),
-        "-PythonExe", ('\"' + (Resolve-Python) + '\"'),
-        "-ShadowScript", ('\"' + $ShadowScript + '\"'),
-        "-WheelPullScript", ('\"' + $WheelPullScript + '\"'),
-        "-BridgeScript", ('\"' + $BridgeScript + '\"'),
-        "-GitHubPushScript", ('\"' + $GitHubPushScript + '\"'),
-        "-ContextSyncScript", ('\"' + $ContextSyncScript + '\"'),
+        "-File", ('"' + $PSCommandPath + '"'),
+        "-ReiHome", ('"' + $ReiHome + '"'),
+        "-PythonExe", ('"' + (Resolve-Python) + '"'),
+        "-ShadowScript", ('"' + $ShadowScript + '"'),
+        "-WheelPullScript", ('"' + $WheelPullScript + '"'),
+        "-BridgeScript", ('"' + $BridgeScript + '"'),
+        "-GitHubPushScript", ('"' + $GitHubPushScript + '"'),
+        "-ContextSyncScript", ('"' + $ContextSyncScript + '"'),
         "-IntervalSeconds", $IntervalSeconds
     ) -join " "
 
