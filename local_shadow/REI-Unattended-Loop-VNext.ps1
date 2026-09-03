@@ -84,6 +84,36 @@ function Ensure-Ollama {
     return $false
 }
 
+function Invoke-NativePowerShellStep {
+    param(
+        [string]$Name,
+        [string]$Script,
+        [string[]]$Arguments = @()
+    )
+    if (-not (Test-Path -LiteralPath $Script)) {
+        Write-ReiLog "$Name missing: $Script"
+        return 127
+    }
+    Write-ReiLog "$Name starting."
+    $previousPreference = $ErrorActionPreference
+    try {
+        # Windows PowerShell can surface native stderr as NativeCommandError when
+        # redirected through a pipeline. Ollama writes harmless progress to stderr,
+        # so temporarily keep those records non-terminating and judge the child by
+        # its actual exit code instead.
+        $ErrorActionPreference = "Continue"
+        $output = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $Script @Arguments 2>&1
+        $code = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousPreference
+    }
+    foreach ($line in @($output)) { Write-ReiLog "${Name}: $line" }
+    if ($null -eq $code) { $code = 0 }
+    Write-ReiLog "$Name exit code: $code"
+    return [int]$code
+}
+
 function Invoke-PythonStep {
     param([string]$Name, [string]$Script, [string[]]$Arguments = @())
     if (-not (Test-Path -LiteralPath $Script)) {
@@ -91,8 +121,16 @@ function Invoke-PythonStep {
         return 127
     }
     Write-ReiLog "$Name starting."
-    & $script:ResolvedPython $Script @Arguments 2>&1 | ForEach-Object { Write-ReiLog "${Name}: $_" }
-    $code = $LASTEXITCODE
+    $previousPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        $output = & $script:ResolvedPython $Script @Arguments 2>&1
+        $code = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousPreference
+    }
+    foreach ($line in @($output)) { Write-ReiLog "${Name}: $line" }
     if ($null -eq $code) { $code = 0 }
     Write-ReiLog "$Name exit code: $code"
     return [int]$code
@@ -106,10 +144,7 @@ function Invoke-OneCycle {
         Write-ReiLog "vNext lockstep cycle starting; protocol=$ProtocolVersion; canonical writes forbidden."
 
         if (Test-Path -LiteralPath $ContextSyncScript) {
-            & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $ContextSyncScript -Once 2>&1 |
-                ForEach-Object { Write-ReiLog "ContextSync: $_" }
-            $codes.context_sync = $LASTEXITCODE
-            if ($null -eq $codes.context_sync) { $codes.context_sync = 0 }
+            $codes.context_sync = Invoke-NativePowerShellStep -Name "ContextSync" -Script $ContextSyncScript -Arguments @("-Once")
             if ($codes.context_sync -ne 0) { Write-ReiLog "ContextSync failed; prior atomically stored context may still be used." }
         }
         else {
@@ -122,11 +157,7 @@ function Invoke-OneCycle {
 
         if (-not (Ensure-Ollama)) { $status = "FAILED_CLOSED_OLLAMA"; return }
 
-        if (-not (Test-Path -LiteralPath $LocalModelScript)) { $status = "FAILED_CLOSED_LOCAL_MODEL_SCRIPT"; return }
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $LocalModelScript -ContextDir (Join-Path $ReiHome "context") 2>&1 |
-            ForEach-Object { Write-ReiLog "LocalModel: $_" }
-        $codes.local_model = $LASTEXITCODE
-        if ($null -eq $codes.local_model) { $codes.local_model = 0 }
+        $codes.local_model = Invoke-NativePowerShellStep -Name "LocalModel" -Script $LocalModelScript -Arguments @("-ContextDir", (Join-Path $ReiHome "context"))
         if ($codes.local_model -ne 0) { $status = "FAILED_CLOSED_LOCAL_MODEL"; return }
 
         $env:REI_MODEL = "rei-local-node-vnext"
