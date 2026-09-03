@@ -1,0 +1,16 @@
+{
+  "epoch_contract_version": "1.9.1",
+  "observer_only": true,
+  "canonical_touch_allowed": false,
+  "components": [
+    {"id":"god-wheel","version":"REI-CLP/3.0-observer","enabled":true,"command":null,"healthcheck":null},
+    {"id":"local-model","version":"rei-local-node-vnext","enabled":true,"command":null,"healthcheck":null},
+    {"id":"shadow","version":"Shadow V2.3+fusion","enabled":true,"command":null,"healthcheck":null},
+    {"id":"observer","version":"vNext+Fusion-v1.9.1","enabled":true,"command":null,"healthcheck":null},
+    {"id":"bridge","version":"v1.9.1-contract","enabled":true,"command":null,"healthcheck":null},
+    {"id":"ledger","version":"v1.9.1-contract","enabled":true,"command":null,"healthcheck":null},
+    {"id":"watchdog","version":"v1.9.1-contract","enabled":true,"command":null,"healthcheck":null},
+    {"id":"recovery","version":"v1.9.1-contract","enabled":true,"command":null,"healthcheck":null},
+    {"id":"god-line","version":"v1.9.1-contract","enabled":true,"command":null,"healthcheck":null}
+  ]
+}
