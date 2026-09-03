@@ -15,7 +15,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $ProtocolVersion = "REI-CLP/3.0-observer"
-$PinnedCommit = "90478956d0ca0bc3ac316ed25039062256aac911"
+$PinnedCommit = "109f9ff2be42920957ea1fcce0887bcacdce45a3"
 $RawRoot = "https://raw.githubusercontent.com/rei-yan/rei-omega-proof/$PinnedCommit/local_shadow"
 $TaskName = "REI Unattended Closed Loop"
 
