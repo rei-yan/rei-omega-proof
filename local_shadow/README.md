@@ -6,7 +6,7 @@
 2. `rei_shadow_closed_loop_v2.py` V2.3 只把通过安全校验、尚未消费的回执作为相关内部反馈输入。
 3. 六路 Shadow 推演、综合与复核继续运行；`canonical_state.json` 永不由本地循环写入。
 4. `bridge_to_wheel.py` 只导出通过确定性 Shadow gate 的候选，并去重、失败关闭。
-5. 现有 `sync_shadow_to_github.py` 把 inbox 推到 GitHub `shadow-node`。
+5. `sync_shadow_to_github.py` 只暂存允许列表中的 inbox 文件，先拉取远端回执，再推到 GitHub `shadow-node`；不使用 force push。
 6. 云端神轮按 source SHA 去重，写入独立、追加式 `divine_wheel_receipts.jsonl`，并同步 Slack、Google Doc 与 Notion。
 
 ## 证据与权限边界

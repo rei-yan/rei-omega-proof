@@ -139,7 +139,7 @@ function Invoke-OneCycle {
             return
         }
 
-        $pushCode = Invoke-PythonStep -Name "GitHubPush" -Script $GitHubPushScript
+        $pushCode = Invoke-PythonStep -Name "GitHubPush" -Script $GitHubPushScript -Arguments @("--home", $ReiHome, "--repo", $ReiHome)
         if ($pushCode -ne 0) {
             $status = "RETRYABLE_GITHUB_PUSH"
             return
