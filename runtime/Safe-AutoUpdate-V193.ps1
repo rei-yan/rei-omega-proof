@@ -90,7 +90,7 @@ function Require-G2Success([string]$sha) {
       [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     } catch {}
     $headers = @{ 'User-Agent'='REI-v1.9.3-safe-updater'; 'Accept'='application/vnd.github+json' }
-    $uri = "$GitHubRunsApiBase?head_sha=$sha&event=pull_request&per_page=50"
+    $uri = ('{0}?head_sha={1}&event=pull_request&per_page=50' -f $GitHubRunsApiBase, $sha)
     $runs = Invoke-RestMethod -Uri $uri -Headers $headers -TimeoutSec 15
     $g2 = @($runs.workflow_runs | Where-Object {
       $_.name -eq 'G2 Lean Proof Gate' -and $_.head_sha -eq $sha
