@@ -19,20 +19,23 @@ permissions:
   contents: read
 
 jobs:
-  vnext-sanity:
-    runs-on: windows-latest
+  python-sanity:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Compile Python
-        shell: pwsh
         run: python -m py_compile local_shadow/vnext_observer.py local_shadow/bridge_to_wheel_vnext.py local_shadow/vnext_sanity.py
       - name: Run deterministic vNext sanity
-        shell: pwsh
         working-directory: local_shadow
         run: python vnext_sanity.py
+
+  powershell-syntax:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Parse PowerShell scripts
         shell: pwsh
         run: |
