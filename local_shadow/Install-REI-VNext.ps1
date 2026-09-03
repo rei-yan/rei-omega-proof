@@ -15,7 +15,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $ProtocolVersion = "REI-CLP/3.0-observer"
-$PinnedCommit = "109f9ff2be42920957ea1fcce0887bcacdce45a3"
+$PinnedCommit = "0fcbea44a9f5ad7e53667e6cecf8543f3b300c9e"
 $RawRoot = "https://raw.githubusercontent.com/rei-yan/rei-omega-proof/$PinnedCommit/local_shadow"
 $TaskName = "REI Unattended Closed Loop"
 
@@ -62,7 +62,6 @@ $manifest = @(
     @{ Source = "VNEXT_CLOSED_LOOP_PROTOCOL.md"; Destination = (Join-Path $ReiHome "VNEXT_CLOSED_LOOP_PROTOCOL.md") }
 )
 
-$deployed = $false
 try {
     foreach ($item in $manifest) {
         $stagedPath = Join-Path $stage $item.Source
@@ -115,7 +114,6 @@ try {
         canonical_write_permission = $false
     } | ConvertTo-Json -Depth 5
     Write-AtomicUtf8 -Path (Join-Path $ReiHome "state\vnext_installation.json") -Content $installState
-    $deployed = $true
 
     Write-Host "REI vNext lockstep closed loop installed and started."
     Write-Host "Protocol: $ProtocolVersion"
