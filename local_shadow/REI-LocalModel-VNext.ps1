@@ -1,12 +1,12 @@
 <#
 REI local-model vNext overlay.
-Builds an observer-governed Ollama model on top of the already synchronized
-rei-local-node context. It does not write REI canonical state.
+Builds an observer-governed Ollama model from the synchronized REI context.
+It does not write REI canonical state.
 #>
 [CmdletBinding()]
 param(
     [string]$ContextDir = "C:\REI-Shadow\context",
-    [string]$BaseModel = "rei-local-node",
+    [string]$BaseModel = $(if ($env:REI_OLLAMA_BASE_MODEL) { $env:REI_OLLAMA_BASE_MODEL } else { "qwen3:8b" }),
     [string]$ModelName = "rei-local-node-vnext",
     [switch]$Force
 )
@@ -17,6 +17,7 @@ $ProtocolVersion = "REI-CLP/3.0-observer"
 $StatePath = Join-Path $ContextDir "model_vnext_state.json"
 $ModelFilePath = Join-Path $ContextDir "Modelfile.rei-local-vnext"
 $ContextHashPath = Join-Path $ContextDir "context.sha256"
+$ContextBundlePath = Join-Path $ContextDir "REI_LOCAL_CONTEXT.md"
 
 function Write-AtomicUtf8 {
     param([string]$Path, [string]$Content)
@@ -36,9 +37,19 @@ function Get-Sha256Text {
     finally { $sha.Dispose() }
 }
 
-if (-not (Get-Command "ollama" -ErrorAction SilentlyContinue)) { Write-Host "VNEXT_LOCAL_MODEL_FAILED_CLOSED: ollama not found"; exit 2 }
+if (-not (Get-Command "ollama" -ErrorAction SilentlyContinue)) {
+    Write-Host "VNEXT_LOCAL_MODEL_FAILED_CLOSED: ollama not found"
+    exit 2
+}
+
 New-Item -ItemType Directory -Path $ContextDir -Force | Out-Null
-$contextHash = if (Test-Path -LiteralPath $ContextHashPath) { (Get-Content -LiteralPath $ContextHashPath -Raw).Trim() } else { "NO_CONTEXT_HASH" }
+if (-not (Test-Path -LiteralPath $ContextBundlePath)) {
+    Write-Host "VNEXT_LOCAL_MODEL_FAILED_CLOSED: synchronized context bundle missing"
+    exit 2
+}
+$contextBundle = Get-Content -LiteralPath $ContextBundlePath -Raw
+$contextHash = if (Test-Path -LiteralPath $ContextHashPath) { (Get-Content -LiteralPath $ContextHashPath -Raw).Trim() } else { Get-Sha256Text -Text $contextBundle }
+
 $contract = @"
 Protocol: $ProtocolVersion
 Mode: OBSERVER_ONLY
@@ -54,31 +65,69 @@ Hypothesis mixtures are ordinary epistemic alternatives, not quantum superpositi
 Never claim independent replication, reality validation, externally witnessed prediction, ascension, or world-best status without external evidence.
 Never perform external actions or write canonical/main. Output remains proposal-only for Shadow and Divine Wheel review.
 "@
+
 $fingerprint = Get-Sha256Text -Text ($ProtocolVersion + "|" + $contextHash + "|" + $contract)
 $previousFingerprint = ""
-if (Test-Path -LiteralPath $StatePath) { try { $previousFingerprint = [string]((Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json).fingerprint) } catch { $previousFingerprint = "" } }
-$available = (& ollama list 2>&1 | Out-String)
-if ($LASTEXITCODE -ne 0) { Write-Host "VNEXT_LOCAL_MODEL_FAILED_CLOSED: ollama list failed"; exit 2 }
-$escapedBase = [Regex]::Escape($BaseModel)
-if ($available -notmatch "(?m)^$escapedBase\s") { Write-Host "VNEXT_LOCAL_MODEL_FAILED_CLOSED: base model '$BaseModel' missing"; exit 2 }
-$escapedTarget = [Regex]::Escape($ModelName); $targetExists = $available -match "(?m)^$escapedTarget\s"
-if (-not $Force -and $targetExists -and $fingerprint -eq $previousFingerprint) {
-    Write-Host "VNEXT_LOCAL_MODEL_NO_CHANGE"; Write-Host "Model: $ModelName"; Write-Host "Protocol: $ProtocolVersion"; exit 0
+if (Test-Path -LiteralPath $StatePath) {
+    try { $previousFingerprint = [string]((Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json).fingerprint) }
+    catch { $previousFingerprint = "" }
 }
+
+$available = (& ollama list 2>&1 | Out-String)
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "VNEXT_LOCAL_MODEL_FAILED_CLOSED: ollama list failed"
+    exit 2
+}
+$escapedBase = [Regex]::Escape($BaseModel)
+$basePattern = if ($BaseModel.Contains(":")) { "(?m)^$escapedBase\s" } else { "(?m)^$escapedBase(?::\S+)?\s" }
+if ($available -notmatch $basePattern) {
+    Write-Host "VNEXT_LOCAL_MODEL_FAILED_CLOSED: base model '$BaseModel' missing"
+    exit 2
+}
+$escapedTarget = [Regex]::Escape($ModelName)
+$targetPattern = if ($ModelName.Contains(":")) { "(?m)^$escapedTarget\s" } else { "(?m)^$escapedTarget(?::\S+)?\s" }
+$targetExists = $available -match $targetPattern
+
+if (-not $Force -and $targetExists -and $fingerprint -eq $previousFingerprint) {
+    Write-Host "VNEXT_LOCAL_MODEL_NO_CHANGE"
+    Write-Host "Model: $ModelName"
+    Write-Host "Protocol: $ProtocolVersion"
+    exit 0
+}
+
 $safeContract = $contract.Replace('"""', "'''")
+$safeBundle = $contextBundle.Replace('"""', "'''")
 $modelFile = @"
 FROM $BaseModel
 PARAMETER temperature 0.15
 PARAMETER num_ctx 32768
 SYSTEM """
 $safeContract
+
+SYNCHRONIZED REI CONTEXT:
+$safeBundle
 """
 "@
 Write-AtomicUtf8 -Path $ModelFilePath -Content $modelFile
 & ollama create $ModelName -f $ModelFilePath
-if ($LASTEXITCODE -ne 0) { Write-Host "VNEXT_LOCAL_MODEL_FAILED_CLOSED: ollama create failed"; exit 2 }
-$state = [ordered]@{ schema_version = 1; protocol_version = $ProtocolVersion; observer_mode = $true; base_model = $BaseModel;
-    model_name = $ModelName; context_sha256 = $contextHash; fingerprint = $fingerprint;
-    refreshed_at_utc = (Get-Date).ToUniversalTime().ToString("o"); canonical_write_permission = $false } | ConvertTo-Json -Depth 5
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "VNEXT_LOCAL_MODEL_FAILED_CLOSED: ollama create failed"
+    exit 2
+}
+
+$state = [ordered]@{
+    schema_version = 1
+    protocol_version = $ProtocolVersion
+    observer_mode = $true
+    base_model = $BaseModel
+    model_name = $ModelName
+    context_sha256 = $contextHash
+    fingerprint = $fingerprint
+    refreshed_at_utc = (Get-Date).ToUniversalTime().ToString("o")
+    canonical_write_permission = $false
+} | ConvertTo-Json -Depth 5
 Write-AtomicUtf8 -Path $StatePath -Content $state
-Write-Host "VNEXT_LOCAL_MODEL_SUCCESS"; Write-Host "Model: $ModelName"; Write-Host "Protocol: $ProtocolVersion"; Write-Host "Canonical write permission: FALSE"
+Write-Host "VNEXT_LOCAL_MODEL_SUCCESS"
+Write-Host "Model: $ModelName"
+Write-Host "Protocol: $ProtocolVersion"
+Write-Host "Canonical write permission: FALSE"
