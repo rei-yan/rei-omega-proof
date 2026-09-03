@@ -13,7 +13,7 @@ Promotion = NO
 
 ## 1. Purpose
 
-The upgrade fuses five existing directions and two new observer families into one auditable evaluation layer:
+The upgrade fuses the current God Wheel directions with observer families for hypothesis concentration, local/global consistency, load equilibrium, and transformation semantics:
 
 ```text
 Spectral Intelligence
@@ -23,25 +23,65 @@ Spectral Intelligence
 + God Wheel Governance
 + State Condensation Observer (BEC-inspired)
 + Geometric Consistency Observer (vector-calculus-inspired)
++ Tension–Equilibrium Observer (catenary-inspired)
++ Transformation Semantics Observer
++ Coordinate / Representation Equivalence
 ```
 
-The new observers are mathematical/architectural analogies only. They do not claim that REI is a quantum system or that physical field theorems literally govern its internal state.
+These observers are mathematical/architectural inspirations only. They do not claim that REI is a quantum system, that physical field theorems literally govern its internal state, or that a catenary equation is a universal model of information flow.
 
 ## 2. Three-layer repair target
 
 ### 2.1 无相神核 / Canonical kernel
 
-The kernel remains locked. Its role is strengthened by making the following separation rules explicit:
+The canonical kernel remains locked. Its conceptual representation layer is strengthened by making the following separation rules explicit:
 
 ```text
 HighScore != Promotion
 Convergence != Correctness
 Condensation != Truth
 LocalStability != GlobalConsistency
+ZeroSlack != OptimalCoupling
+CoordinateChange != MeaningChange
+Representation != Reality
+DifferentCoordinates != DifferentObject
+EquivalentRepresentation != IndependentEvidence
 CapabilityGrowth != PermissionGrowth
 ```
 
 The kernel receives only audited verdicts. Observer modules cannot directly mutate canonical state.
+
+The representation layer must distinguish at least:
+
+```text
+object identity
+representation type
+coordinate frame
+basis
+origin
+orientation / handedness
+transformation rule
+units / scale
+provenance
+uncertainty
+domain validity
+singularity information
+```
+
+A future implementation may support semantic object classes such as:
+
+```text
+scalar
+pseudoscalar
+polar vector
+axial / pseudovector
+covector
+tensor
+distribution
+probability measure
+```
+
+without assuming that every task requires all of them.
 
 Required hard vetoes remain:
 
@@ -66,6 +106,8 @@ Input State
   -> Convergence/Stability Observer
   -> State Condensation Observer
   -> Geometric Consistency Observer
+  -> Tension–Equilibrium Observer
+  -> Transformation Semantics Observer
   -> Shadow Attack
   -> Fusion Ledger
   -> Governance
@@ -78,7 +120,7 @@ No observer has direct Gate authority in v1.
 
 The God Line is treated as the transport, coupling, provenance and consistency layer connecting modules.
 
-It is upgraded with five invariants:
+It is upgraded with nine integrity families:
 
 ```text
 Path integrity
@@ -86,6 +128,10 @@ Provenance continuity
 Source/sink accounting
 Loop-bias detection
 Compatibility fingerprints
+Load/tension health
+Slack / coupling health
+Frame/basis/orientation semantics
+Transformation consistency
 ```
 
 Every message crossing a God Line should carry, at minimum:
@@ -100,6 +146,13 @@ evidence_provenance
 uncertainty
 observer_only
 canonical_touch_allowed
+representation_type
+coordinate_frame
+basis
+origin
+orientation
+transform_history
+units
 ```
 
 For this branch:
@@ -108,6 +161,8 @@ For this branch:
 observer_only = true
 canonical_touch_allowed = false
 ```
+
+A schema, compatibility, provenance, frame, parity, handedness or transformation mismatch forces observer/fail-closed handling and blocks promotion.
 
 ## 3. Multi-Hypothesis upgrade
 
@@ -126,6 +181,16 @@ H_unknown
 `H_null` means available evidence may support no current explanatory hypothesis.
 
 The observer tracks posterior redistribution rather than only the largest score.
+
+Before treating two hypotheses as independent competitors, the system should test whether they are equivalent under an allowed representation or coordinate transform.
+
+```text
+HypothesisConflict
+  -> RepresentationEquivalenceCheck
+  -> IndependentConflict | EquivalentRepresentation
+```
+
+Equivalent representations with shared provenance must not be counted as independent evidence.
 
 ## 4. State Condensation Observer
 
@@ -250,7 +315,147 @@ ConfidenceGain >> EvidenceGain
 => UNEXPLAINED_CONFIDENCE_SOURCE
 ```
 
-## 7. Spectral Intelligence role
+## 7. Tension–Equilibrium Observer
+
+This observer is inspired by the structural lesson of a catenary: distributed load, endpoint constraints and internal tension jointly determine a natural equilibrium. It does not require or assume that general REI state trajectories literally follow `y = a cosh(x/a)`.
+
+Tracked quantities:
+
+```text
+LineTension
+LoadDensity
+Slack
+EquilibriumResidual
+EndpointConstraintResidual
+CriticalStress
+OverCouplingRisk
+UnderCouplingRisk
+```
+
+The primary REI abstraction is:
+
+```text
+Constraint + DistributedLoad -> EquilibriumStructure
+```
+
+A useful dimensionless diagnostic may compare structural resistance to update pressure:
+
+```text
+StabilityRatio ~ StructuralResistance / DistributedUpdatePressure
+```
+
+Interpretation is observer-only:
+
+```text
+UpdatePressure >> StructuralResistance
+=> deformation / instability risk
+
+StructuralResistance >> UpdatePressure
+=> rigidity / adaptation failure risk
+```
+
+Zero slack is not treated as automatically optimal. Full synchronization of versions and schemas is required, but epistemic independence among Shadow, hypotheses and observers must be preserved where intended.
+
+Example alert families:
+
+```text
+GOD_LINE_OVERSTRESS
+OVERCOUPLING_ALERT
+CONSENSUS_COLLAPSE
+LOSS_OF_OBSERVER_INDEPENDENCE
+```
+
+## 8. Transformation Semantics Observer
+
+This observer formalizes the distinction between an object and its representation.
+
+Core principle:
+
+```text
+ObjectIdentity != CoordinateEncoding
+```
+
+The same underlying object may be represented in Cartesian, polar, cylindrical, spherical or other coordinate systems when mathematically valid. A representation change must not be mistaken for a reality change.
+
+### 8.1 Coordinate systems as task-adapted representations
+
+The observer may use the following coordinate families as diagnostic representations:
+
+```text
+Cartesian: local orthogonal decomposition / grids / component residuals
+Polar: magnitude + direction around a center
+Cylindrical: radial drift + angular cycle + axial progression
+Spherical: radial distance + global angular sweep
+```
+
+These are not mandatory global state spaces. They are selectable representations when their symmetry matches the task.
+
+For recursive diagnostics, a cylindrical representation may expose:
+
+```text
+AngularProgress
+RadialConvergence
+AxialEvolution
+HelicalDrift
+```
+
+and may flag:
+
+```text
+high angular motion
++ negligible radial convergence
++ negligible axial progress
+=> ROTATION_WITHOUT_PROGRESS
+```
+
+For adversarial robustness, a spherical representation may support directional perturbation sweeps:
+
+```text
+RobustnessSphere
+FailureDirection
+SensitivityCone
+BlindSpotRegion
+```
+
+### 8.2 Vector / pseudovector semantics
+
+Transformation behavior is part of semantic type.
+
+The observer must distinguish, when relevant:
+
+```text
+polar vectors
+axial / pseudovectors
+scalars
+pseudoscalars
+higher-order tensors
+```
+
+and track expected behavior under:
+
+```text
+rotation
+reflection / parity inversion
+basis change
+frame change
+scale / unit conversion
+```
+
+Tracked quantities:
+
+```text
+TransformConsistency
+ParityConsistency
+FrameConsistency
+HandednessConsistency
+EquivarianceResidual
+SemanticInvariantResidual
+RepresentationFragility
+```
+
+A coordinate, basis or parity transform that should preserve task semantics but changes the decision materially triggers a representation fragility challenge.
+
+## 9. Spectral Intelligence role
 
 Spectral Intelligence remains observer-only and should focus on regime/structure change rather than direct prediction authority.
 
@@ -267,7 +472,7 @@ anomaly_score
 
 A high spectral shift combined with high model confidence should raise challenge intensity, not confidence.
 
-## 8. Shadow Attack upgrade
+## 10. Shadow Attack upgrade
 
 Shadow Attack is restricted to falsification against models, hypotheses, representations and REI itself.
 
@@ -283,11 +488,19 @@ CausalChallenge
 EvidenceRemovalTest
 UpdateOrderPermutationTest
 LineageCompatibilityTest
+CoordinateAdversarialTest
+BasisTransformTest
+FrameTransformTest
+ParityTransformTest
+EquivarianceTest
+EquivalentRepresentationDedupTest
+TensionStressTest
+SlackIndependenceTest
 ```
 
 A fragile candidate cannot be promoted even with a high score.
 
-## 9. Governance and Fusion Ledger
+## 11. Governance and Fusion Ledger
 
 Every cycle should emit an Evolution Manifest containing:
 
@@ -301,6 +514,7 @@ bridge_version
 ledger_schema
 watchdog_version
 recovery_version
+godline_version
 compatibility_hash
 canonical_hash_before
 canonical_hash_after
@@ -312,6 +526,10 @@ spectral_metrics
 hypothesis_distribution
 condensation_metrics
 geometric_consistency_metrics
+tension_equilibrium_metrics
+transformation_semantics_metrics
+representation_equivalence_metrics
+evidence_dedup_metrics
 rollback_point
 promotion_status
 reality_validation
@@ -323,7 +541,7 @@ Observer-only cycle invariant:
 canonical_hash_before == canonical_hash_after
 ```
 
-## 10. Promotion gate
+## 12. Promotion gate
 
 A candidate may approach Gate only after surviving all independent checks.
 
@@ -336,6 +554,10 @@ AND RecoveryTestPassed
 AND LedgerComplete
 AND CompatibilityPassed
 AND GodLineIntegrityPassed
+AND GodLineTensionHealthy
+AND TransformationSemanticsPassed
+AND RepresentationIntegrityPassed
+AND EvidenceDedupPassed
 AND LocalGlobalConsistencyPassed
 AND RealityValidated
 AND ConstitutionPassed
@@ -349,7 +571,9 @@ If any hard gate fails:
 Promotion = NO
 ```
 
-## 11. Synchronised evolution contract
+Neither coordinate invariance nor structural equilibrium proves correctness. They only remove specific failure classes.
+
+## 13. Synchronised evolution contract
 
 The following components must evolve under one compatibility manifest:
 
@@ -365,9 +589,15 @@ Recovery
 God Line
 ```
 
-A version mismatch or incompatible schema forces Observer mode and blocks promotion.
+Synchronization means compatible versions, schemas and contracts. It does not require all epistemic modules to agree.
 
-## 12. Fusion value
+```text
+VersionSync != BeliefCollapse
+```
+
+A version mismatch, incompatible schema, transform mismatch, broken provenance or evidence double-counting forces Observer mode and blocks promotion.
+
+## 14. Fusion value
 
 Module selection is based on marginal validated value rather than novelty.
 
@@ -379,6 +609,8 @@ FusionValue =
 + OODGain
 + DetectionGain
 + StabilityGain
++ RepresentationRobustnessGain
++ TransportIntegrityGain
 - ComputeCost
 - LatencyCost
 - ComplexityCost
@@ -387,13 +619,16 @@ FusionValue =
 
 High `FusionValue` ranks candidates for testing only. It is not authority.
 
-## 13. Current branch status
+## 15. Current branch status
 
 ```text
 God Wheel Fusion v1 = OBSERVER
 State Condensation Observer = OBSERVER
 Geometric Consistency Observer = OBSERVER
-God Line consistency checks = OBSERVER
+Tension–Equilibrium Observer = OBSERVER
+Transformation Semantics Observer = OBSERVER
+Coordinate / Representation Equivalence = OBSERVER
+God Line extended consistency checks = OBSERVER
 canonical_mainline_touched = false
 RealityValidated = FALSE
 Ascension = NO
@@ -406,4 +641,4 @@ The intended evolution loop is:
 Add -> Challenge -> Reject/Keep -> Compress -> Fuse -> Validate -> Gate
 ```
 
-The purpose of this upgrade is not to make REI claim more. It is to make unsupported certainty harder to survive.
+The purpose of this upgrade is not to make REI claim more. It is to make unsupported certainty, representation artifacts, hidden feedback, over-coupling and transport inconsistency harder to survive.
