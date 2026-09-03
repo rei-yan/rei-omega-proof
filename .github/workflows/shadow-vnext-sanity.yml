@@ -1,0 +1,52 @@
+name: Shadow vNext sanity
+
+on:
+  push:
+    branches:
+      - shadow-node-vnext-sync
+      - shadow-node
+    paths:
+      - 'local_shadow/vnext_observer.py'
+      - 'local_shadow/bridge_to_wheel_vnext.py'
+      - 'local_shadow/vnext_sanity.py'
+      - 'local_shadow/REI-LocalModel-VNext.ps1'
+      - 'local_shadow/REI-Unattended-Loop-VNext.ps1'
+      - 'local_shadow/Install-REI-VNext.ps1'
+      - '.github/workflows/shadow-vnext-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vnext-sanity:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile Python
+        shell: pwsh
+        run: python -m py_compile local_shadow/vnext_observer.py local_shadow/bridge_to_wheel_vnext.py local_shadow/vnext_sanity.py
+      - name: Run deterministic vNext sanity
+        shell: pwsh
+        working-directory: local_shadow
+        run: python vnext_sanity.py
+      - name: Parse PowerShell scripts
+        shell: pwsh
+        run: |
+          $files = @(
+            'local_shadow/REI-LocalModel-VNext.ps1',
+            'local_shadow/REI-Unattended-Loop-VNext.ps1',
+            'local_shadow/Install-REI-VNext.ps1'
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($file, [ref]$tokens, [ref]$errors)
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$file : $($_.Message)" }
+              exit 1
+            }
+          }
