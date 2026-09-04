@@ -18,14 +18,18 @@ $RuntimeRoot = Join-Path $Root 'runtime-v191'
 $StateDir = Join-Path $RuntimeRoot 'state'
 $CheckpointRoot = 'C:\REI_Resilience_Layer_v1\checkpoints'
 $Lock = Join-Path $RuntimeRoot 'cycle.lock'
+$OverlapState = Join-Path $StateDir 'last-overlap.json'
 $Log = Join-Path $RuntimeRoot 'runtime-v191.log'
 $SourceShaFile = Join-Path $RuntimeRoot 'deployed-sha.txt'
+$MutexName = 'Global\REI_Omega_v193_Synchronized_Cycle'
 $ContractVersion = '1.9.3'
 $SchemaVersion = 'runtime-epoch-schema/1.2'
 $PolicyHash = 'v1.9.3-observer-policy-pr28-vnext'
 $CandidatePullRequest = 28
 $CandidateHeadRef = 'rei-v193-reconcile'
 $ProtocolVersion = 'REI-CLP/3.0-observer'
+$script:CycleMutex = $null
+$script:CycleMutexOwned = $false
 
 function Log([string]$m) {
   $line = "$(Get-Date -Format o) $m"
@@ -134,8 +138,22 @@ function FailClosed([string]$reason) {
   }
   $state | ConvertTo-Json -Depth 10 | Set-Content -Encoding UTF8 (Join-Path $StateDir 'last-cycle.json')
   Log "FAIL-CLOSED: $reason"
-  if (Test-Path $Lock) { Remove-Item $Lock -Force -ErrorAction SilentlyContinue }
+  if ($script:CycleMutexOwned -and (Test-Path $Lock)) { Remove-Item $Lock -Force -ErrorAction SilentlyContinue }
   exit 2
+}
+
+function Record-OverlapSkip {
+  New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
+  $state = [ordered]@{
+    contract_version=$ContractVersion; schema_version=$SchemaVersion; status='SKIPPED_OVERLAP';
+    reason='Another synchronized v1.9.3 runtime cycle currently owns the Windows mutex';
+    observer_source_sha=(Get-SourceSha); observer_only=$true; promotion='NO';
+    reality_validated=$false; canonical_mainline_touched=$false;
+    candidate_pull_request=$CandidatePullRequest; candidate_head_ref=$CandidateHeadRef;
+    timestamp_utc=[DateTime]::UtcNow.ToString('o')
+  }
+  $state | ConvertTo-Json -Depth 10 | Set-Content -Encoding UTF8 $OverlapState
+  Log 'SKIP_OVERLAP: another synchronized runtime cycle is active; existing cycle left untouched'
 }
 
 $script:PythonExe = Resolve-Python
@@ -159,10 +177,34 @@ if ($Canary) {
 }
 
 New-Item -ItemType Directory -Force -Path $StateDir,$CheckpointRoot | Out-Null
-if (Test-Path $Lock) { FailClosed 'Previous synchronized runtime cycle still active; overlap prevented' }
-New-Item -ItemType File -Path $Lock -Force | Out-Null
 
+# OS mutex is the authority. cycle.lock is only a visible marker and may be safely
+# replaced after the mutex is acquired. An overlap must never overwrite last-cycle
+# or remove the active owner's marker.
+$script:CycleMutex = New-Object System.Threading.Mutex($false, $MutexName)
 try {
+  try {
+    $script:CycleMutexOwned = $script:CycleMutex.WaitOne(0, $false)
+  }
+  catch [System.Threading.AbandonedMutexException] {
+    $script:CycleMutexOwned = $true
+    Log 'SELF_HEAL: recovered abandoned synchronized runtime mutex'
+  }
+
+  if (-not $script:CycleMutexOwned) {
+    Record-OverlapSkip
+    $script:CycleMutex.Dispose()
+    $script:CycleMutex = $null
+    exit 0
+  }
+
+  if (Test-Path $Lock) {
+    Remove-Item $Lock -Force -ErrorAction SilentlyContinue
+    Log 'SELF_HEAL: removed stale cycle.lock marker after exclusive mutex acquisition'
+  }
+  [ordered]@{pid=$PID;created_utc=[DateTime]::UtcNow.ToString('o');contract_version=$ContractVersion} |
+    ConvertTo-Json | Set-Content -Encoding UTF8 $Lock
+
   $sourceSha = Get-SourceSha
   $epoch = 'rei-v193-' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ')
   $cycleId = [Guid]::NewGuid().ToString('N')
@@ -281,5 +323,11 @@ try {
 }
 catch { FailClosed $_.Exception.Message }
 finally {
-  if (Test-Path $Lock) { Remove-Item $Lock -Force -ErrorAction SilentlyContinue }
+  if ($script:CycleMutexOwned) {
+    if (Test-Path $Lock) { Remove-Item $Lock -Force -ErrorAction SilentlyContinue }
+    try { $script:CycleMutex.ReleaseMutex() } catch {}
+  }
+  if ($null -ne $script:CycleMutex) {
+    try { $script:CycleMutex.Dispose() } catch {}
+  }
 }
