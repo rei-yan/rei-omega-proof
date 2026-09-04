@@ -1,8 +1,8 @@
 <#
-Transactional one-time installer for REI Closed Loop Sync vNext.
-Stages an immutable pinned revision, validates Python + PowerShell syntax,
-backs up replaced files, runs observer self-test, installs the vNext scheduled
-supervisor, and rolls files back if deployment fails.
+Transactional installer for REI Closed Loop Sync vNext.
+Deploys the reconciled PR #28 context/model/Shadow/Observer/Bridge payload.
+If the v1.9.3 Full Pipeline exists, it is the ONLY mutating scheduler and the
+standalone vNext scheduled task is removed to prevent double-run races.
 #>
 [CmdletBinding()]
 param(
@@ -15,9 +15,10 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $ProtocolVersion = "REI-CLP/3.0-observer"
-$PinnedCommit = "d55709566e792ab3b8e22976dba9893e7423df35"
+$PinnedCommit = "7fcec5140fbb1529075b5a11a5a6f4b066811d71"
 $RawRoot = "https://raw.githubusercontent.com/rei-yan/rei-omega-proof/$PinnedCommit/local_shadow"
-$TaskName = "REI Unattended Closed Loop"
+$StandaloneTaskName = "REI Unattended Closed Loop"
+$PipelineTaskName = "REI Full Pipeline v1.9.1"
 
 function Resolve-Python {
     if (Test-Path -LiteralPath $PythonExe) { return $PythonExe }
@@ -36,6 +37,14 @@ function Write-AtomicUtf8 {
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     [IO.File]::WriteAllText($temporary, $Content, $utf8NoBom)
     Move-Item -LiteralPath $temporary -Destination $Path -Force
+}
+
+function Remove-StandaloneScheduler {
+    $task = Get-ScheduledTask -TaskName $StandaloneTaskName -ErrorAction SilentlyContinue
+    if ($task) {
+        Stop-ScheduledTask -TaskName $StandaloneTaskName -ErrorAction SilentlyContinue
+        Unregister-ScheduledTask -TaskName $StandaloneTaskName -Confirm:$false
+    }
 }
 
 $resolvedPython = Resolve-Python
@@ -82,12 +91,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "vNext observer self-test failed; deployment not started." }
 
     foreach ($psItem in ($manifest | Where-Object { $_.Source.EndsWith(".ps1") })) {
-        $tokens = $null
-        $errors = $null
+        $tokens = $null; $errors = $null
         [void][System.Management.Automation.Language.Parser]::ParseFile($psItem.Staged, [ref]$tokens, [ref]$errors)
-        if ($errors.Count -gt 0) {
-            throw "PowerShell syntax validation failed for $($psItem.Source): $($errors[0].Message)"
-        }
+        if ($errors.Count -gt 0) { throw "PowerShell syntax validation failed for $($psItem.Source): $($errors[0].Message)" }
     }
 
     foreach ($item in $manifest) {
@@ -99,34 +105,47 @@ try {
     }
 
     $supervisor = Join-Path $ReiHome "REI-Unattended-Loop-VNext.ps1"
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $supervisor `
-        -Install -ReiHome $ReiHome -PythonExe $resolvedPython -IntervalSeconds $IntervalSeconds
-    if ($LASTEXITCODE -ne 0) { throw "vNext scheduled-task installation failed." }
+    $pipeline = Get-ScheduledTask -TaskName $PipelineTaskName -ErrorAction SilentlyContinue
+    if ($pipeline) {
+        Remove-StandaloneScheduler
+        $schedulerMode = "FULL_PIPELINE_AUTHORITY"
+        Write-Host "Authoritative scheduler: $PipelineTaskName"
+        Write-Host "Standalone vNext scheduler removed/disabled to prevent duplicate Shadow/Bridge/GitHub cycles."
+    }
+    else {
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $supervisor `
+            -Install -ReiHome $ReiHome -PythonExe $resolvedPython -IntervalSeconds $IntervalSeconds
+        if ($LASTEXITCODE -ne 0) { throw "vNext standalone scheduled-task installation failed." }
+        $schedulerMode = "STANDALONE_VNEXT_FALLBACK"
+    }
 
     $installState = [ordered]@{
-        schema_version = 1
+        schema_version = 2
         protocol_version = $ProtocolVersion
         pinned_commit = $PinnedCommit
         installed_at_utc = (Get-Date).ToUniversalTime().ToString("o")
         backup_path = $backup
-        task_name = $TaskName
+        scheduler_mode = $schedulerMode
+        pipeline_task_name = $PipelineTaskName
+        standalone_task_name = $StandaloneTaskName
         candidate_pull_request = 28
         candidate_head_ref = "rei-v193-reconcile"
+        local_model = "rei-local-node-vnext"
         observer_mode = $true
         canonical_write_permission = $false
     } | ConvertTo-Json -Depth 5
     Write-AtomicUtf8 -Path (Join-Path $ReiHome "state\vnext_installation.json") -Content $installState
 
-    Write-Host "REI vNext lockstep closed loop installed and started."
+    Write-Host "REI vNext payload installed."
     Write-Host "Protocol: $ProtocolVersion"
     Write-Host "Pinned source commit: $PinnedCommit"
     Write-Host "Candidate context: PR #28 / rei-v193-reconcile"
+    Write-Host "Scheduler mode: $schedulerMode"
     Write-Host "Backup: $backup"
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $supervisor -Status -ReiHome $ReiHome
 }
 catch {
     Write-Warning "vNext deployment failed: $($_.Exception.Message)"
-    Write-Warning "Restoring pre-install files."
+    Write-Warning "Restoring pre-install files without resurrecting any legacy scheduler."
     foreach ($item in $manifest) {
         $destination = [string]$item.Destination
         $backupFile = Join-Path $backup ([IO.Path]::GetFileName($destination))
@@ -136,15 +155,6 @@ catch {
         elseif (-not $item.HadExisting -and (Test-Path -LiteralPath $destination)) {
             Remove-Item -LiteralPath $destination -Force -ErrorAction SilentlyContinue
         }
-    }
-    $oldSupervisor = Join-Path $ReiHome "REI-Unattended-Loop.ps1"
-    if (Test-Path -LiteralPath $oldSupervisor) {
-        try {
-            & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $oldSupervisor `
-                -Install -ReiHome $ReiHome -PythonExe $resolvedPython -IntervalSeconds $IntervalSeconds | Out-Null
-            Write-Warning "Previous unattended supervisor was reinstalled."
-        }
-        catch { Write-Warning "Automatic previous-supervisor restore failed; files were restored but task should be checked." }
     }
     throw
 }
