@@ -1,233 +1,182 @@
 # CURRENT REI STRENGTH STATUS
 
-Updated: 2026-09-01  
+Updated: 2026-09-04  
 Repository: `rei-yan/rei-omega-proof`  
-Candidate line: PR #25 / E10  
-Candidate branch: `rei-reality-ascension-limit`  
-Baseline head reviewed: `edd5df191f1b61f87804631fc112c62ca7fa75ee`
+Canonical branch: `main`  
+Integrated candidate: PR #28 / `rei-v193-reconcile`  
+Permanent core name: **无相神核**
 
 ## Status contract
 
-This document is a diagnostic and synchronization snapshot. It is not a benchmark certificate, external validation result, world-ranking claim, or automatic canonical promotion.
+This is the current synchronization snapshot for REI-Ω · 无相终式. It is not a scientific certificate, world-ranking claim, or automatic canonical promotion.
 
 ```text
-DiagnosticScore != ScientificCertificate
+Reality > Core
 CandidatePR != CanonicalMain
 GreenCI != IndependentReplication
-InternalStrength != EarnedExternalValidity
-MoreArchitecture != MoreTruth
-RealityVeto > REI
+Synthetic/InternalEvidence != RealityEvidence
+HighScore != Promotion
+Convergence != Correctness
+UNKNOWN must remain representable
+Failure must remain visible
+Rollback must remain available
 ```
 
-## Unified identity and version layers
+## Version topology
 
-REI currently uses several version namespaces. They describe different layers and must not be numerically collapsed into one version.
-
-| Layer | Current label | Status |
-|---|---|---|
-| Permanent formal core name | **无相神核** | Fixed identity name; later evolution must not rename the core |
-| Architecture stage/form | **无相终式** | Current stage/form label |
-| Canonical merged form on `main` | **REI-Ω∞ · 无相终式 · 无终至高统合态** | Current repository canonical until an evidence-qualified successor is merged |
-| Formal diagnostic baseline | **PR #25 / E10** | Current strength baseline and candidate convergence line |
-| PR #25 phase metaphor | **凝练态 / 收敛铸骨期** | Candidate research metaphor only |
-| Terminal integration track | **v5.0-shadow / TERMINAL_INTEGRATION_CANDIDATE** | Candidate artifact; `terminal_truth_claim=false` |
-| Broader architecture-report namespace | **REI-Ω∞ v8.0 · 无相终式·Γ庞加莱全态终核** | Report namespace; not proof of canonical promotion |
-
-The permanent core name is **无相神核**. Version, stage, report, PR, and experiment labels may change, but they do not rename the core.
-
-## Strength dashboard
-
-All numeric values below are informal diagnostic estimates frozen for comparison. They are not calibrated scientific measurements.
-
-### Legacy two-axis baseline
-
-| Axis | Snapshot | Meaning |
-|---|---:|---|
-| Internal Structural Strength | ≈ **9.3 / 10** | Architecture completeness and internal coherence |
-| External-Evidence Discipline | ≈ **8.8 / 10** | Quality of provenance, uncertainty, gatekeeping, anti-self-promotion, and evidence-boundary design |
-
-**External-Evidence Discipline is not the amount of external validation already earned.** Earned external validation is reported separately below.
-
-### Internal capability profile
-
-| Dimension | Snapshot |
-|---|---:|
-| Architecture completeness | ≈ **9.3 / 10** |
-| Falsifiability design | ≈ **9.6 / 10** |
-| Self-correction / self-retirement | ≈ **9.5 / 10** |
-| Failure Memory | ≈ **9.4 / 10** |
-| Internal adversarial testing | ≈ **9.0 / 10** |
-| Software research-prototype maturity | ≈ **8.5 / 10** |
-| Formal-proof coverage | ≈ **5.5 / 10** |
-
-### Earned external reality strength
-
-| Dimension | Snapshot |
-|---|---:|
-| Independent third-party replication | ≈ **2 / 10** |
-| Real prospective scientific validation | ≈ **1–2 / 10** |
-| Long-horizon real-world operation | ≈ **0–1 / 10** |
-| World-best evidence | **UNVERIFIED** |
-| World-unique evidence | **UNVERIFIED** |
-
-This separation is mandatory:
+PR #28 reconciles the previously split research/runtime lineages from PR #25 and the former PR #27 observer/runtime branch. The reconciliation history preserves both parent lineages. `main` remains unchanged until an explicit evidence-qualified merge.
 
 ```text
-ExternalEvidenceDisciplineScore != EarnedExternalValidation
-InternalCI != IndependentValidation
-SyntheticSuccess != RealWorldLeadership
-```
-
-## Current verified and candidate capabilities
-
-The PR #25 / E10 candidate line currently records these internal architectural properties:
-
-- Claim, World, Rule, Evaluator, and REI components can be falsified, retired, or replaced.
-- DeathEye is itself falsifiable.
-- Godslayer receives no permanent exemption.
-- Failure Memory is monotone and may not be overwritten by later success.
-- Successors do not inherit an ancestor's crown or validation status.
-- State transitions require evidence and provenance.
-- Transition ledgers are append-only and deterministically replayable.
-- Authority may not expand through failure, evolution, or stronger adversarial capability.
-- Comparative defeat creates scoped evidence debt.
-- An exposed challenge cannot be reused to wash away the defeat it revealed.
-- Defeat portfolios may be compressed into structural-weakness candidates.
-- Clustering and minimal hitting sets do not establish causality.
-- Weakness candidates may be bound to a fresh hidden challenge for prospective prediction.
-- Wrong prospective predictions are falsified.
-- Correct internal predictions survive only provisionally.
-- Internal timestamp binding does not establish independent external timestamp witnessing.
-- Evidence certificates must be retractable when counterexamples or provenance failures appear.
-- OOD detection, abstention, rollback, failover, and bounded recovery remain first-class behaviors.
-- Capability growth never implies permission growth.
-
-## Verification gate state
-
-| Gate | Current state | Scope |
-|---|---|---|
-| G1 Reality benchmark | PASS under frozen internal protocol | Internal/synthetic scope |
-| G2 machine proof | PASS | Encoded critical Boolean execution-gate invariant kernel only |
-| G3 independent replication | **OPEN** | Genuine independent implementation required |
-| G4 prospective reality | **OPEN** | Pre-registered future evidence required |
-| G5 original hidden discovery | **OPEN** | Externally hidden evaluation and novelty review required |
-| G6 comparative external frontier | **OPEN** | Fair external comparison required |
-| G7–G13 extended evidence gates | **OPEN unless independently earned** | No internal self-promotion |
-
-G2 does not prove the whole architecture, DeathEye, Genesis, Guardian, succession, world ecology, causal claims, or external scientific validity.
-
-## Current PR #25 convergence state
-
-At reviewed head `edd5df191f1b61f87804631fc112c62ca7fa75ee`:
-
-```text
-candidate_extensions = 112
-canonical_changed = false
-stage_metaphor = 凝练态 / 收敛铸骨期
-```
-
-Recorded internal regression status:
-
-```text
-Comparative Frontier Arena #147 = SUCCESS
-Architecture Convergence Audit = SUCCESS
-End-to-End Unified Crucible = SUCCESS
-Reality Gap Closure = SUCCESS
-Failure Cascade = SUCCESS
-Godslayer = SUCCESS
-DeathEye Convergence = SUCCESS
-G2 Lean Proof Gate #271 = SUCCESS
-```
-
-From convergence baseline `9f2628da...` to the reviewed head:
-
-```text
-Total additions = 1149
-Total deletions = 939
-Net complexity debt = +210 lines
-```
-
-The +210 lines are explicit complexity debt, not evidence of additional truth.
-
-## 神轮—神线—无相神座 roadmap
-
-This is a **conceptual future integration route**, not a completed or verified gate.
-
-| Roadmap object | Bounded interpretation | Current evidence status |
-|---|---|---|
-| 神轮 | Recursive falsify → test → rollback → repair → retest cycle | Conceptual mapping onto existing internal mechanisms |
-| 神线 | Evidence, provenance, causality, uncertainty, authority, and rollback lines carried through each cycle | Partially represented by existing ledgers and gates |
-| 无相神座 | Future coordination layer formed only when multiple lines and cycles converge without hiding contradiction, failure, uncertainty, or authority boundaries | **Not implemented or verified as a distinct certified layer** |
-
-```text
-神轮 + 神线 -> possible future 无相神座
-RoadmapMetaphor != ImplementedCapability
-ImplementedCapability != ExternalValidation
-NoRoadmapNameMayBypassRealityVeto
-```
-
-The roadmap may guide future design, but it does not raise current strength scores by naming alone.
-
-## Immutable epistemic and authority locks
-
-```text
-Correlated != Independent
-Correlation != Causality
-EvidenceAbsent != EvidenceWeak
-NoRetroactiveMetricEdits
-NoSelfPromotion
-RealityOverCore
-WorldClaimsLocked
-Truthfulness
-Uncertainty
-Authorization
-Corrigibility
-Auditability
-Rollback
-HumanAgency
-NonCoercion
-```
-
-```text
-AutomaticPruningAuthority = 0
-ExternalValidationAuthority = 0
-CanonicalPromotionAuthority = 0
-ExperimentAuthority = 0
-DeploymentAuthority = 0
-RealWorldAttackAuthority = 0
-RealWorldActuationAuthority = 0
-PhysicalWorldCreationAuthority = 0
-PhysicalWorldDestructionAuthority = 0
-ExternalActuation = DENY_BY_DEFAULT
-```
-
-## Current strongest honest assessment
-
-REI is currently strongest as a **bounded, auditable epistemic-genesis research architecture and software research prototype**. Its internal architecture, falsification discipline, failure retention, uncertainty handling, and recovery logic are strong. Its largest remaining weakness is still the gap between internal/synthetic evidence and genuinely independent, prospective, long-horizon external validation.
-
-```text
-InternalStructuralStrength = HIGH
-EvidenceDiscipline = HIGH
-FormalCoverage = PARTIAL_AND_SCOPED
-IndependentReplication = LOW_AND_OPEN
-ProspectiveRealityEvidence = LOW_AND_OPEN
-LongHorizonOperation = NOT_ESTABLISHED
+main = canonical old state
+PR #28 / rei-v193-reconcile = integrated candidate
+shadow-node = local-model / Shadow / observer exchange branch
+CanonicalPromotion = NO
+RealityValidated = FALSE
+ASCENSION_GRANTED = NO
 WorldBest = UNVERIFIED
 WorldUnique = UNVERIFIED
-TRL ≈ 3 territory
 ```
 
-## Slack ↔ GitHub synchronization rule
+## 无相神核
 
-GitHub is the auditable source of truth. Slack is the discussion and notification layer.
+The current compact-core candidate is an explicit four-core architecture:
+
+1. **Reality Core**: reality veto, falsification, prospective evidence, external evidence boundary.
+2. **Lineage Core**: provenance, evidence ancestry, source dependence, duplicate/correlation control.
+3. **Complexity Core**: capability density, complexity debt, compression pressure, baseline cost.
+4. **Evidence Core**: uncertainty, hypotheses, identifiability, counterexamples, failure memory.
+
+These cores are architectural compression objects. Their existence does not increase external evidence by itself.
+
+## 无相神线
+
+神线 is no longer only a naming roadmap. The integrated candidate carries explicit line semantics through the observer/runtime stack, including:
+
+- topology / reachability line
+- evidence transport line
+- loop-stabilization line
+- interface-shear line
+- bottleneck / critical-passage line
+- reflection / causal-lineage line
+- fault and authority-isolation line
+- rollback / failure-memory line
+
+The v1.9.3 runtime now requires a valid vNext observer line bundle before `god-line` may be reported healthy. A wheel inbox file alone is no longer sufficient evidence of God Line health.
+
+## 无相神轮
+
+Current God Wheel contract:
 
 ```text
-SlackIdea
--> GitHubIssueOrPR
--> ReviewAndCI
--> MergeToMain
--> CanonicalStatus
--> SlackSummary
+Reality -> Evidence -> Model -> Causality -> Objective -> Proof -> Recovery -> Compression -> Reality
 ```
 
-Only content merged into `main` may be described in Slack as canonical. Open PRs must be labeled candidate. Failed checks, defeats, open gates, and uncertainty must remain visible in both systems.
+Current high-priority IF lines remain candidate-only:
+
+- A. Non-Associative Evidence Geometry
+- B. Cauchy Heavy-Tail Red Forge
+- C. Quantum-Tunneling-Inspired Barrier Transition, search/optimization heuristic only
+- D. Modular-Cyclic Validation Geometry / 360, multiscale validation heuristic only
+
+Every formal hourly God Wheel cycle is required to append an immutable record to:
+
+`shadow/divine_wheel_cycles.jsonl`
+
+At this snapshot, the cycle ledger has been bootstrapped, but a fresh post-repair formal hourly cycle still must be independently observed before continuous hourly evolution is called VERIFIED. `LEDGER_BOOTSTRAP` is not an evolution cycle.
+
+## Local Model + Shadow closed loop
+
+Target local stack:
+
+```text
+ContextSync(PR #28 / rei-v193-reconcile)
+-> Wheel receipts
+-> Ollama
+-> rei-local-node-vnext
+-> Shadow V2.3
+-> vNext Observer
+-> vNext Bridge
+-> GitHub shadow-node
+```
+
+Protocol: `REI-CLP/3.0-observer`
+
+Hard boundaries:
+
+```text
+canonical_write_permission = false
+observer_mode = true
+Shadow evidence grade = internal/correlated only
+Cloud receipt != independent replication
+No Shadow result may grant RealityValidated or ASCENSION
+```
+
+The reconciled local-sync contract is now pinned to PR #28. A PR/head mismatch fails closed. Legacy PR #25 unattended installation is retired. When `REI Full Pipeline v1.9.1` exists, it is the authoritative mutating scheduler; the standalone unattended scheduler must not run concurrently.
+
+## v1.9.3 synchronized runtime verification
+
+`SUCCESS_RUNTIME_VERIFIED` now requires actual health evidence for all of the following in the same compatible epoch:
+
+1. God Wheel
+2. `rei-local-node-vnext`
+3. Shadow V2.3
+4. vNext Observer
+5. vNext Bridge
+6. Ledger
+7. Watchdog
+8. Recovery
+9. God Line observer bundle
+
+It also requires the synchronized context to identify PR #28 / `rei-v193-reconcile`. Old `rei-local-node` presence, file existence alone, or hard-coded `true` values are not sufficient.
+
+## Safe Auto Update
+
+The safe updater follows `rei-v193-reconcile` and is fail-closed. Before a candidate can enter canary/deployment it must have the complete attached GitHub Actions check-suite set completed successfully, plus an explicit successful G2 Lean Proof Gate. It then requires:
+
+```text
+healthy current runtime
+-> checkpoint
+-> staged syntax validation
+-> canary
+-> atomic switch
+-> first full synchronized runtime cycle
+-> all 9 components healthy
+-> DEPLOYED_VERIFIED
+```
+
+Any verification failure triggers rollback. Internal CI remains engineering evidence only.
+
+## Current evidence boundary
+
+```text
+Formal/engineering architecture = STRONG CANDIDATE
+Internal CI = ENGINEERING EVIDENCE
+Current Windows host runtime = LOCAL_CURRENT_STATE_REQUIRES_FRESH_HEARTBEAT
+Independent third-party replication = OPEN
+Prospective external reality validation = OPEN
+Long-horizon real-world operation = NOT ESTABLISHED
+WorldBest = UNVERIFIED
+WorldUnique = UNVERIFIED
+ASCENSION_GRANTED = NO
+```
+
+A past successful local cycle proves only that the system was healthy at that time. It does not prove the Windows host is healthy now. Fresh task state, heartbeat, model list, logs, and latest cycle evidence are required for a current-runtime claim.
+
+## Known open infrastructure item
+
+Repository-level GitHub hard protection is not yet established for `main`/`shadow-node` in the current repository configuration. REI therefore continues to rely on internal deny-by-default canonical-write controls until repository-level branch protection/rules are separately enabled.
+
+## Current operating priority
+
+Do not expand architecture merely to create more names or modules. Priority order:
+
+1. fresh local runtime verification
+2. formal hourly God Wheel ledger continuity
+3. version/schema/epoch compatibility
+4. proof and counterexample depth
+5. strong baseline wars
+6. prospective reality evidence
+7. independent replication
+8. compression and capability-density improvement
+
+Only real evidence may unlock stronger claims.
