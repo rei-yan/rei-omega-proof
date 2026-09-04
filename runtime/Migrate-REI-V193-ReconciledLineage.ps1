@@ -35,7 +35,7 @@ if ($LASTEXITCODE -ne 0 -or -not $candidate) { throw 'Cannot resolve reconciled 
 
 $newContent = (& $git -C $Repo show "$RemoteRef`:runtime/Safe-AutoUpdate-V193.ps1") -join [Environment]::NewLine
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($newContent)) { throw 'Unable to retrieve reconciled updater' }
-if ($newContent -notmatch "\$RemoteBranch\s*=\s*'rei-v193-reconcile'") { throw 'Reconciled updater branch pin verification failed' }
+if (-not $newContent.Contains('$RemoteBranch = ''rei-v193-reconcile''')) { throw 'Reconciled updater branch pin verification failed' }
 
 $tmp = Join-Path $RuntimeRoot 'safe_auto_update_v193.ps1.migrating'
 $newContent | Set-Content -Encoding UTF8 $tmp
