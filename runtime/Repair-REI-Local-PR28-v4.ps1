@@ -58,14 +58,14 @@ try {
 
     $deadline = (Get-Date).AddSeconds($WaitSeconds)
     do {
-        $active = Get-ReiCycleProcesses
+        $active = @(Get-ReiCycleProcesses)
         if ($active.Count -eq 0) { break }
         $ids = ($active | ForEach-Object { [string]$_.ProcessId }) -join ','
         Write-Host "Waiting for active REI runtime cycle process(es): PID $ids" -ForegroundColor Yellow
         Start-Sleep -Seconds 5
     } while ((Get-Date) -lt $deadline)
 
-    $active = Get-ReiCycleProcesses
+    $active = @(Get-ReiCycleProcesses)
     if ($active.Count -gt 0) {
         $detail = ($active | ForEach-Object { "PID=$($_.ProcessId) CMD=$($_.CommandLine)" }) -join ' | '
         throw "A real REI runtime cycle is still active after $WaitSeconds seconds. Refusing to remove lock. $detail"
