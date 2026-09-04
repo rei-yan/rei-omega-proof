@@ -1,0 +1,1 @@
+{"schema_version":1,"record_type":"LEDGER_BOOTSTRAP","cycle_id":"bootstrap-20260904T1101Z","completed_at_utc":"2026-09-04T11:01:00Z","main_sha":"d2d10fb05925d54980faedb291c13baf43380eb6","observer_sha":"e2152ef921b41372d7267647f8784c632307c0cf","shadow_sha":"e02efa6442fe802fd8755008ab60e1ee450e91b4","status":"BOOTSTRAP_ONLY"}
