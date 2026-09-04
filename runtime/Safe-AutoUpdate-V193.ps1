@@ -1,5 +1,5 @@
 # REI-Ω v1.9.3 Safe Auto-Update Gate
-# Polls the observer branch, requires successful G2 CI, stages/canaries, checkpoints,
+# Polls the reconciled candidate branch, requires successful G2 CI, stages/canaries, checkpoints,
 # atomically switches the local cycle, verifies one full cycle, and rolls back on failure.
 
 param(
@@ -18,7 +18,7 @@ $ActiveShaFile = Join-Path $RuntimeRoot 'deployed-sha.txt'
 $UpdaterState = Join-Path $UpdateDir 'last-update.json'
 $UpdaterLog = Join-Path $UpdateDir 'safe-auto-update.log'
 $PipelineTask = 'REI Full Pipeline v1.9.1'
-$RemoteBranch = 'rei-god-wheel-fusion-v1-observer'
+$RemoteBranch = 'rei-v193-reconcile'
 $RemoteRef = "origin/$RemoteBranch"
 $GitHubRunsApiBase = 'https://api.github.com/repos/rei-yan/rei-omega-proof/actions/runs'
 $RecoveryRoot = 'C:\REI_Resilience_Layer_v1\autoupdate'
