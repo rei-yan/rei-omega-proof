@@ -42,7 +42,6 @@ try {
         throw 'Base repair script layout changed; refusing an unsafe patch.'
     }
     $text = $text.Replace($old, $new)
-    $text = $text.Replace("`$RuntimeRawRoot = \"https://raw.githubusercontent.com/rei-yan/rei-omega-proof/`$Branch/runtime\"", "`$RuntimeRawRoot = \"https://raw.githubusercontent.com/rei-yan/rei-omega-proof/$SourceCommit/runtime\"")
 
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     [IO.File]::WriteAllText($TempScript, $text, $utf8NoBom)
