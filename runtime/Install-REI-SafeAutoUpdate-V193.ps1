@@ -13,7 +13,7 @@ $StateDir = Join-Path $RuntimeRoot 'state'
 $Updater = Join-Path $RuntimeRoot 'safe_auto_update_v193.ps1'
 $TaskName = 'REI Safe Auto Update v1.9.3'
 $PipelineTask = 'REI Full Pipeline v1.9.1'
-$RemoteBranch = 'rei-god-wheel-fusion-v1-observer'
+$RemoteBranch = 'rei-v193-reconcile'
 
 if (-not (Test-Path $Repo)) { throw "Repo missing: $Repo" }
 if (-not (Get-ScheduledTask -TaskName $PipelineTask -ErrorAction SilentlyContinue)) {
