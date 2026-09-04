@@ -1,13 +1,19 @@
-# REI-Ω v1.9.3 canonical synchronized Windows runtime cycle
-# Compatible with Windows PowerShell 5.1 / .NET Framework.
+# REI-Ω v1.9.3 synchronized Windows runtime cycle
+# Windows PowerShell 5.1 / .NET Framework. Observer-only, fail-closed.
 
 param([switch]$Canary)
 
 $ErrorActionPreference = 'Stop'
 $Root = 'C:\REI-Shadow'
 $ShadowScript = 'C:\REI\rei_shadow_closed_loop_v2.py'
-$BridgeScript = Join-Path $Root 'bridge_to_wheel.py'
+$ContextSyncScript = Join-Path $Root 'REI-LocalSync.ps1'
+$LocalModelScript = Join-Path $Root 'REI-LocalModel-VNext.ps1'
+$WheelPullScript = Join-Path $Root 'sync_wheel_to_local.py'
+$ObserverScript = Join-Path $Root 'vnext_observer.py'
+$BridgeScript = Join-Path $Root 'bridge_to_wheel_vnext.py'
 $GitSyncScript = Join-Path $Root 'sync_shadow_to_github.py'
+$ContextState = Join-Path $Root 'context\sync_state.json'
+$ObserverState = Join-Path $Root 'state\vnext_observer\latest.json'
 $RuntimeRoot = Join-Path $Root 'runtime-v191'
 $StateDir = Join-Path $RuntimeRoot 'state'
 $CheckpointRoot = 'C:\REI_Resilience_Layer_v1\checkpoints'
@@ -15,8 +21,11 @@ $Lock = Join-Path $RuntimeRoot 'cycle.lock'
 $Log = Join-Path $RuntimeRoot 'runtime-v191.log'
 $SourceShaFile = Join-Path $RuntimeRoot 'deployed-sha.txt'
 $ContractVersion = '1.9.3'
-$SchemaVersion = 'runtime-epoch-schema/1.1'
-$PolicyHash = 'v1.9.3-observer-policy'
+$SchemaVersion = 'runtime-epoch-schema/1.2'
+$PolicyHash = 'v1.9.3-observer-policy-pr28-vnext'
+$CandidatePullRequest = 28
+$CandidateHeadRef = 'rei-v193-reconcile'
+$ProtocolVersion = 'REI-CLP/3.0-observer'
 
 function Log([string]$m) {
   $line = "$(Get-Date -Format o) $m"
@@ -42,6 +51,14 @@ function Get-SourceSha {
   return 'UNPINNED_LOCAL_RUNTIME'
 }
 
+function Resolve-Python {
+  foreach ($candidate in @('python.exe','python','py.exe','py')) {
+    $cmd = Get-Command $candidate -ErrorAction SilentlyContinue
+    if ($cmd) { return $cmd.Source }
+  }
+  throw 'Python not found'
+}
+
 function Test-Ollama {
   try {
     $tags = Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/tags' -TimeoutSec 3
@@ -59,12 +76,60 @@ function Test-Ollama {
   }
 }
 
+function Test-ReconciledContext {
+  if (-not (Test-Path $ContextState)) { return $false }
+  try {
+    $ctx = Get-Content $ContextState -Raw | ConvertFrom-Json
+    return ([int]$ctx.pull_request -eq $CandidatePullRequest -and
+            [string]$ctx.head_ref -eq $CandidateHeadRef -and
+            -not [string]::IsNullOrWhiteSpace([string]$ctx.head_sha))
+  }
+  catch { return $false }
+}
+
+function Test-GodLineState {
+  if (-not (Test-Path $ObserverState)) { return @{healthy=$false;cycle='';reason='observer state missing'} }
+  try {
+    $o = Get-Content $ObserverState -Raw | ConvertFrom-Json
+    $promotion = $o.promotion_gate_v2
+    $lineage = $o.lineage
+    $hypotheses = $o.hypothesis_state
+    $failure = $o.failure_recurrence
+    $healthy = (
+      [string]$o.protocol_version -eq $ProtocolVersion -and
+      [bool]$o.observer_mode -eq $true -and
+      [bool]$o.canonical_write_permission -eq $false -and
+      -not [string]::IsNullOrWhiteSpace([string]$o.cycle_id) -and
+      $null -ne $lineage -and $null -ne $hypotheses -and $null -ne $failure -and
+      $null -ne $promotion -and
+      [bool]$promotion.may_promote_canonical -eq $false -and
+      [bool]$promotion.may_grant_reality_validation -eq $false -and
+      [bool]$promotion.may_grant_ascension -eq $false
+    )
+    return @{healthy=$healthy;cycle=[string]$o.cycle_id;reason=$(if($healthy){'vNext observer line bundle verified'}else{'observer line bundle invalid'})}
+  }
+  catch { return @{healthy=$false;cycle='';reason=$_.Exception.Message} }
+}
+
+function Invoke-Python([string]$name,[string]$script,[string[]]$arguments=@()) {
+  if (-not (Test-Path $script)) { throw "$name missing: $script" }
+  & $script:PythonExe $script @arguments
+  if ($LASTEXITCODE -ne 0) { throw "$name exited $LASTEXITCODE" }
+}
+
+function Invoke-PowerShell([string]$name,[string]$script,[string[]]$arguments=@()) {
+  if (-not (Test-Path $script)) { throw "$name missing: $script" }
+  & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script @arguments
+  if ($LASTEXITCODE -ne 0) { throw "$name exited $LASTEXITCODE" }
+}
+
 function FailClosed([string]$reason) {
   New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
   $state = [ordered]@{
-    contract_version=$ContractVersion; status='FAIL_CLOSED'; reason=$reason;
+    contract_version=$ContractVersion; schema_version=$SchemaVersion; status='FAIL_CLOSED'; reason=$reason;
     observer_source_sha=(Get-SourceSha); observer_only=$true; promotion='NO';
     reality_validated=$false; canonical_mainline_touched=$false;
+    candidate_pull_request=$CandidatePullRequest; candidate_head_ref=$CandidateHeadRef;
     timestamp_utc=[DateTime]::UtcNow.ToString('o')
   }
   $state | ConvertTo-Json -Depth 10 | Set-Content -Encoding UTF8 (Join-Path $StateDir 'last-cycle.json')
@@ -73,16 +138,18 @@ function FailClosed([string]$reason) {
   exit 2
 }
 
-# Dependency-only canary. It deliberately does not mutate Shadow/Ledger/God Wheel state.
+$script:PythonExe = Resolve-Python
+
+# Dependency-only canary. It deliberately does not run a Shadow cycle or write the wheel ledger.
 if ($Canary) {
-  foreach ($p in @($Root,$ShadowScript,$BridgeScript,$GitSyncScript,'C:\REI_Resilience_Layer_v1')) {
+  foreach ($p in @($Root,$ShadowScript,$ContextSyncScript,$LocalModelScript,$WheelPullScript,$ObserverScript,$BridgeScript,$GitSyncScript,'C:\REI_Resilience_Layer_v1')) {
     if (-not (Test-Path $p)) { Write-Error "CANARY missing path: $p"; exit 2 }
   }
   $ollama = Test-Ollama
   if (-not $ollama.healthy) { Write-Error 'CANARY Ollama unavailable'; exit 2 }
   $names = @($ollama.tags.models | ForEach-Object { $_.name })
-  if (-not ($names | Where-Object { $_ -like 'rei-local-node*' })) {
-    Write-Error 'CANARY rei-local-node model missing'; exit 2
+  if (-not ($names | Where-Object { $_ -like 'rei-local-node-vnext*' })) {
+    Write-Error 'CANARY rei-local-node-vnext model missing'; exit 2
   }
   if (-not (Get-ScheduledTask -TaskName 'REI-Local-Watchdog' -ErrorAction SilentlyContinue)) {
     Write-Error 'CANARY REI-Local-Watchdog missing'; exit 2
@@ -92,45 +159,65 @@ if ($Canary) {
 }
 
 New-Item -ItemType Directory -Force -Path $StateDir,$CheckpointRoot | Out-Null
-if (Test-Path $Lock) { FailClosed 'Previous cycle lock still present; overlap prevented' }
+if (Test-Path $Lock) { FailClosed 'Previous synchronized runtime cycle still active; overlap prevented' }
 New-Item -ItemType File -Path $Lock -Force | Out-Null
 
 try {
   $sourceSha = Get-SourceSha
   $epoch = 'rei-v193-' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ')
   $cycleId = [Guid]::NewGuid().ToString('N')
-  $compatSeed = "$ContractVersion|$SchemaVersion|$PolicyHash|observer-only|$sourceSha"
+  $compatSeed = "$ContractVersion|$SchemaVersion|$PolicyHash|$ProtocolVersion|PR$CandidatePullRequest|$CandidateHeadRef|observer-only|$sourceSha"
   $compatHash = Get-CompatibleSha256 $compatSeed
-  Log "PREPARE epoch=$epoch cycle=$cycleId source=$sourceSha"
+  Log "PREPARE epoch=$epoch cycle=$cycleId source=$sourceSha candidate=PR#$CandidatePullRequest/$CandidateHeadRef"
 
   $ollama = Test-Ollama
   if (-not $ollama.healthy) { FailClosed 'Ollama API unavailable' }
   $modelNames = @($ollama.tags.models | ForEach-Object { $_.name })
-  if (-not ($modelNames | Where-Object { $_ -like 'rei-local-node*' })) {
-    FailClosed 'rei-local-node model missing from Ollama'
+  if (-not ($modelNames | Where-Object { $_ -like 'rei-local-node-vnext*' })) {
+    FailClosed 'rei-local-node-vnext model missing from Ollama'
   }
 
   $cp = Join-Path $CheckpointRoot $cycleId
   New-Item -ItemType Directory -Force -Path $cp | Out-Null
-  foreach ($f in @('shadow_ledger.jsonl','divine_wheel_inbox.jsonl','bridge_to_wheel.py','sync_shadow_to_github.py')) {
+  foreach ($f in @('shadow_ledger.jsonl','divine_wheel_inbox.jsonl','bridge_to_wheel_vnext.py','sync_shadow_to_github.py')) {
     $src = Join-Path $Root $f
     if (Test-Path $src) { Copy-Item $src $cp -Force }
   }
-  @{epoch_id=$epoch;cycle_id=$cycleId;compatibility_hash=$compatHash;observer_source_sha=$sourceSha;created_utc=[DateTime]::UtcNow.ToString('o')} |
+  @{epoch_id=$epoch;cycle_id=$cycleId;compatibility_hash=$compatHash;observer_source_sha=$sourceSha;candidate_pull_request=$CandidatePullRequest;created_utc=[DateTime]::UtcNow.ToString('o')} |
     ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $cp 'checkpoint.json')
   Log "SNAPSHOT checkpoint=$cp"
 
-  Log 'OBSERVE -> SHADOW_CHALLENGE'
-  & python $ShadowScript --home $Root --once
-  if ($LASTEXITCODE -ne 0) { FailClosed "Shadow exited $LASTEXITCODE" }
+  Log 'CONTEXT_SYNC -> PR28 reconciled candidate'
+  Invoke-PowerShell 'ContextSync' $ContextSyncScript @('-Once','-PullRequest',[string]$CandidatePullRequest,'-ContextOnly')
+  if (-not (Test-ReconciledContext)) { FailClosed 'Context is not pinned to PR #28 / rei-v193-reconcile' }
 
-  Log 'CROSS_CHECK -> BRIDGE'
-  & python $BridgeScript
-  if ($LASTEXITCODE -ne 0) { FailClosed "Bridge exited $LASTEXITCODE" }
+  Log 'WHEEL_PULL -> correlated internal receipts only'
+  Invoke-Python 'WheelPull' $WheelPullScript @('--home',$Root)
+
+  Log 'LOCAL_MODEL -> exact vNext overlay'
+  Invoke-PowerShell 'LocalModel' $LocalModelScript @('-ContextDir',(Join-Path $Root 'context'))
+  $ollama = Test-Ollama
+  $modelNames = @($ollama.tags.models | ForEach-Object { $_.name })
+  if (-not ($modelNames | Where-Object { $_ -like 'rei-local-node-vnext*' })) { FailClosed 'vNext local model refresh not verified' }
+
+  $env:REI_MODEL='rei-local-node-vnext'
+  $env:REI_VALIDATOR_MODEL='rei-local-node-vnext'
+  $env:REI_CLOSED_LOOP_PROTOCOL=$ProtocolVersion
+  $env:REI_OBSERVER_MODE='true'
+
+  Log 'OBSERVE -> SHADOW_CHALLENGE'
+  Invoke-Python 'Shadow' $ShadowScript @('--home',$Root,'--once')
+
+  Log 'OBSERVER -> VNEXT GOVERNANCE'
+  Invoke-Python 'VNextObserver' $ObserverScript @('--home',$Root)
+  $godLine = Test-GodLineState
+  if (-not $godLine.healthy) { FailClosed ('God Line observer bundle failed: ' + $godLine.reason) }
+
+  Log 'CROSS_CHECK -> VNEXT BRIDGE'
+  Invoke-Python 'VNextBridge' $BridgeScript @('--home',$Root)
 
   Log 'LEDGER_COMMIT -> GIT_SYNC'
-  & python $GitSyncScript
-  if ($LASTEXITCODE -ne 0) { FailClosed "Git sync exited $LASTEXITCODE" }
+  Invoke-Python 'GitSync' $GitSyncScript @('--home',$Root,'--repo',(Join-Path $Root 'repo'))
 
   $shadowLedger = Join-Path $Root 'shadow_ledger.jsonl'
   $wheelInbox = Join-Path $Root 'divine_wheel_inbox.jsonl'
@@ -141,17 +228,19 @@ try {
   if (-not $ollamaWatchdog) { FailClosed 'REI-Local-Watchdog scheduled task missing' }
   $recoveryReady = Test-Path 'C:\REI_Resilience_Layer_v1'
   if (-not $recoveryReady) { FailClosed 'Recovery root missing' }
+  $observerHealthy = (Test-Path $ObserverState) -and $godLine.healthy
+  $bridgeHealthy = Test-Path $BridgeScript
 
   $components = @(
     @{id='god-wheel';version='REI-CLP/3.0-observer+v1.9.3';heartbeat=(Test-Path $wheelInbox);healthcheck_passed=(Test-Path $wheelInbox)},
-    @{id='local-model';version='rei-local-node-vnext';heartbeat=$ollama.healthy;healthcheck_passed=$ollama.healthy},
-    @{id='shadow';version='Shadow V2.3+fusion';heartbeat=(Test-Path $shadowLedger);healthcheck_passed=$true},
-    @{id='observer';version='vNext+Fusion-v1.9.3';heartbeat=$true;healthcheck_passed=$true},
-    @{id='bridge';version='v1.9.3-contract';heartbeat=(Test-Path $BridgeScript);healthcheck_passed=$true},
-    @{id='ledger';version='v1.9.3-contract';heartbeat=(Test-Path $shadowLedger);healthcheck_passed=$true},
+    @{id='local-model';version='rei-local-node-vnext';heartbeat=$ollama.healthy;healthcheck_passed=([bool]($modelNames | Where-Object { $_ -like 'rei-local-node-vnext*' }))},
+    @{id='shadow';version='Shadow V2.3+fusion';heartbeat=(Test-Path $shadowLedger);healthcheck_passed=(Test-Path $shadowLedger)},
+    @{id='observer';version='vNext+Fusion-v1.9.3';heartbeat=$observerHealthy;healthcheck_passed=$observerHealthy},
+    @{id='bridge';version='vNext-v1.9.3-contract';heartbeat=$bridgeHealthy;healthcheck_passed=$bridgeHealthy},
+    @{id='ledger';version='v1.9.3-contract';heartbeat=((Test-Path $shadowLedger) -and (Test-Path $wheelInbox));healthcheck_passed=((Test-Path $shadowLedger) -and (Test-Path $wheelInbox))},
     @{id='watchdog';version='v1.9.3-contract';heartbeat=($null -ne $ollamaWatchdog);healthcheck_passed=($null -ne $ollamaWatchdog)},
     @{id='recovery';version='v1.9.3-contract';heartbeat=$recoveryReady;healthcheck_passed=$recoveryReady},
-    @{id='god-line';version='v1.9.3-contract';heartbeat=(Test-Path $wheelInbox);healthcheck_passed=$true}
+    @{id='god-line';version='v1.9.3-vnext-line-bundle';heartbeat=$godLine.healthy;healthcheck_passed=$godLine.healthy}
   )
 
   $records = foreach ($c in $components) {
@@ -159,6 +248,7 @@ try {
       epoch_id=$epoch; cycle_id=$cycleId; component_id=$c.id; component_version=$c.version;
       schema_version=$SchemaVersion; compatibility_hash=$compatHash; policy_hash=$PolicyHash;
       canonical_hash_seen='RUNTIME_OBSERVER_BRANCH'; observer_source_sha=$sourceSha;
+      candidate_pull_request=$CandidatePullRequest; candidate_head_ref=$CandidateHeadRef;
       checkpoint_id=$cycleId; rollback_id=$cycleId; observer_only=$true;
       promotion_capability=$false; heartbeat=[bool]$c.heartbeat; healthcheck_passed=[bool]$c.healthcheck_passed
     }
@@ -178,9 +268,10 @@ try {
   if ($bad.Count -gt 0) { FailClosed ('Runtime sync failed: ' + (($bad | ForEach-Object {$_.component_id}) -join ', ')) }
 
   $final = [ordered]@{
-    contract_version=$ContractVersion; epoch_id=$epoch; cycle_id=$cycleId;
+    contract_version=$ContractVersion; schema_version=$SchemaVersion; epoch_id=$epoch; cycle_id=$cycleId;
     cycle_status='SUCCESS_RUNTIME_VERIFIED'; compatibility_hash=$compatHash;
-    observer_source_sha=$sourceSha; checkpoint_id=$cycleId; rollback_id=$cycleId;
+    observer_source_sha=$sourceSha; candidate_pull_request=$CandidatePullRequest; candidate_head_ref=$CandidateHeadRef;
+    god_line_source_cycle=$godLine.cycle; checkpoint_id=$cycleId; rollback_id=$cycleId;
     observer_only=$true; canonical_mainline_touched=$false; reality_validated=$false;
     promotion='NO'; components=$records; finish_utc=[DateTime]::UtcNow.ToString('o')
   }
