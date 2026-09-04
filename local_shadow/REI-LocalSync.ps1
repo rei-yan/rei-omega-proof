@@ -6,21 +6,22 @@ It separates merged canonical material from open pull-request candidates.
 Optionally, it rebuilds an Ollama context model when the bundle changes.
 
 Examples:
-  powershell -ExecutionPolicy Bypass -File .\REI-LocalSync.ps1 -Once
-  powershell -ExecutionPolicy Bypass -File .\REI-LocalSync.ps1 -Once -BaseModel "MODEL_FROM_OLLAMA_LIST"
-  powershell -ExecutionPolicy Bypass -File .\REI-LocalSync.ps1 -Install -BaseModel "MODEL_FROM_OLLAMA_LIST"
+  powershell -ExecutionPolicy Bypass -File .\REI-LocalSync.ps1 -Once -PullRequest 28 -ContextOnly
+  powershell -ExecutionPolicy Bypass -File .\REI-LocalSync.ps1 -Once -PullRequest 28 -BaseModel "MODEL_FROM_OLLAMA_LIST"
+  powershell -ExecutionPolicy Bypass -File .\REI-LocalSync.ps1 -Install -PullRequest 28 -BaseModel "MODEL_FROM_OLLAMA_LIST"
   powershell -ExecutionPolicy Bypass -File .\REI-LocalSync.ps1 -Uninstall
 #>
 
 [CmdletBinding()]
 param(
     [string]$Repo = "rei-yan/rei-omega-proof",
-    [int]$PullRequest = 25,
+    [int]$PullRequest = 28,
     [string]$OutputDir = "C:\REI-Shadow\context",
     [string]$BaseModel = $(if ($env:REI_OLLAMA_BASE_MODEL) { $env:REI_OLLAMA_BASE_MODEL } else { "qwen3:8b" }),
     [string]$LocalModelName = "rei-local-node",
     [ValidateRange(30, 3600)]
     [int]$PollSeconds = 60,
+    [switch]$ContextOnly,
     [switch]$Once,
     [switch]$Install,
     [switch]$Uninstall
@@ -167,8 +168,6 @@ $candidate
 "@
 
     $bundlePath = Join-Path $OutputDir "REI_LOCAL_CONTEXT.md"
-    # Hash only source-derived content. A sync timestamp must not trigger a rebuild
-    # on every polling interval when GitHub itself has not changed.
     $newHash = Get-Sha256Text -Text $stableBundle
     $hashPath = Join-Path $OutputDir "context.sha256"
     $oldHash = if (Test-Path -LiteralPath $hashPath) { (Get-Content -LiteralPath $hashPath -Raw).Trim() } else { "" }
@@ -185,11 +184,19 @@ $candidate
     )
 
     Write-AtomicUtf8 -Path (Join-Path $OutputDir "CANONICAL_MAIN.md") -Content $canonical
-    Write-AtomicUtf8 -Path (Join-Path $OutputDir "CANDIDATE_PR25.md") -Content $candidate
+    $candidatePath = Join-Path $OutputDir ("CANDIDATE_PR{0}.md" -f $PullRequest)
+    Write-AtomicUtf8 -Path $candidatePath -Content $candidate
     Write-AtomicUtf8 -Path $bundlePath -Content $bundle
     Write-AtomicUtf8 -Path $hashPath -Content $newHash
 
-    $ollamaRefreshed = Update-OllamaContextModel -ContextBundle $bundle -ModelBase $BaseModel -ModelName $LocalModelName
+    if ($ContextOnly) {
+        $ollamaRefreshed = $false
+        Write-Log "Context-only sync complete; Ollama rebuild delegated to REI-LocalModel-VNext.ps1."
+    }
+    else {
+        $ollamaRefreshed = Update-OllamaContextModel -ContextBundle $bundle -ModelBase $BaseModel -ModelName $LocalModelName
+    }
+
     $state = [ordered]@{
         synced_at_utc = $syncedAt
         repository = $Repo
@@ -200,20 +207,22 @@ $candidate
         head_ref = $headRef
         head_sha = $headSha
         context_sha256 = $newHash
+        context_only = [bool]$ContextOnly
         ollama_base_model = $BaseModel
         ollama_model_name = $LocalModelName
         ollama_refreshed = $ollamaRefreshed
         canonical_rule = "Only merged base-branch content is canonical."
     } | ConvertTo-Json -Depth 4
     Write-AtomicUtf8 -Path (Join-Path $OutputDir "sync_state.json") -Content $state
-    Write-Log "REI local context synchronized at head $headSha."
+    Write-Log "REI local context synchronized from PR #$PullRequest at head $headSha."
 }
 
 function Install-ReiSyncTask {
     $scriptPath = $PSCommandPath
     if (-not (Test-Path -LiteralPath $scriptPath)) { throw "Save this script locally before using -Install." }
 
-    $arguments = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`" -PollSeconds $PollSeconds -LocalModelName `"$LocalModelName`""
+    $arguments = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`" -PullRequest $PullRequest -PollSeconds $PollSeconds -LocalModelName `"$LocalModelName`""
+    if ($ContextOnly) { $arguments += " -ContextOnly" }
     if (-not [string]::IsNullOrWhiteSpace($BaseModel)) { $arguments += " -BaseModel `"$BaseModel`"" }
 
     $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $arguments
