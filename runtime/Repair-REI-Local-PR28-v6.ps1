@@ -197,7 +197,7 @@ try {
     }
 
     # Detect any respawn after legacy tasks were disabled.
-    $respawn = Get-ShadowProcesses
+    $respawn = @(Get-ShadowProcesses)
     if ($respawn.Count -gt 0) {
         $detail = ($respawn | ForEach-Object { "PID=$($_.ProcessId) CMD=$($_.CommandLine)" }) -join ' | '
         throw "Shadow worker respawned after legacy task quiesce: $detail"
