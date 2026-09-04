@@ -15,7 +15,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $ProtocolVersion = "REI-CLP/3.0-observer"
-$PinnedCommit = "0fcbea44a9f5ad7e53667e6cecf8543f3b300c9e"
+$PinnedCommit = "d55709566e792ab3b8e22976dba9893e7423df35"
 $RawRoot = "https://raw.githubusercontent.com/rei-yan/rei-omega-proof/$PinnedCommit/local_shadow"
 $TaskName = "REI Unattended Closed Loop"
 
@@ -110,6 +110,8 @@ try {
         installed_at_utc = (Get-Date).ToUniversalTime().ToString("o")
         backup_path = $backup
         task_name = $TaskName
+        candidate_pull_request = 28
+        candidate_head_ref = "rei-v193-reconcile"
         observer_mode = $true
         canonical_write_permission = $false
     } | ConvertTo-Json -Depth 5
@@ -118,6 +120,7 @@ try {
     Write-Host "REI vNext lockstep closed loop installed and started."
     Write-Host "Protocol: $ProtocolVersion"
     Write-Host "Pinned source commit: $PinnedCommit"
+    Write-Host "Candidate context: PR #28 / rei-v193-reconcile"
     Write-Host "Backup: $backup"
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $supervisor -Status -ReiHome $ReiHome
 }
