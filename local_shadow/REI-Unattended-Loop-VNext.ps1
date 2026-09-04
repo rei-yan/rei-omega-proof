@@ -26,10 +26,13 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $ProtocolVersion = "REI-CLP/3.0-observer"
+$CandidatePullRequest = 28
+$CandidateHeadRef = "rei-v193-reconcile"
 $TaskName = "REI Unattended Closed Loop"
 $LogDir = Join-Path $ReiHome "logs"
 $LogPath = Join-Path $LogDir "unattended_loop_vnext.log"
 $HeartbeatPath = Join-Path $ReiHome "state\unattended_heartbeat.json"
+$ContextStatePath = Join-Path $ReiHome "context\sync_state.json"
 
 function Write-ReiLog {
     param([string]$Message)
@@ -84,6 +87,33 @@ function Ensure-Ollama {
     return $false
 }
 
+function Test-ReconciledContext {
+    if (-not (Test-Path -LiteralPath $ContextStatePath)) {
+        Write-ReiLog "Context state missing; refusing to run local model on an unverified bundle."
+        return $false
+    }
+    try {
+        $state = Get-Content -LiteralPath $ContextStatePath -Raw | ConvertFrom-Json
+        if ([int]$state.pull_request -ne $CandidatePullRequest) {
+            Write-ReiLog "Context PR mismatch: expected #$CandidatePullRequest, found #$($state.pull_request)."
+            return $false
+        }
+        if ([string]$state.head_ref -ne $CandidateHeadRef) {
+            Write-ReiLog "Context head mismatch: expected $CandidateHeadRef, found $($state.head_ref)."
+            return $false
+        }
+        if ([string]::IsNullOrWhiteSpace([string]$state.head_sha)) {
+            Write-ReiLog "Context head SHA missing."
+            return $false
+        }
+        return $true
+    }
+    catch {
+        Write-ReiLog "Context state validation failed: $($_.Exception.Message)"
+        return $false
+    }
+}
+
 function Invoke-NativePowerShellStep {
     param(
         [string]$Name,
@@ -97,10 +127,6 @@ function Invoke-NativePowerShellStep {
     Write-ReiLog "$Name starting."
     $previousPreference = $ErrorActionPreference
     try {
-        # Windows PowerShell can surface native stderr as NativeCommandError when
-        # redirected through a pipeline. Ollama writes harmless progress to stderr,
-        # so temporarily keep those records non-terminating and judge the child by
-        # its actual exit code instead.
         $ErrorActionPreference = "Continue"
         $output = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $Script @Arguments 2>&1
         $code = $LASTEXITCODE
@@ -141,16 +167,18 @@ function Invoke-OneCycle {
     $status = "STARTING"
     $codes = [ordered]@{ context_sync = -1; local_model = -1; wheel_pull = -1; shadow = -1; observer = -1; bridge = -1; github_push = -1 }
     try {
-        Write-ReiLog "vNext lockstep cycle starting; protocol=$ProtocolVersion; canonical writes forbidden."
+        Write-ReiLog "vNext lockstep cycle starting; protocol=$ProtocolVersion; candidate=PR#$CandidatePullRequest/$CandidateHeadRef; canonical writes forbidden."
 
         if (Test-Path -LiteralPath $ContextSyncScript) {
-            $codes.context_sync = Invoke-NativePowerShellStep -Name "ContextSync" -Script $ContextSyncScript -Arguments @("-Once")
-            if ($codes.context_sync -ne 0) { Write-ReiLog "ContextSync failed; prior atomically stored context may still be used." }
+            $codes.context_sync = Invoke-NativePowerShellStep -Name "ContextSync" -Script $ContextSyncScript -Arguments @("-Once", "-PullRequest", [string]$CandidatePullRequest, "-ContextOnly")
+            if ($codes.context_sync -ne 0) { Write-ReiLog "ContextSync failed; checking whether a previously verified reconciled context exists." }
         }
         else {
-            Write-ReiLog "ContextSync missing; local-model overlay will fail closed if no prior bundle exists."
+            Write-ReiLog "ContextSync missing."
             $codes.context_sync = 127
         }
+
+        if (-not (Test-ReconciledContext)) { $status = "FAILED_CLOSED_CONTEXT_VERSION"; return }
 
         $codes.wheel_pull = Invoke-PythonStep -Name "WheelPull" -Script $WheelPullScript -Arguments @("--home", $ReiHome)
         if ($codes.wheel_pull -ne 0) { Write-ReiLog "WheelPull failed; continuing only with already-local valid receipts." }
@@ -186,11 +214,13 @@ function Invoke-OneCycle {
     finally {
         $finished = (Get-Date).ToUniversalTime()
         Write-AtomicJson -Path $HeartbeatPath -Value ([ordered]@{
-            schema_version = 2
+            schema_version = 3
             protocol_version = $ProtocolVersion
             observer_mode = $true
             local_model = "rei-local-node-vnext"
             core_name = "无相神核"
+            candidate_pull_request = $CandidatePullRequest
+            candidate_head_ref = $CandidateHeadRef
             started_at_utc = $started.ToString("o")
             finished_at_utc = $finished.ToString("o")
             next_due_at_utc = $finished.AddSeconds($IntervalSeconds).ToString("o")
@@ -199,14 +229,14 @@ function Invoke-OneCycle {
             canonical_mainline_touched = $false
             canonical_write_permission = $false
         })
-        Write-ReiLog "Cycle finished: $status; observer_mode=TRUE; canonical mainline touched: FALSE"
+        Write-ReiLog "Cycle finished: $status; candidate=PR#$CandidatePullRequest/$CandidateHeadRef; observer_mode=TRUE; canonical mainline touched: FALSE"
     }
 }
 
 function Install-ReiTask {
     if (-not (Test-Path -LiteralPath $PSCommandPath)) { throw "Save this script before -Install." }
     [void](Resolve-Python)
-    foreach ($required in @($ShadowScript, $WheelPullScript, $ObserverScript, $BridgeScript, $GitHubPushScript, $LocalModelScript)) {
+    foreach ($required in @($ContextSyncScript, $ShadowScript, $WheelPullScript, $ObserverScript, $BridgeScript, $GitHubPushScript, $LocalModelScript)) {
         if (-not (Test-Path -LiteralPath $required)) { throw "Required file missing: $required" }
     }
 
@@ -233,11 +263,12 @@ function Install-ReiTask {
         -MultipleInstances IgnoreNew
 
     Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings `
-        -Description "REI lockstep vNext observer closed loop; never writes canonical/main." `
+        -Description "REI lockstep vNext observer closed loop; candidate context locked to PR #28; never writes canonical/main." `
         -RunLevel Highest -Force | Out-Null
     Start-ScheduledTask -TaskName $TaskName
     Write-Host "Installed and started: $TaskName"
     Write-Host "Protocol: $ProtocolVersion"
+    Write-Host "Candidate context: PR #$CandidatePullRequest / $CandidateHeadRef"
 }
 
 function Uninstall-ReiTask {
