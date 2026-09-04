@@ -22,6 +22,29 @@ Failure must remain visible
 Rollback must remain available
 ```
 
+## Synchronized-upgrade rule
+
+Any new REI capability is treated as incomplete until its effects have been reviewed across the synchronized compatibility surfaces rather than added as an isolated file or name.
+
+```text
+God Wheel
+Local Model
+Shadow
+Observer
+Bridge
+Ledger
+Watchdog
+Recovery
+God Line
+Formal Lean invariants
+Research manifests
+Runtime compatibility contract
+CI / verification
+Current handoff / strength snapshot
+```
+
+Synchronization means compatible contracts, schemas, provenance and safety boundaries. It does not mean forced agreement between components and does not grant extra authority.
+
 ## Version topology
 
 PR #28 reconciles the previously split research/runtime lineages from PR #25 and the former PR #27 observer/runtime branch. The reconciliation history preserves both parent lineages. `main` remains unchanged until an explicit evidence-qualified merge.
@@ -84,6 +107,33 @@ Every formal hourly God Wheel cycle is required to append an immutable record to
 
 At this snapshot, the cycle ledger has been bootstrapped, but a fresh post-repair formal hourly cycle still must be independently observed before continuous hourly evolution is called VERIFIED. `LEDGER_BOOTSTRAP` is not an evolution cycle.
 
+## RDDO synchronized observer extension
+
+The candidate now includes a bounded **Recursive Divided-Difference Observer (RDDO)**. It is integrated beneath the existing Epistemic–Operator and Dynamics–Control cores rather than becoming a fifth universal core.
+
+Repository assets:
+
+```text
+Rei_omega_proof/RecursiveDifferenceObserver.lean
+research/rddo_reference.py
+research/rddo_sanity.py
+research/GOD_WHEEL_FUSION_V1_9_4_RDDO.md
+.github/workflows/rddo-sanity.yml
+```
+
+Core boundary:
+
+```text
+InterpolationFit != Truth
+LocalDifference != GlobalCausality
+HighOrderActivity != VerifiedRegimeChange
+HigherOrder != BetterEvidence
+RDDO != RealityValidation
+RDDO != PromotionAuthority
+```
+
+The reference implementation rejects non-finite input and duplicate / near-duplicate sample coordinates, bounds recursion order, exposes numerical-conditioning telemetry and remains observer-only. Derived divided differences from one source series remain one provenance family rather than independent evidence.
+
 ## Local Model + Shadow closed loop
 
 Target local stack:
@@ -111,11 +161,13 @@ Cloud receipt != independent replication
 No Shadow result may grant RealityValidated or ASCENSION
 ```
 
+RDDO summaries may be supplied to the local model only as diagnostic context. The local model must remain free to disagree and preserve `UNKNOWN` when RDDO conflicts with other evidence.
+
 The reconciled local-sync contract is now pinned to PR #28. A PR/head mismatch fails closed. Legacy PR #25 unattended installation is retired. When `REI Full Pipeline v1.9.1` exists, it is the authoritative mutating scheduler; the standalone unattended scheduler must not run concurrently.
 
 ## v1.9.3 synchronized runtime verification
 
-`SUCCESS_RUNTIME_VERIFIED` now requires actual health evidence for all of the following in the same compatible epoch:
+The established v1.9.3 runtime contract requires actual health evidence for all of the following in the same compatible epoch:
 
 1. God Wheel
 2. `rei-local-node-vnext`
@@ -127,7 +179,9 @@ The reconciled local-sync contract is now pinned to PR #28. A PR/head mismatch f
 8. Recovery
 9. God Line observer bundle
 
-It also requires the synchronized context to identify PR #28 / `rei-v193-reconcile`. Old `rei-local-node` presence, file existence alone, or hard-coded `true` values are not sufficient.
+RDDO is now a synchronized repository candidate extension. It does not become a tenth verified host component until the Windows runtime actually deploys and reports the RDDO observer asset in a fresh compatibility epoch. Repository integration alone is insufficient for that host-level claim.
+
+The runtime also requires the synchronized context to identify PR #28 / `rei-v193-reconcile`. Old `rei-local-node` presence, file existence alone, or hard-coded `true` values are not sufficient.
 
 ## Safe Auto Update
 
@@ -140,16 +194,18 @@ healthy current runtime
 -> canary
 -> atomic switch
 -> first full synchronized runtime cycle
--> all 9 components healthy
+-> required components healthy
 -> DEPLOYED_VERIFIED
 ```
 
-Any verification failure triggers rollback. Internal CI remains engineering evidence only.
+Any verification failure triggers rollback. Internal CI remains engineering evidence only. The RDDO extension must not be called locally deployed until its runtime asset and observer-only markers are included in the same guarded deployment/rollback path and a fresh host cycle verifies them.
 
 ## Current evidence boundary
 
 ```text
 Formal/engineering architecture = STRONG CANDIDATE
+RDDO repository integration = CANDIDATE_INTEGRATED
+RDDO Windows host deployment = NOT YET ESTABLISHED
 Internal CI = ENGINEERING EVIDENCE
 Current Windows host runtime = LOCAL_CURRENT_STATE_REQUIRES_FRESH_HEARTBEAT
 Independent third-party replication = OPEN
@@ -160,7 +216,7 @@ WorldUnique = UNVERIFIED
 ASCENSION_GRANTED = NO
 ```
 
-A past successful local cycle proves only that the system was healthy at that time. It does not prove the Windows host is healthy now. Fresh task state, heartbeat, model list, logs, and latest cycle evidence are required for a current-runtime claim.
+A past successful local cycle proves only that the system was healthy at that time. It does not prove the Windows host is healthy now. Fresh task state, heartbeat, model list, logs, latest cycle evidence and any newly required extension state are required for a current-runtime claim.
 
 ## Known open infrastructure item
 
@@ -171,12 +227,13 @@ Repository-level GitHub hard protection is not yet established for `main`/`shado
 Do not expand architecture merely to create more names or modules. Priority order:
 
 1. fresh local runtime verification
-2. formal hourly God Wheel ledger continuity
-3. version/schema/epoch compatibility
-4. proof and counterexample depth
-5. strong baseline wars
-6. prospective reality evidence
-7. independent replication
-8. compression and capability-density improvement
+2. complete guarded host deployment path for synchronized candidate extensions such as RDDO
+3. formal hourly God Wheel ledger continuity
+4. version/schema/epoch compatibility
+5. proof and counterexample depth
+6. strong baseline wars
+7. prospective reality evidence
+8. independent replication
+9. compression and capability-density improvement
 
 Only real evidence may unlock stronger claims.
