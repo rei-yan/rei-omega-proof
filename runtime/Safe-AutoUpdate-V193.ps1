@@ -1,10 +1,11 @@
 # REI-Ω v1.9.3 Safe Auto-Update Gate
-# Polls the reconciled candidate branch, requires successful G2 CI, stages/canaries, checkpoints,
-# atomically switches the local cycle, verifies one full cycle, and rolls back on failure.
+# Polls the reconciled candidate branch, requires complete successful candidate CI,
+# stages/canaries, checkpoints, atomically switches the local cycle, verifies one
+# full synchronized cycle, and rolls back on failure.
 
 param(
   [switch]$Force,
-  [int]$VerifyTimeoutSeconds = 240
+  [int]$VerifyTimeoutSeconds = 300
 )
 
 $ErrorActionPreference = 'Stop'
@@ -20,7 +21,7 @@ $UpdaterLog = Join-Path $UpdateDir 'safe-auto-update.log'
 $PipelineTask = 'REI Full Pipeline v1.9.1'
 $RemoteBranch = 'rei-v193-reconcile'
 $RemoteRef = "origin/$RemoteBranch"
-$GitHubRunsApiBase = 'https://api.github.com/repos/rei-yan/rei-omega-proof/actions/runs'
+$GitHubApiBase = 'https://api.github.com/repos/rei-yan/rei-omega-proof'
 $RecoveryRoot = 'C:\REI_Resilience_Layer_v1\autoupdate'
 $candidate = ''
 $previous = ''
@@ -37,8 +38,8 @@ function Write-State([string]$status,[string]$candidateSha,[string]$previousSha,
   [ordered]@{
     version='1.9.3'; status=$status; candidate_sha=$candidateSha; previous_sha=$previousSha;
     reason=$reason; checkpoint_path=$checkpointPath; observer_only=$true;
-    reality_validated=$false; promotion='NO'; canonical_mainline_touched=$false;
-    timestamp_utc=[DateTime]::UtcNow.ToString('o')
+    candidate_branch=$RemoteBranch; reality_validated=$false; promotion='NO';
+    canonical_mainline_touched=$false; timestamp_utc=[DateTime]::UtcNow.ToString('o')
   } | ConvertTo-Json -Depth 8 | Set-Content -Encoding UTF8 $UpdaterState
   Write-Log ("STATE " + $status + " candidate=" + $candidateSha + " previous=" + $previousSha + " reason=" + $reason)
 }
@@ -53,21 +54,14 @@ trap {
 function Resolve-GitExe {
   $cmd = Get-Command git.exe -ErrorAction SilentlyContinue
   if ($cmd) { return $cmd.Source }
-  $candidates = @(
-    'C:\Program Files\Git\cmd\git.exe',
-    'C:\Program Files\Git\bin\git.exe',
-    'C:\Program Files (x86)\Git\cmd\git.exe'
-  )
-  foreach ($p in $candidates) {
+  foreach ($p in @('C:\Program Files\Git\cmd\git.exe','C:\Program Files\Git\bin\git.exe','C:\Program Files (x86)\Git\cmd\git.exe')) {
     if (Test-Path $p) { return $p }
   }
   throw 'git.exe not found in PATH or standard Git for Windows locations'
 }
 
 function Get-CurrentSha {
-  if (Test-Path $ActiveShaFile) {
-    return (Get-Content $ActiveShaFile -Raw).Trim()
-  }
+  if (Test-Path $ActiveShaFile) { return (Get-Content $ActiveShaFile -Raw).Trim() }
   return ''
 }
 
@@ -78,31 +72,51 @@ function Require-HealthyCurrentRuntime {
   if ($obj.cycle_status -ne 'SUCCESS_RUNTIME_VERIFIED') {
     throw "Current runtime is not healthy: $($obj.status)$($obj.cycle_status)"
   }
-  $shadow = @($obj.components | Where-Object { $_.component_id -eq 'shadow' })
-  if ($shadow.Count -eq 0 -or -not [bool]$shadow[0].heartbeat -or -not [bool]$shadow[0].healthcheck_passed) {
-    throw 'Current Shadow health is not verified'
+  foreach ($required in @('local-model','shadow','observer','bridge','ledger','watchdog','recovery','god-line')) {
+    $component = @($obj.components | Where-Object { $_.component_id -eq $required })
+    if ($component.Count -eq 0 -or -not [bool]$component[0].heartbeat -or -not [bool]$component[0].healthcheck_passed) {
+      throw "Current runtime component not verified: $required"
+    }
   }
 }
 
-function Require-G2Success([string]$sha) {
+function Get-GitHubHeaders {
+  try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 } catch {}
+  return @{ 'User-Agent'='REI-v1.9.3-safe-updater'; 'Accept'='application/vnd.github+json' }
+}
+
+function Require-CandidateCI([string]$sha) {
   try {
-    try {
-      [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-    } catch {}
-    $headers = @{ 'User-Agent'='REI-v1.9.3-safe-updater'; 'Accept'='application/vnd.github+json' }
-    $uri = ('{0}?head_sha={1}&event=pull_request&per_page=50' -f $GitHubRunsApiBase, $sha)
-    $runs = Invoke-RestMethod -Uri $uri -Headers $headers -TimeoutSec 15
-    $g2 = @($runs.workflow_runs | Where-Object {
-      $_.name -eq 'G2 Lean Proof Gate' -and $_.head_sha -eq $sha
-    } | Sort-Object run_number -Descending)
+    $headers = Get-GitHubHeaders
+
+    # First require every GitHub Actions check suite attached to the exact candidate SHA
+    # to be completed/success. This prevents deployment while a broader regression gate
+    # is still queued, running, cancelled, or failed.
+    $suiteUri = "$GitHubApiBase/commits/$sha/check-suites?per_page=100"
+    $suites = Invoke-RestMethod -Uri $suiteUri -Headers $headers -TimeoutSec 20
+    $allSuites = @($suites.check_suites)
+    if ($allSuites.Count -eq 0) { return @{pass=$false;reason='Candidate check suites missing'} }
+    $unfinished = @($allSuites | Where-Object { $_.status -ne 'completed' })
+    if ($unfinished.Count -gt 0) { return @{pass=$false;reason="Candidate CI unfinished=$($unfinished.Count)/$($allSuites.Count)"} }
+    $badSuites = @($allSuites | Where-Object { $_.conclusion -ne 'success' })
+    if ($badSuites.Count -gt 0) {
+      $summary = (($badSuites | ForEach-Object { [string]$_.conclusion }) -join ',')
+      return @{pass=$false;reason="Candidate CI non-success suites=$($badSuites.Count): $summary"}
+    }
+
+    # Preserve an explicit G2 proof-gate check instead of assuming suite success alone
+    # identifies the proof workflow.
+    $runsUri = "$GitHubApiBase/actions/runs?head_sha=$sha&event=pull_request&per_page=100"
+    $runs = Invoke-RestMethod -Uri $runsUri -Headers $headers -TimeoutSec 20
+    $g2 = @($runs.workflow_runs | Where-Object { $_.name -eq 'G2 Lean Proof Gate' -and $_.head_sha -eq $sha } | Sort-Object run_number -Descending)
     if ($g2.Count -eq 0) { return @{pass=$false;reason='G2 run missing'} }
-    $latest = $g2[0]
-    if ($latest.status -ne 'completed') { return @{pass=$false;reason="G2 status=$($latest.status)"} }
-    if ($latest.conclusion -ne 'success') { return @{pass=$false;reason="G2 conclusion=$($latest.conclusion)"} }
-    return @{pass=$true;reason='G2 completed/success'}
+    if ($g2[0].status -ne 'completed') { return @{pass=$false;reason="G2 status=$($g2[0].status)"} }
+    if ($g2[0].conclusion -ne 'success') { return @{pass=$false;reason="G2 conclusion=$($g2[0].conclusion)"} }
+
+    return @{pass=$true;reason="All $($allSuites.Count) check suites completed/success + G2 completed/success"}
   }
   catch {
-    return @{pass=$false;reason=('G2 query failed: ' + $_.Exception.Message)}
+    return @{pass=$false;reason=('Candidate CI query failed: ' + $_.Exception.Message)}
   }
 }
 
@@ -140,7 +154,7 @@ if (-not $Force -and $candidate -eq $previous) {
 }
 
 Require-HealthyCurrentRuntime
-$ci = Require-G2Success $candidate
+$ci = Require-CandidateCI $candidate
 if (-not $ci.pass) {
   Write-State 'WAIT_CI' $candidate $previous $ci.reason
   exit 0
@@ -191,8 +205,14 @@ try {
           -not [bool]$_.heartbeat -or -not [bool]$_.healthcheck_passed -or
           [bool]$_.promotion_capability -ne $false -or [bool]$_.observer_only -ne $true
         })
-        if ($bad.Count -eq 0) { $verified = $true; break }
-        $failureReason = 'First cycle component health/authority check failed'
+        $requiredIds = @('god-wheel','local-model','shadow','observer','bridge','ledger','watchdog','recovery','god-line')
+        $presentIds = @($last.components | ForEach-Object { [string]$_.component_id })
+        $missingIds = @($requiredIds | Where-Object { $_ -notin $presentIds })
+        if ($bad.Count -eq 0 -and $missingIds.Count -eq 0 -and [int]$last.candidate_pull_request -eq 28) {
+          $verified = $true
+          break
+        }
+        $failureReason = 'First cycle component health/authority/version check failed'
         break
       }
       if ($last.status -eq 'FAIL_CLOSED') {
@@ -203,7 +223,7 @@ try {
   }
 
   if (-not $verified) { throw $failureReason }
-  Write-State 'DEPLOYED_VERIFIED' $candidate $previous 'G2 + canary + first full cycle passed' $checkpoint
+  Write-State 'DEPLOYED_VERIFIED' $candidate $previous ($ci.reason + ' + canary + first full synchronized cycle passed') $checkpoint
   exit 0
 }
 catch {
