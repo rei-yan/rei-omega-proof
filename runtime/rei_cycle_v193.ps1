@@ -94,7 +94,7 @@ function Test-ReconciledContext {
 function Test-GodLineState {
   if (-not (Test-Path $ObserverState)) { return @{healthy=$false;cycle='';reason='observer state missing'} }
   try {
-    $o = Get-Content $ObserverState -Raw | ConvertFrom-Json
+    $o = Get-Content $ObserverState -Raw -Encoding UTF8 | ConvertFrom-Json
     $promotion = $o.promotion_gate_v2
     $lineage = $o.lineage
     $hypotheses = $o.hypothesis_state

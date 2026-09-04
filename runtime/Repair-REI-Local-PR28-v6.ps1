@@ -54,8 +54,26 @@ function Fail([string]$Reason) {
 }
 
 function Get-ActionText($Task) {
-    if ($null -eq $Task) { return '' }
-    return (($Task.Actions | ForEach-Object { ([string]$_.Execute) + ' ' + ([string]$_.Arguments) }) -join ' ')
+    if ($null -eq $Task -or $null -eq $Task.Actions) { return '' }
+
+    $parts = foreach ($action in @($Task.Actions)) {
+        $execute = ''
+        $arguments = ''
+
+        $executeProp = $action.PSObject.Properties['Execute']
+        if ($null -ne $executeProp) {
+            $execute = [string]$executeProp.Value
+        }
+
+        $argumentsProp = $action.PSObject.Properties['Arguments']
+        if ($null -ne $argumentsProp) {
+            $arguments = [string]$argumentsProp.Value
+        }
+
+        ($execute + ' ' + $arguments).Trim()
+    }
+
+    return (($parts | Where-Object { $_ }) -join ' ')
 }
 
 function Get-ShadowProcesses {
@@ -224,7 +242,7 @@ try {
     Patch-WindowsShadowLock
 
     $v3Report = Join-Path $ReiHome 'state\local_repair_pr28.json'
-    $report = if (Test-Path -LiteralPath $v3Report) { Get-Content -LiteralPath $v3Report -Raw | ConvertFrom-Json } else { $null }
+    $report = if (Test-Path -LiteralPath $v3Report) { Get-Content -LiteralPath $v3Report -Raw -Encoding UTF8 | ConvertFrom-Json } else { $null }
     if ($null -eq $report -or [string]$report.status -ne 'LOCAL_REPAIR_PASS') {
         throw 'v3 verification report is missing or not LOCAL_REPAIR_PASS.'
     }

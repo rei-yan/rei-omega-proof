@@ -80,7 +80,7 @@ function Resolve-Python {
 
 function Read-JsonSafe([string]$Path) {
     if (-not (Test-Path -LiteralPath $Path)) { return $null }
-    try { return (Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json) } catch { return $null }
+    try { return (Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json) } catch { return $null }
 }
 
 $principalCheck = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
