@@ -29,6 +29,7 @@ $ProtocolVersion = "REI-CLP/3.0-observer"
 $CandidatePullRequest = 28
 $CandidateHeadRef = "rei-v193-reconcile"
 $TaskName = "REI Unattended Closed Loop"
+$PipelineTaskName = "REI Full Pipeline v1.9.1"
 $LogDir = Join-Path $ReiHome "logs"
 $LogPath = Join-Path $LogDir "unattended_loop_vnext.log"
 $HeartbeatPath = Join-Path $ReiHome "state\unattended_heartbeat.json"
@@ -238,6 +239,17 @@ function Install-ReiTask {
     [void](Resolve-Python)
     foreach ($required in @($ContextSyncScript, $ShadowScript, $WheelPullScript, $ObserverScript, $BridgeScript, $GitHubPushScript, $LocalModelScript)) {
         if (-not (Test-Path -LiteralPath $required)) { throw "Required file missing: $required" }
+    }
+
+    if (Get-ScheduledTask -TaskName $PipelineTaskName -ErrorAction SilentlyContinue) {
+        $existing = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+        if ($existing) {
+            Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+            Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
+        }
+        Write-Host "Standalone scheduler not installed: '$PipelineTaskName' is authoritative." -ForegroundColor Yellow
+        Write-Host "The vNext payload remains callable with -Once, but a second mutating scheduler is forbidden." -ForegroundColor Yellow
+        return
     }
 
     $arguments = @(
