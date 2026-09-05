@@ -25,7 +25,7 @@ jobs:
       - name: Run nine-system fail-closed sanity
         run: python research/nine_system_sanity.py
 
-      - name: Verify interfaces mapped and ascension remains pending
+      - name: Verify interfaces mapped, God Source overlay synchronized, and ascension remains pending
         shell: bash
         run: |
           set -euo pipefail
@@ -34,5 +34,8 @@ jobs:
           grep -q '"ascension_granted": false' runtime/nine-system-contract-v1.json
           grep -q '"reality_validated": false' runtime/nine-system-contract-v1.json
           grep -q '"god_proof_independent_check": "PENDING"' runtime/nine-system-contract-v1.json
+          grep -q '"god_source_phase1": "CI_VERIFIED_EXTERNAL_BINDINGS_PENDING"' runtime/nine-system-contract-v1.json
           grep -q '"status": "MAPPED_CANDIDATE_NOT_ASCENDED"' research/NINE_SYSTEM_INTERFACE_MAP_V1.json
+          grep -q '"status": "PHASE1_CI_VERIFIED_RUNTIME_BINDINGS_PENDING"' research/NINE_SYSTEM_GOD_SOURCE_OVERLAY_V1.json
+          grep -q '"runtime_external_bindings": "PENDING"' research/NINE_SYSTEM_GOD_SOURCE_OVERLAY_V1.json
           grep -q 'NINE_SYSTEM_ARCHITECTURE = CANDIDATE' research/NINE_SYSTEM_ARCHITECTURE_V1.md
