@@ -104,7 +104,7 @@ jobs:
           if ([bool]$evidence.promotion_authority) { throw 'Example may not claim promotion authority' }
           Write-Host 'REALITY_EVIDENCE_SHAPE_PASS'
 
-      - name: Exercise reality sidecar
+      - name: Exercise reality sidecar and conflict preservation
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
@@ -112,8 +112,10 @@ jobs:
           $inbox = Join-Path $root 'inbox'
           $state = Join-Path $root 'state'
           $context = Join-Path $root 'context\REALITY_FEEDBACK_CONTEXT.md'
+          $ledger = Join-Path $state 'ledger.jsonl'
           New-Item -ItemType Directory -Force -Path $inbox | Out-Null
-          @{
+
+          $fixture = @{
             schema_version = 1
             evidence_id = 'ci-observation-001'
             observed_at_utc = '2026-09-05T04:00:00Z'
@@ -123,7 +125,9 @@ jobs:
             provenance = 'github-actions synthetic fixture'
             reality_validated = $false
             promotion_authority = $false
-          } | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $inbox 'observation.json')
+          }
+          $fixture | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $inbox 'observation.json')
+
           & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'runtime/REI-Reality-Sidecar-V1.ps1' -Inbox $inbox -StateRoot $state -ContextPath $context
           if ($LASTEXITCODE -ne 0) { throw "Sidecar fixture failed: $LASTEXITCODE" }
           $latest = Get-Content (Join-Path $state 'latest.json') -Raw | ConvertFrom-Json
@@ -135,7 +139,32 @@ jobs:
           foreach ($needle in @('DATA_ONLY','UNVALIDATED_REALITY_FEEDBACK','INDEPENDENT_EXTERNAL_EVIDENCE: NOT_ESTABLISHED','PROMOTION_EFFECT: NONE')) {
             if (-not $text.Contains($needle)) { throw "Reality context missing boundary: $needle" }
           }
-          Write-Host 'REALITY_SIDECAR_FIXTURE_PASS'
+
+          # Re-reading the exact same artifact must be idempotent and must not inflate history.
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'runtime/REI-Reality-Sidecar-V1.ps1' -Inbox $inbox -StateRoot $state -ContextPath $context
+          if ($LASTEXITCODE -ne 0) { throw "Duplicate replay should remain healthy: $LASTEXITCODE" }
+          $duplicateState = Get-Content (Join-Path $state 'latest.json') -Raw | ConvertFrom-Json
+          if ([int]$duplicateState.valid_artifacts -ne 1) { throw 'Duplicate replay inflated valid artifact count' }
+          if ([int]$duplicateState.newly_ingested -ne 0) { throw 'Duplicate replay was incorrectly ingested as new' }
+          if ([int]$duplicateState.duplicates -lt 1) { throw 'Duplicate replay was not recognized' }
+          if (@(Get-Content $ledger).Count -ne 1) { throw 'Append-only ledger changed cardinality on duplicate replay' }
+
+          # Same evidence ID with different normalized content must never overwrite history.
+          $conflict = @{}
+          foreach ($key in $fixture.Keys) { $conflict[$key] = $fixture[$key] }
+          $conflict.outcome = 'conflicting outcome that must be rejected'
+          $conflict | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $inbox 'conflict.json')
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'runtime/REI-Reality-Sidecar-V1.ps1' -Inbox $inbox -StateRoot $state -ContextPath $context
+          if ($LASTEXITCODE -ne 1) { throw "Conflicting evidence must degrade with exit 1, got $LASTEXITCODE" }
+          $conflictState = Get-Content (Join-Path $state 'latest.json') -Raw | ConvertFrom-Json
+          if ($conflictState.status -ne 'SIDECAR_DEGRADED') { throw 'Conflict did not produce SIDECAR_DEGRADED' }
+          if ([int]$conflictState.evidence_id_conflicts -lt 1) { throw 'Evidence ID conflict was not recorded' }
+          if ([int]$conflictState.valid_artifacts -ne 1) { throw 'Conflicting evidence changed accepted evidence cardinality' }
+          if (@(Get-Content $ledger).Count -ne 1) { throw 'Conflicting evidence overwrote or appended to accepted ledger' }
+          if ([bool]$conflictState.reality_validated) { throw 'Conflict path may not grant RealityValidated' }
+          if ([string]$conflictState.promotion -ne 'NO') { throw 'Conflict path may not grant promotion' }
+
+          Write-Host 'REALITY_SIDECAR_FIXTURE_AND_CONFLICT_PRESERVATION_PASS'
 
       - name: Check safety and binding phrases
         shell: powershell
