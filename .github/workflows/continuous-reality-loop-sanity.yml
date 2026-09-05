@@ -165,6 +165,7 @@ jobs:
           if ([string]$conflictState.promotion -ne 'NO') { throw 'Conflict path may not grant promotion' }
 
           Write-Host 'REALITY_SIDECAR_FIXTURE_AND_CONFLICT_PRESERVATION_PASS'
+          exit 0
 
       - name: Check safety and binding phrases
         shell: powershell
