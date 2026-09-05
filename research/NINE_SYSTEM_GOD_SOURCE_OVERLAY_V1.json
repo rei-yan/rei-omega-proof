@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "overlay_id": "REI-NINE-GOD-SOURCE-OVERLAY/1.0",
+  "status": "PHASE1_CI_VERIFIED_RUNTIME_BINDINGS_PENDING",
+  "candidate_pull_request": 28,
+  "candidate_head_ref": "rei-v193-reconcile",
+  "base_interface_map": "research/NINE_SYSTEM_INTERFACE_MAP_V1.json",
+  "applies_to_system_id": 7,
+  "name_zh": "神源",
+  "name_en": "God Source",
+  "precondition_maturity": "PARTIAL_LOCAL_SOURCE_ONLY",
+  "candidate_maturity": "PARTIAL_UNIFIED_REGISTRY_EXTERNAL_BINDINGS_OPEN",
+  "anchors_add": [
+    "runtime/god-source-registry-v1.json",
+    "runtime/god-source-contract-v1.json",
+    "runtime/god-source-receipt-schema-v1.json",
+    "research/GOD_SOURCE_UNIFIED_REGISTRY_V1.md",
+    "research/god_source_registry_sanity.py",
+    ".github/workflows/god-source-registry-sanity.yml"
+  ],
+  "resolved_blockers": [
+    "Unified GPT/Claude/local source registry is not yet implemented"
+  ],
+  "remaining_blockers": [
+    "Real GPT runtime binding remains pending",
+    "Real Claude runtime binding remains pending",
+    "GPT/Claude disagreement arbitration is not yet a synchronized runtime capability",
+    "Source-specific Failure Memory runtime remains pending",
+    "Dynamic reliability scoring and budget-aware routing remain pending",
+    "External model outputs do not constitute independent truth by source label alone"
+  ],
+  "hard_rules": [
+    "SourcePowerDoesNotEqualSourceAuthority",
+    "ProviderDiversityDoesNotEqualIndependence",
+    "AgreementDoesNotEqualTruth",
+    "DisagreementMustBePreserved",
+    "SilentModelSubstitutionForbidden",
+    "UnknownSourceFailsClosed",
+    "RealityVetoRemainsAbsolute"
+  ],
+  "authority": {
+    "source_only": true,
+    "may_set_reality_validated": false,
+    "may_grant_canonical_promotion": false,
+    "may_grant_ascension": false
+  },
+  "runtime_external_bindings": "PENDING",
+  "reality_validated": false,
+  "ascension_granted": false
+}
