@@ -25,7 +25,7 @@ jobs:
       - name: Run God Proof internal precheck
         run: python research/nine_system_god_proof_gate.py
 
-      - name: Assert external blockers and self-ascension lock remain visible
+      - name: Assert God Source Phase 1 is bounded and external blockers remain visible
         shell: bash
         run: |
           set -euo pipefail
@@ -33,5 +33,9 @@ jobs:
           grep -q '"reality_validated": false' runtime/nine-system-contract-v1.json
           grep -q '"ascension_granted": false' runtime/nine-system-contract-v1.json
           grep -q '"automatic_ascension_permission": false' runtime/nine-system-contract-v1.json
-          grep -q 'Unified GPT/Claude/local source registry is not yet implemented' research/NINE_SYSTEM_INTERFACE_MAP_V1.json
+          grep -q '"god_source_phase1": "CI_VERIFIED_EXTERNAL_BINDINGS_PENDING"' runtime/nine-system-contract-v1.json
+          grep -q '"status": "PHASE1_CI_VERIFIED_RUNTIME_BINDINGS_PENDING"' research/NINE_SYSTEM_GOD_SOURCE_OVERLAY_V1.json
+          grep -q 'Real GPT runtime binding remains pending' research/NINE_SYSTEM_GOD_SOURCE_OVERLAY_V1.json
+          grep -q 'Real Claude runtime binding remains pending' research/NINE_SYSTEM_GOD_SOURCE_OVERLAY_V1.json
+          grep -q 'GPT/Claude disagreement arbitration is not yet a synchronized runtime capability' research/NINE_SYSTEM_GOD_SOURCE_OVERLAY_V1.json
           grep -q 'Independent external validation remains open' research/NINE_SYSTEM_INTERFACE_MAP_V1.json
