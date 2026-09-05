@@ -2,7 +2,7 @@
 
 Status: `CANDIDATE / ASCENSION_PENDING`
 
-This document defines the nine-system architecture as a candidate organizational and governance layer above the existing reconciled REI runtime. It does not replace the current Epistemic–Operator, Dynamics–Control, Active Evidence, or Structural–Transport cores, and it does not grant any new authority.
+This document defines the nine-system architecture as a candidate organizational and governance layer above the existing reconciled REI runtime. It does not replace the current Epistemic-Operator, Dynamics-Control, Active Evidence, or Structural-Transport cores, and it does not grant any new authority.
 
 ## Constitutional rule
 
@@ -52,6 +52,24 @@ Existing anchors: Multi-Lineage Coevolution, Sovereignless Epistemic Ecology, Pl
 Purpose: treat GPT, Claude, local models, tools, datasets, and future engines as replaceable evidence/compute sources with provenance and reliability tracking.
 
 Rule: `SourcePower != SourceAuthority`.
+
+Phase 1 synchronized candidate status:
+
+```text
+UnifiedSourceRegistry = CI_VERIFIED_CANDIDATE
+LocalSource = BOUND_LOCAL_CANDIDATE
+GPTBinding = PENDING_EXTERNAL_BINDING
+ClaudeBinding = PENDING_EXTERNAL_BINDING
+DisagreementPreservation = REQUIRED
+ProviderDiversity != Independence
+Agreement != Truth
+SourceSpecificFailureMemoryRuntime = PENDING
+RuntimeArbitration = PENDING
+RealityValidated = FALSE
+Ascension = NO
+```
+
+The Phase 1 registry is carried as a bounded overlay on the stable 9/9 interface map. The overlay may advance God Source candidate maturity without rewriting the historical base map and without granting any source promotion authority.
 
 ### 8. 无相终式 / Wuxiang Final Form
 Purpose: permit task-conditioned composition, compression, replacement, and restructuring of internal mechanisms while preserving constitution, rollback, and auditability.
