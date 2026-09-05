@@ -100,7 +100,13 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $guard = Get-Content 'runtime/REI-Continuous-Reality-Guard-V1.ps1' -Raw
-          foreach ($needle in @('canonical_write_permission=$false', "reality_validated=$false", "promotion='NO'", "ascension='NO'")) {
-            if ($guard -notlike "*$needle*") { throw "Guard missing safety marker: $needle" }
+          $needles = @(
+            'canonical_write_permission=$false',
+            'reality_validated=$false',
+            "promotion='NO'",
+            "ascension='NO'"
+          )
+          foreach ($needle in $needles) {
+            if (-not $guard.Contains($needle)) { throw "Guard missing safety marker: $needle" }
           }
           Write-Host 'CONTINUOUS_REALITY_LOOP_SANITY_PASS'
