@@ -25,10 +25,14 @@ jobs:
       - name: Run nine-system fail-closed sanity
         run: python research/nine_system_sanity.py
 
-      - name: Verify ascension remains pending
+      - name: Verify interfaces mapped and ascension remains pending
         shell: bash
         run: |
+          set -euo pipefail
+          grep -q '"nine_of_nine_interfaces_mapped": true' runtime/nine-system-contract-v1.json
           grep -q '"automatic_ascension_permission": false' runtime/nine-system-contract-v1.json
           grep -q '"ascension_granted": false' runtime/nine-system-contract-v1.json
           grep -q '"reality_validated": false' runtime/nine-system-contract-v1.json
+          grep -q '"god_proof_independent_check": "PENDING"' runtime/nine-system-contract-v1.json
+          grep -q '"status": "MAPPED_CANDIDATE_NOT_ASCENDED"' research/NINE_SYSTEM_INTERFACE_MAP_V1.json
           grep -q 'NINE_SYSTEM_ARCHITECTURE = CANDIDATE' research/NINE_SYSTEM_ARCHITECTURE_V1.md
