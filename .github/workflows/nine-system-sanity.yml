@@ -1,0 +1,34 @@
+name: Nine-System Sanity
+
+on:
+  push:
+    branches: ["rei-v193-reconcile"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nine-system-sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run nine-system fail-closed sanity
+        run: python research/nine_system_sanity.py
+
+      - name: Verify ascension remains pending
+        shell: bash
+        run: |
+          grep -q '"automatic_ascension_permission": false' runtime/nine-system-contract-v1.json
+          grep -q '"ascension_granted": false' runtime/nine-system-contract-v1.json
+          grep -q '"reality_validated": false' runtime/nine-system-contract-v1.json
+          grep -q 'NINE_SYSTEM_ARCHITECTURE = CANDIDATE' research/NINE_SYSTEM_ARCHITECTURE_V1.md
