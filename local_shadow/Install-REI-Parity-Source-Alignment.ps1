@@ -9,6 +9,11 @@ This installer patches only C:\REI-Shadow\sync_shadow_to_github.py, backs it up,
 validates Python syntax, bootstraps one sync against C:\REI-Shadow, verifies the
 receipt points at the freshest Shadow-home cycle, and rolls back on failure.
 
+PowerShell 5.1 ConvertFrom-Json can reject otherwise valid cycle JSON when object
+keys collide case-insensitively. To avoid making the installer depend on that
+parser, the expected cycle id is derived from the canonical cycle filename; the
+Python transport remains responsible for parsing the cycle payload itself.
+
 It does NOT modify canonical/main, God Core, God Wheel logic, Observer, Bridge,
 model payloads, checkpoints, or Task Scheduler configuration.
 #>
@@ -55,17 +60,10 @@ $latest = Get-ChildItem -LiteralPath $CycleDir -Filter "cycle_*.json" -File |
     Select-Object -First 1
 if (-not $latest) { throw "No cycle_*.json found under $CycleDir" }
 
-$latestJson = Get-Content -LiteralPath $latest.FullName -Raw | ConvertFrom-Json
-$expectedCycleId = $null
-foreach ($name in @("cycle_id","cycle","id")) {
-    if ($latestJson.PSObject.Properties.Name -contains $name) {
-        $value = [string]$latestJson.$name
-        if (-not [string]::IsNullOrWhiteSpace($value)) { $expectedCycleId = $value; break }
-    }
-}
+$expectedCycleId = [IO.Path]::GetFileNameWithoutExtension($latest.Name)
+if ($expectedCycleId.StartsWith("cycle_")) { $expectedCycleId = $expectedCycleId.Substring(6) }
 if ([string]::IsNullOrWhiteSpace($expectedCycleId)) {
-    $expectedCycleId = [IO.Path]::GetFileNameWithoutExtension($latest.Name)
-    if ($expectedCycleId.StartsWith("cycle_")) { $expectedCycleId = $expectedCycleId.Substring(6) }
+    throw "Unable to derive expected cycle id from filename: $($latest.Name)"
 }
 
 $stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss")
