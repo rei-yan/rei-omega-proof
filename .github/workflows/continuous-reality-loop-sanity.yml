@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - 'runtime/REI-Continuous-Reality-Guard-V1.ps1'
+      - 'runtime/REI-Reality-Sidecar-V1.ps1'
+      - 'runtime/REI-Continuous-Reality-Orchestrator-V1.ps1'
+      - 'runtime/REI-LocalModel-Reality-VNext.ps1'
       - 'runtime/Install-REI-Continuous-Reality-Loop-V1.ps1'
       - 'runtime/continuous-reality-contract-v1.json'
       - 'runtime/reality-evidence.example.json'
@@ -14,6 +17,9 @@ on:
       - rei-v193-reconcile
     paths:
       - 'runtime/REI-Continuous-Reality-Guard-V1.ps1'
+      - 'runtime/REI-Reality-Sidecar-V1.ps1'
+      - 'runtime/REI-Continuous-Reality-Orchestrator-V1.ps1'
+      - 'runtime/REI-LocalModel-Reality-VNext.ps1'
       - 'runtime/Install-REI-Continuous-Reality-Loop-V1.ps1'
       - 'runtime/continuous-reality-contract-v1.json'
       - 'runtime/reality-evidence.example.json'
@@ -37,6 +43,9 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $files = @(
             'runtime/REI-Continuous-Reality-Guard-V1.ps1',
+            'runtime/REI-Reality-Sidecar-V1.ps1',
+            'runtime/REI-Continuous-Reality-Orchestrator-V1.ps1',
+            'runtime/REI-LocalModel-Reality-VNext.ps1',
             'runtime/Install-REI-Continuous-Reality-Loop-V1.ps1'
           )
           foreach ($file in $files) {
@@ -95,18 +104,53 @@ jobs:
           if ([bool]$evidence.promotion_authority) { throw 'Example may not claim promotion authority' }
           Write-Host 'REALITY_EVIDENCE_SHAPE_PASS'
 
-      - name: Check safety phrases
+      - name: Exercise reality sidecar
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'rei-reality-sidecar-test'
+          $inbox = Join-Path $root 'inbox'
+          $state = Join-Path $root 'state'
+          $context = Join-Path $root 'context\REALITY_FEEDBACK_CONTEXT.md'
+          New-Item -ItemType Directory -Force -Path $inbox | Out-Null
+          @{
+            schema_version = 1
+            evidence_id = 'ci-observation-001'
+            observed_at_utc = '2026-09-05T04:00:00Z'
+            source_type = 'benchmark'
+            subject = 'bounded CI reality-sidecar fixture'
+            outcome = 'fixture outcome; data only'
+            provenance = 'github-actions synthetic fixture'
+            reality_validated = $false
+            promotion_authority = $false
+          } | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $inbox 'observation.json')
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'runtime/REI-Reality-Sidecar-V1.ps1' -Inbox $inbox -StateRoot $state -ContextPath $context
+          if ($LASTEXITCODE -ne 0) { throw "Sidecar fixture failed: $LASTEXITCODE" }
+          $latest = Get-Content (Join-Path $state 'latest.json') -Raw | ConvertFrom-Json
+          if ($latest.status -ne 'SIDECAR_READY') { throw 'Sidecar did not report SIDECAR_READY' }
+          if ([int]$latest.valid_artifacts -ne 1) { throw 'Sidecar did not ingest exactly one fixture' }
+          if ([bool]$latest.reality_validated) { throw 'Sidecar may not grant RealityValidated' }
+          if ([string]$latest.promotion -ne 'NO') { throw 'Sidecar may not grant promotion' }
+          $text = Get-Content $context -Raw
+          foreach ($needle in @('DATA_ONLY','UNVALIDATED_REALITY_FEEDBACK','INDEPENDENT_EXTERNAL_EVIDENCE: NOT_ESTABLISHED','PROMOTION_EFFECT: NONE')) {
+            if (-not $text.Contains($needle)) { throw "Reality context missing boundary: $needle" }
+          }
+          Write-Host 'REALITY_SIDECAR_FIXTURE_PASS'
+
+      - name: Check safety and binding phrases
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
           $guard = Get-Content 'runtime/REI-Continuous-Reality-Guard-V1.ps1' -Raw
-          $needles = @(
-            'canonical_write_permission=$false',
-            'reality_validated=$false',
-            "promotion='NO'",
-            "ascension='NO'"
-          )
-          foreach ($needle in $needles) {
+          foreach ($needle in @('canonical_write_permission=$false','reality_validated=$false',"promotion='NO'","ascension='NO'")) {
             if (-not $guard.Contains($needle)) { throw "Guard missing safety marker: $needle" }
+          }
+          $model = Get-Content 'runtime/REI-LocalModel-Reality-VNext.ps1' -Raw
+          foreach ($needle in @('reality_context_sha256','UNVALIDATED_REALITY_FEEDBACK','Canonical write permission: FALSE','RealityValidated: FALSE')) {
+            if (-not $model.Contains($needle)) { throw "Reality model missing marker: $needle" }
+          }
+          $installer = Get-Content 'runtime/Install-REI-Continuous-Reality-Loop-V1.ps1' -Raw
+          foreach ($needle in @('Reality sidecar/model SHA binding mismatch','reality_sidecar_bound_to_model','REI Continuous Reality Guard v1')) {
+            if (-not $installer.Contains($needle)) { throw "Installer missing binding marker: $needle" }
           }
           Write-Host 'CONTINUOUS_REALITY_LOOP_SANITY_PASS'
