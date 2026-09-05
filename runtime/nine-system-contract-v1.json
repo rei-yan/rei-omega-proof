@@ -5,6 +5,12 @@
   "candidate_pull_request": 28,
   "candidate_head_ref": "rei-v193-reconcile",
   "interface_map": "research/NINE_SYSTEM_INTERFACE_MAP_V1.json",
+  "interface_overlays": [
+    "research/NINE_SYSTEM_GOD_SOURCE_OVERLAY_V1.json"
+  ],
+  "candidate_extensions": {
+    "god_source_phase1": "CI_VERIFIED_EXTERNAL_BINDINGS_PENDING"
+  },
   "canonical_mainline_write_permission": false,
   "automatic_ascension_permission": false,
   "automatic_authority_expansion_permission": false,
