@@ -1,0 +1,33 @@
+name: DeathEye Omega Robustness Self-Falsification Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run robustness and self-falsification stack
+        run: |
+          python research/deatheye_omega_robustness_self_falsification_stack.py | tee /tmp/deatheye-robustness.out
+      - name: Assert bounded research ceilings
+        run: |
+          grep -q 'REPAIR_CROSS_REGIME_ROBUSTNESS_READY' /tmp/deatheye-robustness.out
+          grep -q 'ONE_WINDOW_REPAIR_SUCCESS_NOT_PERSISTENT_AUTHORITY' /tmp/deatheye-robustness.out
+          grep -q 'REPAIR_INTERFERENCE_GRAPH_READY' /tmp/deatheye-robustness.out
+          grep -q 'INDIVIDUAL_REPAIR_VALIDITY_NOT_COMPOSITION_SAFETY' /tmp/deatheye-robustness.out
+          grep -q 'DEATHEYE_SELF_FALSIFICATION_READY' /tmp/deatheye-robustness.out
+          grep -q 'FATAL_FALSE_NEGATIVE_RETIRES_DETECTOR' /tmp/deatheye-robustness.out
+          grep -q 'DETECTOR_PASS_NOT_FINAL_DETECTOR' /tmp/deatheye-robustness.out
+          grep -q 'DEATHEYE_OMEGA_ROBUSTNESS_SELF_FALSIFICATION_STACK_READY' /tmp/deatheye-robustness.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/deatheye-robustness.out
+          grep -q 'REAL_WORLD_ATTACK_AUTHORITY_ZERO' /tmp/deatheye-robustness.out

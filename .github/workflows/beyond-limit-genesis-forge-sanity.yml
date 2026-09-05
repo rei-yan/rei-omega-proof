@@ -1,0 +1,46 @@
+name: Beyond-Limit Genesis Forge Sanity
+
+on:
+  push:
+    branches: ["rei-reality-ascension-limit"]
+    paths:
+      - "research/BEYOND_LIMIT_GENESIS_FORGE.md"
+      - "research/beyond_limit_genesis_forge.py"
+      - "research/beyond_limit_genesis_forge_sanity.py"
+      - ".github/workflows/beyond-limit-genesis-forge-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/BEYOND_LIMIT_GENESIS_FORGE.md"
+      - "research/beyond_limit_genesis_forge.py"
+      - "research/beyond_limit_genesis_forge_sanity.py"
+      - ".github/workflows/beyond-limit-genesis-forge-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run finite digital-world forge
+        run: python3 research/beyond_limit_genesis_forge.py
+
+      - name: Run beyond-limit governance sanity
+        run: python3 research/beyond_limit_genesis_forge_sanity.py
+
+      - name: Assert research claim boundaries remain explicit
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'candidate research extension / not canonical' research/BEYOND_LIMIT_GENESIS_FORGE.md
+          grep -q 'InvincibleResearchProperty != NeverDefeated' research/BEYOND_LIMIT_GENESIS_FORGE.md
+          grep -q 'DigitalWorldGenesis != PhysicalWorldCreation' research/BEYOND_LIMIT_GENESIS_FORGE.md
+          grep -q 'G3-G13 PASS' research/BEYOND_LIMIT_GENESIS_FORGE.md
+          grep -q 'RealityVeto > REI' research/BEYOND_LIMIT_GENESIS_FORGE.md
+          grep -q 'HumanAuthorization' research/BEYOND_LIMIT_GENESIS_FORGE.md
+          grep -q 'Rollback' research/BEYOND_LIMIT_GENESIS_FORGE.md

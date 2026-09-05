@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "schema_id": "REI-GOD-SOURCE-RECEIPT/1.0",
+  "status": "CANDIDATE",
+  "required_fields": [
+    "receipt_id",
+    "source_id",
+    "source_kind",
+    "provider",
+    "model_family",
+    "model_version",
+    "task_scope",
+    "request_sha256",
+    "response_sha256",
+    "observed_at_utc",
+    "provenance_status",
+    "correlation_group",
+    "reliability_snapshot",
+    "cost_snapshot",
+    "latency_ms",
+    "authority_level",
+    "disagreement_set_id",
+    "downstream_targets"
+  ],
+  "authority_constraints": {
+    "authority_level_must_equal": "SOURCE_ONLY",
+    "may_set_reality_validated": false,
+    "may_grant_promotion": false,
+    "may_grant_ascension": false
+  },
+  "downstream_targets_allowed": [
+    "God Wheel",
+    "Shadow",
+    "Observer",
+    "God Proof",
+    "God Line",
+    "God Seat"
+  ],
+  "fail_closed_on": [
+    "MISSING_SOURCE_IDENTITY",
+    "MISSING_MODEL_VERSION",
+    "MISSING_PROVENANCE",
+    "HASH_MISMATCH",
+    "SILENT_SOURCE_SUBSTITUTION",
+    "UNKNOWN_CORRELATION_GROUP",
+    "AUTHORITY_ESCALATION"
+  ]
+}

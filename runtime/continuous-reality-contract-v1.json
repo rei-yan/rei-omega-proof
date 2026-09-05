@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "contract_id": "REI-CRL/1.0",
+  "candidate_pull_request": 28,
+  "candidate_head_ref": "rei-v193-reconcile",
+  "expected_cycle_minutes": 60,
+  "stale_after_minutes": 95,
+  "guard_interval_minutes": 10,
+  "recovery_cooldown_minutes": 15,
+  "required_components": [
+    "god-wheel",
+    "local-model",
+    "shadow",
+    "observer",
+    "bridge",
+    "ledger",
+    "watchdog",
+    "recovery",
+    "god-line"
+  ],
+  "required_tasks": [
+    "REI Full Pipeline v1.9.1",
+    "REI-Local-Watchdog",
+    "REI Local Self Heal v1",
+    "REI Safe Auto Update v1.9.3"
+  ],
+  "stability_windows_hours": [24, 72, 168],
+  "stability_72h": {
+    "minimum_coverage_hours": 71.5,
+    "minimum_health_sample_ratio": 0.99,
+    "minimum_unique_successful_cycles": 60,
+    "maximum_unknown_hold_samples": 0,
+    "maximum_canonical_touch_samples": 0
+  },
+  "reality_feedback": {
+    "inbox": "C:\\REI-Shadow\\reality-inbox",
+    "required_fields": [
+      "evidence_id",
+      "observed_at_utc",
+      "source_type",
+      "subject",
+      "outcome",
+      "provenance"
+    ],
+    "valid_source_types": [
+      "human",
+      "external_system",
+      "external_model",
+      "benchmark",
+      "prospective_trial"
+    ]
+  },
+  "authority": {
+    "canonical_write_permission": false,
+    "automatic_promotion_permission": false,
+    "automatic_reality_validation_permission": false,
+    "automatic_ascension_permission": false,
+    "allowed_defensive_actions": [
+      "observe",
+      "record",
+      "enable_known_task",
+      "start_known_task",
+      "request_self_heal",
+      "hold"
+    ]
+  },
+  "hard_rules": [
+    "NoRealityEvidenceNoPromotion",
+    "FreshHostEvidenceRequired",
+    "GreenCINotHostHealth",
+    "SingleMutatingScheduler",
+    "UnknownFailureMeansHold",
+    "CanonicalMainlineMustRemainUntouched",
+    "RealityFeedbackDoesNotEqualRealityValidation"
+  ]
+}

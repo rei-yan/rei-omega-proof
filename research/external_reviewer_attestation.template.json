@@ -1,0 +1,19 @@
+{
+  "template_only": true,
+  "review_id": null,
+  "packet_hash": null,
+  "reviewed_candidate_hash": null,
+  "reviewed_adapter_hash": null,
+  "evaluator_id": null,
+  "evaluator_provenance": null,
+  "independence_attested": null,
+  "candidate_operator": null,
+  "conflict_of_interest_declared": null,
+  "frozen_contract_accepted": null,
+  "decision": null,
+  "rationale": null,
+  "signature_reference": null,
+  "issued_at": null,
+  "expires_at": null,
+  "synthetic_fixture": false
+}

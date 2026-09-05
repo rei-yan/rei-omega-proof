@@ -1,0 +1,43 @@
+name: Evidence Topology Revalidation Sanity
+
+on:
+  push:
+    branches: ["rei-reality-ascension-limit"]
+    paths:
+      - "research/EVIDENCE_TOPOLOGY_REVALIDATION.md"
+      - "research/evidence_topology_revalidation_sanity.py"
+      - ".github/workflows/evidence-topology-revalidation-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "research/EVIDENCE_TOPOLOGY_REVALIDATION.md"
+      - "research/evidence_topology_revalidation_sanity.py"
+      - ".github/workflows/evidence-topology-revalidation-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run evidence topology sanity
+        run: python3 research/evidence_topology_revalidation_sanity.py
+
+      - name: Assert claim boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'candidate research extension / not canonical' research/EVIDENCE_TOPOLOGY_REVALIDATION.md
+          grep -q 'EvidenceScope >= ClaimScope' research/EVIDENCE_TOPOLOGY_REVALIDATION.md
+          grep -q 'NoPermanentCentralEvaluator' research/EVIDENCE_TOPOLOGY_REVALIDATION.md
+          grep -q 'G3 Independent Replication = OPEN' research/EVIDENCE_TOPOLOGY_REVALIDATION.md
+          grep -q 'G13 Scale and Reversibility = OPEN' research/EVIDENCE_TOPOLOGY_REVALIDATION.md
+          grep -q 'NoHistoricalPassRewriting' research/EVIDENCE_TOPOLOGY_REVALIDATION.md
+          grep -q 'NoDefeatDeletion' research/EVIDENCE_TOPOLOGY_REVALIDATION.md
+          ! grep -q '^WorldBest = VERIFIED$' research/EVIDENCE_TOPOLOGY_REVALIDATION.md
+          ! grep -q '^WorldUnique = VERIFIED$' research/EVIDENCE_TOPOLOGY_REVALIDATION.md

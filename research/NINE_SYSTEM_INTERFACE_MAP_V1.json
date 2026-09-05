@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "contract_id": "REI-NINE-INTERFACE/1.0",
+  "status": "MAPPED_CANDIDATE_NOT_ASCENDED",
+  "candidate_pull_request": 28,
+  "candidate_head_ref": "rei-v193-reconcile",
+  "mapping_rule": "Mapped != Implemented != RealityValidated != Ascended",
+  "required_interface_fields": ["input", "state", "decision", "output", "failure", "evidence"],
+  "systems": [
+    {
+      "id": 1,
+      "name_zh": "神核",
+      "name_en": "God Core",
+      "maturity": "ESTABLISHED_GOVERNANCE",
+      "interface": {
+        "input": "claims, evidence scope, constitutional state, authority requests, candidate transitions",
+        "state": "truth/evidence precedence, authority bounds, claim scope, revocation dependencies, failure memory",
+        "decision": "allow bounded consideration, narrow claim, veto authority expansion, abstain, require stronger evidence",
+        "output": "constitutional constraints, admissible claim scope, vetoes, verification burden",
+        "failure": "self-certification, unsupported claim expansion, authority expansion, reality override, sacred-final-form claim",
+        "evidence": "claim/evidence graph, constitutional invariants, external-gate state, preserved counterevidence"
+      },
+      "anchors": [
+        "research/REALITY_ASCENSION_LIMIT.md",
+        "research/CLAIM_SCOPE_EVIDENCE_GRAPH.md",
+        "research/NINE_SYSTEM_ARCHITECTURE_V1.md"
+      ],
+      "promotion_blockers": []
+    },
+    {
+      "id": 2,
+      "name_zh": "神轮",
+      "name_en": "God Wheel",
+      "maturity": "ESTABLISHED_CANDIDATE_RUNTIME",
+      "interface": {
+        "input": "bounded candidate hypotheses, local-model proposals, RDDO telemetry, Shadow challenges, prior failure memory",
+        "state": "live hypothesis set, convergence state, uncertainty, challenge history, candidate lineage",
+        "decision": "retain plurality, challenge, refine, retire, abstain, forward candidate to governance",
+        "output": "bounded candidate set, challenge priorities, observer payloads, candidate decision traces",
+        "failure": "premature convergence, single-observer dominance, hidden failure deletion, unbounded recursion, unsupported promotion",
+        "evidence": "Shadow ledger, wheel inbox, RDDO diagnostics, observer lineage, cycle provenance"
+      },
+      "anchors": [
+        "research/GOD_WHEEL_FUSION_V1_9_4_RDDO.md",
+        "research/rddo_reference.py",
+        "runtime/rei_cycle_v193.ps1"
+      ],
+      "promotion_blockers": ["Fresh Windows host deployment of every new observer extension remains separately evidential"]
+    },
+    {
+      "id": 3,
+      "name_zh": "神线",
+      "name_en": "God Line",
+      "maturity": "ESTABLISHED_RUNTIME_TRANSPORT",
+      "interface": {
+        "input": "model outputs, observer state, evidence provenance, bridge payloads, operational reality feedback",
+        "state": "SHA-bound lineage, compatibility epoch, bridge/ledger state, reality-feedback provenance",
+        "decision": "transport, correlate, preserve conflict, reject malformed lineage, fail closed on missing provenance",
+        "output": "traceable cross-component packets, append-only records, synchronized context, God Line health state",
+        "failure": "lineage loss, stale context, schema mismatch, evidence duplication treated as independence, canonical touch",
+        "evidence": "Bridge records, Ledger records, runtime epoch, Continuous Reality history, source hashes"
+      },
+      "anchors": [
+        "research/CONTINUOUS_REALITY_LOOP_V1.md",
+        "runtime/continuous-reality-contract-v1.json",
+        "runtime/rei_cycle_v193.ps1"
+      ],
+      "promotion_blockers": ["Operational reality feedback remains distinct from independently admissible external validation"]
+    },
+    {
+      "id": 4,
+      "name_zh": "神座",
+      "name_en": "God Seat",
+      "maturity": "PARTIAL_GOVERNANCE_COMPOSITION",
+      "interface": {
+        "input": "observer verdicts, runtime health, CI/proof state, rollback readiness, authority flags, candidate SHA",
+        "state": "current approved runtime, checkpoint, gate status, watchdog/recovery state, authority ceiling",
+        "decision": "hold, veto, canary, deploy candidate runtime, rollback, request recovery, defer promotion",
+        "output": "governance verdict, deployment/rollback status, preserved checkpoint, audit reason",
+        "failure": "bypass of veto, missing rollback, automatic authority growth, promotion from green CI alone, unknown failure rewritten as success",
+        "evidence": "safe-update state, checkpoint artifacts, first-cycle verification, watchdog/recovery evidence, CI status"
+      },
+      "anchors": [
+        "runtime/Safe-AutoUpdate-V193.ps1",
+        "runtime/continuous-reality-contract-v1.json",
+        "runtime/rei_cycle_v193.ps1"
+      ],
+      "promotion_blockers": ["Global cross-system arbitration is composed from existing gates but not yet a single independently verified God Seat runtime service"]
+    },
+    {
+      "id": 5,
+      "name_zh": "神域",
+      "name_en": "God Domain",
+      "maturity": "PARTIAL_RESEARCH_EXECUTABLE",
+      "interface": {
+        "input": "domain-scoped tasks, domain evidence, observer maps, transfer candidates, claim scope",
+        "state": "domain identity, law/representation assumptions, local performance, transfer history, unresolved classes",
+        "decision": "specialize, transfer cautiously, reject false universalization, abstain on unsupported domain, request new evidence",
+        "output": "domain-bounded models/claims, transfer candidates, counterexamples, scoped uncertainty",
+        "failure": "local success generalized globally, observer artifact, false transfer, domain identity loss, scope inflation",
+        "evidence": "domain-scoped heldout results, evidence graph, transfer failures, world/observer provenance"
+      },
+      "anchors": [
+        "research/PLURIVERSAL_EVA_CONVERGENCE_KERNEL.md",
+        "research/CLAIM_SCOPE_EVIDENCE_GRAPH.md"
+      ],
+      "promotion_blockers": ["Broad real-domain transfer remains externally unvalidated and must stay scoped"]
+    },
+    {
+      "id": 6,
+      "name_zh": "神界",
+      "name_en": "God Realm",
+      "maturity": "PARTIAL_RESEARCH_EXECUTABLE",
+      "interface": {
+        "input": "multiple lineages, evaluators, agents, worlds, evidence packets, frozen assignments",
+        "state": "lineage graph, evaluator assignment graph, Pareto frontier, world identities, conflict state",
+        "decision": "coordinate, challenge, preserve plurality, quorum/abstain, fork, propose reversible merge, retire",
+        "output": "multi-lineage verdicts, conflict records, preserved defeats, reversible coordination proposals",
+        "failure": "permanent central evaluator, self-evaluation, role collapse, identity erasure, irreversible merge, fake external independence",
+        "evidence": "lineage histories, evaluator packets, frozen schedules, Pareto results, Failure Graveyard entries"
+      },
+      "anchors": [
+        "research/MULTILINEAGE_COEVOLUTION_KERNEL.md",
+        "research/SOVEREIGNLESS_EPISTEMIC_ECOLOGY.md",
+        "research/PLURIVERSAL_EVA_CONVERGENCE_KERNEL.md"
+      ],
+      "promotion_blockers": ["Current evaluator diversity is internally/synthetically structured and does not establish genuine third-party independence"]
+    },
+    {
+      "id": 7,
+      "name_zh": "神源",
+      "name_en": "God Source",
+      "maturity": "PARTIAL_LOCAL_SOURCE_ONLY",
+      "interface": {
+        "input": "local model, future GPT/Claude outputs, tools, datasets, human/external-system observations, source provenance",
+        "state": "source identity, model/version, availability, provenance, trust scope, known failure modes, budget class",
+        "decision": "route source by task, preserve disagreement, downweight unreliable source, request independent source, abstain",
+        "output": "source-tagged candidate evidence, reliability metadata, disagreement records, routing recommendation",
+        "failure": "source confidence converted to authority, source identity loss, correlated sources counted as independent, silent model substitution",
+        "evidence": "source/version hashes, provenance records, disagreement history, source-specific failure memory, budget records"
+      },
+      "anchors": [
+        "runtime/REI-LocalModel-Reality-VNext.ps1",
+        "runtime/continuous-reality-contract-v1.json"
+      ],
+      "promotion_blockers": [
+        "Unified GPT/Claude/local source registry is not yet implemented",
+        "GPT/Claude disagreement arbitration is not yet a synchronized runtime capability",
+        "External model outputs do not constitute independent truth by source label alone"
+      ]
+    },
+    {
+      "id": 8,
+      "name_zh": "无相终式",
+      "name_en": "Wuxiang Final Form",
+      "maturity": "PARTIAL_META_ARCHITECTURE",
+      "interface": {
+        "input": "incumbent architecture, failure history, complexity debt, candidate meta-level replacements, frozen evaluation criteria",
+        "state": "current meta-stack, lineage, termination bounds, constitution hash, complexity debt, rollback route",
+        "decision": "retain, compress, replace, split, merge, retire, propose finite successor, abstain beyond verified horizon",
+        "output": "bounded structural successor proposal, preserved lineage, rollback plan, explicit unresolved horizon",
+        "failure": "unbounded self-modification, infinite regress, sacred final form, complexity growth without repayment, authority expansion",
+        "evidence": "frozen heldout comparison, termination checks, lineage traceability, complexity accounting, rollback evidence"
+      },
+      "anchors": [
+        "research/BOUNDLESS_HORIZON_KERNEL.md",
+        "research/REALITY_ASCENSION_LIMIT.md"
+      ],
+      "promotion_blockers": ["Open-ended structural recomposition remains a sequence of finite verified successors, not an unlimited autonomous self-modifier"]
+    },
+    {
+      "id": 9,
+      "name_zh": "神证",
+      "name_en": "God Proof",
+      "maturity": "PARTIAL_INTERNAL_PROOF_EXTERNAL_OPEN",
+      "interface": {
+        "input": "candidate change, proof obligations, regression suite, comparative protocol, runtime evidence, external evidence when required",
+        "state": "gate results, counterevidence, failure memory, claim scope, external-gate status, verification burden",
+        "decision": "internal-ready, reject, abstain, require external test, require revalidation, forbid ascension",
+        "output": "scoped proof verdict, blockers, preserved failures, admissible promotion recommendation without self-promotion authority",
+        "failure": "internal CI renamed as external truth, benchmark overclaim, hidden competitor removal, missing external replication, self-certification",
+        "evidence": "Lean kernel replay, sanity/regression CI, comparative arena records, prospective falsification, external gate evidence"
+      },
+      "anchors": [
+        ".github/workflows/g2-proof.yml",
+        "research/COMPARATIVE_FRONTIER_ARENA.md",
+        "research/REALITY_ASCENSION_LIMIT.md"
+      ],
+      "promotion_blockers": [
+        "Independent external validation remains open",
+        "G3/G4/G5/G6 and later external gates are not closed by internal CI",
+        "God Proof may recommend but may not self-grant canonical promotion or ascension"
+      ]
+    }
+  ]
+}

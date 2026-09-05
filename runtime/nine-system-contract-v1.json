@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "contract_id": "REI-NINE/1.0",
+  "status": "CANDIDATE_ASCENSION_PENDING",
+  "candidate_pull_request": 28,
+  "candidate_head_ref": "rei-v193-reconcile",
+  "interface_map": "research/NINE_SYSTEM_INTERFACE_MAP_V1.json",
+  "interface_overlays": [
+    "research/NINE_SYSTEM_GOD_SOURCE_OVERLAY_V1.json"
+  ],
+  "candidate_extensions": {
+    "god_source_phase1": "CI_VERIFIED_EXTERNAL_BINDINGS_PENDING"
+  },
+  "canonical_mainline_write_permission": false,
+  "automatic_ascension_permission": false,
+  "automatic_authority_expansion_permission": false,
+  "existing_runtime_must_remain_unchanged": true,
+  "systems": [
+    {"id": 1, "name_zh": "神核", "name_en": "God Core", "role": "constitutional invariants and authority bounds"},
+    {"id": 2, "name_zh": "神轮", "name_en": "God Wheel", "role": "bounded recursive evolution and candidate competition"},
+    {"id": 3, "name_zh": "神线", "name_en": "God Line", "role": "traceable model-tool-evidence-reality transport"},
+    {"id": 4, "name_zh": "神座", "name_en": "God Seat", "role": "global governance and arbitration"},
+    {"id": 5, "name_zh": "神域", "name_en": "God Domain", "role": "bounded domain specialization and transfer"},
+    {"id": 6, "name_zh": "神界", "name_en": "God Realm", "role": "multi-lineage and multi-agent coordination"},
+    {"id": 7, "name_zh": "神源", "name_en": "God Source", "role": "replaceable intelligence-source management"},
+    {"id": 8, "name_zh": "无相终式", "name_en": "Wuxiang Final Form", "role": "evidence-bounded structural recomposition"},
+    {"id": 9, "name_zh": "神证", "name_en": "God Proof", "role": "independent proof of upgrade value and non-regression"}
+  ],
+  "required_interface_fields": ["input", "state", "decision", "output", "failure", "evidence"],
+  "ascension_requirements": {
+    "nine_of_nine_responsibilities_defined": true,
+    "nine_of_nine_interfaces_mapped": true,
+    "no_authority_expansion": true,
+    "rollback_available": true,
+    "ledger_traceability": true,
+    "canonical_mainline_touched": false,
+    "existing_runtime_regression": false,
+    "god_proof_independent_check": "PENDING",
+    "reality_validated": false,
+    "ascension_granted": false
+  },
+  "hard_rules": [
+    "NineSystemDefinitionDoesNotEqualAscension",
+    "ArchitectureNamingDoesNotEqualCapabilityGain",
+    "CapabilityGainDoesNotEqualRealityValidation",
+    "SourcePowerDoesNotEqualSourceAuthority",
+    "NoSacredFinalForm",
+    "RealityVetoRemainsAbsolute",
+    "MoreSystemsDoesNotEqualMoreIntelligence",
+    "CandidateArchitectureMayBeRejected",
+    "MappedDoesNotEqualImplemented"
+  ]
+}

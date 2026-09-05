@@ -1,0 +1,45 @@
+{
+  "status": "CANDIDATE_PROTOCOL_EXAMPLE",
+  "arena": {
+    "arena_id": "CLEAN_ROOM_SUCCESSOR_TOURNAMENT_SYNTHETIC_V1",
+    "metric_id": "synthetic_loss",
+    "metric_direction": "LOWER_IS_BETTER",
+    "compute_budget": 100,
+    "wallclock_budget": 100,
+    "tool_policy": "FROZEN_TOOLS_V1",
+    "human_assistance_policy": "NONE",
+    "retry_policy": "MAX_1_RETRY",
+    "abstention_policy": "ALLOWED_AND_PRESERVED",
+    "tie_tolerance": 0.000001
+  },
+  "entrants": [
+    {
+      "candidate_id": "SUCCESSOR-A",
+      "lineage_label": "direct-rei-lineage",
+      "starting_authority": 0,
+      "certification": "UNVERIFIED"
+    },
+    {
+      "candidate_id": "SUCCESSOR-B",
+      "lineage_label": "alternative-clean-room-lineage",
+      "starting_authority": 0,
+      "certification": "UNVERIFIED"
+    },
+    {
+      "candidate_id": "SUCCESSOR-C",
+      "lineage_label": "independent-clean-room-lineage",
+      "starting_authority": 0,
+      "certification": "UNVERIFIED"
+    }
+  ],
+  "allowed_outcomes": [
+    "SCOPED_SUCCESSOR_ADVANTAGE",
+    "TIE_OR_INCONCLUSIVE",
+    "NO_ELIGIBLE_SUCCESSOR",
+    "INVALID_TOURNAMENT_PROTOCOL"
+  ],
+  "external_gates_closed": [],
+  "canonical_promotion": false,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0
+}

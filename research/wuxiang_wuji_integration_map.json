@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "status": "CANDIDATE_NOT_CANONICAL",
+  "integration_name": "Wuxiang-Wuji Unified Integration Kernel",
+  "candidate_extension_count_before_integration": 27,
+  "candidate_extension_count_with_integration": 28,
+  "core_loop": [
+    "Partition",
+    "Observe",
+    "Dynamics",
+    "Predict",
+    "SelectBoundedActionCandidate",
+    "Evaluate",
+    "Correct"
+  ],
+  "state_vector": [
+    "Omega_raw_problem_space",
+    "Phi_structured_representation",
+    "Observations",
+    "Models",
+    "HypothesisEcology",
+    "EvidenceGraph",
+    "Uncertainty",
+    "Authority",
+    "RecoveryState",
+    "FailureMemory",
+    "ExternalGateState"
+  ],
+  "lanes": {
+    "structural_genesis": [
+      "Reality Ascension Limit",
+      "Beyond-Limit Genesis Forge",
+      "Representation Rupture Genesis",
+      "Ontology Rupture / Causal Grammar Genesis / Multi-World Transfer",
+      "Unknown Unknown Genesis",
+      "Discovery Genesis Stack"
+    ],
+    "evidence": [
+      "Claim Scope Lattice & Evidence Graph",
+      "Evidence Topology & Revalidation Spine"
+    ],
+    "falsification": [
+      "Regime-Adversarial Multiverse Arena",
+      "Wuji Adversarial Epistemic Crucible",
+      "Comparative Frontier Arena"
+    ],
+    "external_reality": [
+      "External Discovery Bridge",
+      "G4/G5 External Challenge Package",
+      "External Reality Trial Kit",
+      "External Witness Network",
+      "Temporal Regime Crucible",
+      "Externally Witnessed Succession",
+      "Frontier Roster Freeze",
+      "Frontier Search Coverage",
+      "Frontier Rechallenge Protocol",
+      "Real Frontier Roster Population v0 + Cross-Domain Comparability Guard",
+      "Frontier Arena Eligibility Contract",
+      "Scientific Hypothesis Arena Adapter Forge",
+      "External Scientific Eligibility Review",
+      "External Reviewer Handoff Kit"
+    ],
+    "domain_operators": [
+      "Equivalent Photon Flux Operator",
+      "Weyl-Wigner Phase-Space Operator"
+    ],
+    "integration": [
+      "Wuxiang-Wuji Unified Integration Kernel"
+    ]
+  },
+  "domain_routing": {
+    "ultraperipheral_collision": [
+      "Equivalent Photon Flux Operator"
+    ],
+    "quantum_phase_space": [
+      "Weyl-Wigner Phase-Space Operator"
+    ],
+    "general_reasoning": []
+  },
+  "hard_rules": [
+    "EvidenceScope >= ClaimScope",
+    "CapabilityUp => VerificationBurdenUpOrSufficientCeiling",
+    "AdversarialPowerUp => RealWorldFreedomDownOrBounded",
+    "NoScoreOverridesHardGate",
+    "FailureMemoryPreserved",
+    "DomainOperatorNotGlobalCoreLaw",
+    "InternalCI != ExternalGatePass",
+    "CurrentUnifiedKernel != FinalTruth",
+    "RealWorldAttackAuthority = 0",
+    "CanonicalPromotionAuthority = 0"
+  ],
+  "internal_ceiling": "WUXIANG_WUJI_UNIFIED_INTEGRATION_READY",
+  "external_gates": {
+    "G3": "OPEN",
+    "G4": "OPEN",
+    "G5": "OPEN",
+    "G6": "OPEN",
+    "G7": "OPEN",
+    "G8": "OPEN",
+    "G9": "OPEN",
+    "G10": "OPEN",
+    "G11": "OPEN",
+    "G12": "OPEN",
+    "G13": "OPEN",
+    "G_infinity": "ROLLING_PROCESS_NOT_PERMANENT_PASS"
+  },
+  "authority": {
+    "integration": 0,
+    "formula": 0,
+    "representation": 0,
+    "experiment": 0,
+    "deployment": 0,
+    "real_world_attack": 0,
+    "real_world_actuation": 0,
+    "canonical_promotion": 0
+  }
+}

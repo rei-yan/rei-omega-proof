@@ -1,0 +1,38 @@
+{
+  "schema_version": "rddo-runtime-contract/1.0",
+  "candidate_pull_request": 28,
+  "candidate_head_ref": "rei-v193-reconcile",
+  "observer_name": "Recursive Divided-Difference Observer",
+  "observer_id": "rddo",
+  "runtime_asset": "C:\\REI-Shadow\\rddo_reference.py",
+  "source_asset": "research/rddo_reference.py",
+  "observer_only": true,
+  "promotion_capability": false,
+  "reality_validation_capability": false,
+  "max_recursive_order": 8,
+  "fail_closed_on": [
+    "nonfinite_input",
+    "duplicate_or_near_duplicate_coordinate",
+    "invalid_denominator",
+    "missing_source_asset",
+    "python_compile_failure",
+    "observer_authority_expansion"
+  ],
+  "synchronized_surfaces": [
+    "god-wheel",
+    "local-model",
+    "shadow",
+    "observer",
+    "bridge",
+    "ledger",
+    "watchdog",
+    "recovery",
+    "god-line",
+    "formal-lean",
+    "ci",
+    "handoff"
+  ],
+  "provenance_rule": "Derived divided differences from one source series remain one provenance family and are not independent evidence.",
+  "authority_rule": "RDDO telemetry may veto or raise verification burden but cannot grant canonical promotion, RealityValidated, Ascension, or real-world actuation.",
+  "deployment_rule": "Repository presence alone does not establish host deployment; exact source SHA, successful local compile/self-test, state attestation, and fresh runtime compatibility evidence are required."
+}

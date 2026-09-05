@@ -1,0 +1,21 @@
+{
+  "status": "DEATHEYE_OMEGA_CONCENTRATED_EVOLUTION_STACK_READY",
+  "layer_39": "DEATHEYE_OMEGA_HYPERGRAPH_CUTSET_READY",
+  "layer_40": "COUNTERFACTUAL_REPAIR_MINIMALITY_READY",
+  "layer_41": "REPAIR_TOURNAMENT_READY",
+  "minimal_fatal_cutsets": [
+    ["CONSTITUTION_SCORE_OVERRIDE_BYPASS"],
+    ["DISSENT_DELETION", "DYNASTIC_PRIVILEGE"],
+    ["PROVENANCE_LOSS", "RECOVERY_LOSS"]
+  ],
+  "repair_tournament": {
+    "status": "REPAIR_WINNER_SELECTED",
+    "winner": "REPAIR-B"
+  },
+  "no_eligible_fixture": "NO_ELIGIBLE_REPAIR",
+  "external_gates_closed": [],
+  "canonical_promotion": false,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

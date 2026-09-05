@@ -1,0 +1,26 @@
+{
+  "capsule_id": "REI-REVIEWER-REPRO-CAPSULE-SYNTHETIC-V1",
+  "candidate_commit_sha": "764e83bc9162e9621330d2e0140f5c258b3cbb5f",
+  "review_request_hash": "a399577a875a4c05df7030b90dd75d3d413e28628cfdca882bb34df0ecd5ac75",
+  "runtime": "python-3.x-frozen-by-reviewer",
+  "platform": "declared-posix-compatible",
+  "architecture": "declared-amd64-compatible",
+  "dependency_lock_hash": "81059fe6210ccee4e3349c0f34c12d180f995150128a913d63b65b7937c6b152",
+  "entrypoint": "research/reviewer_reproducibility_capsule.py",
+  "command": "python research/reviewer_reproducibility_capsule.py",
+  "seed": 20260809,
+  "environment_allowlist_hash": "5093e7a8c7aca31f9731ba52b78fae03a552e59c3dfefa1fd3e5b9bf6f799a71",
+  "network_policy": "DENY",
+  "input_hashes": [
+    "dc32c60b88d31984495abe796703593851797d63b23b9beed68be354a7609f98",
+    "b44c575757bb2652fe18a80d189dbc6f649f46a30edcbc9ddf7dbea025cbd0f9"
+  ],
+  "output_schema_hash": "6c3ef6633c05ea882b2d8210074b867ffa0d683938f5c2a338ca4ad01e7ebb32",
+  "timeout_seconds": 60,
+  "nondeterminism_budget": 0.0,
+  "expected_internal_output_hash": "c5751c3bf6d45f8226bdcc0b1d6a643114c99949608a120679d933c576d59bc7",
+  "root_constitution_hash": "2bf1102bbd7af6de838eeeb4c3aceccbcdee79bdeb23f3504c6149aabfc2eda8",
+  "meta_evolution_record_hash": "4e18179d3fe4f7abee2ba4e0548223463fc0f9d8fcd4c3409883bfcb8141510f",
+  "witness_state": "AWAITING_INDEPENDENT_REPLAY",
+  "external_gates_closed": []
+}

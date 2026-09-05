@@ -1,0 +1,31 @@
+name: Frontier Rechallenge Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/FRONTIER_RECHALLENGE_PROTOCOL.md'
+      - 'research/frontier_rechallenge_protocol.py'
+      - '.github/workflows/frontier-rechallenge-sanity.yml'
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run frontier rechallenge sanity
+        run: python research/frontier_rechallenge_protocol.py
+      - name: Assert rechallenge cannot self-pass G6
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          d = json.loads(subprocess.check_output(['python','research/frontier_rechallenge_protocol.py'], text=True))
+          assert d['protocol_status'] == 'FRONTIER_RECHALLENGE_PROTOCOL_READY'
+          assert d['g6'] == 'OPEN'
+          assert d['world_best'] == 'UNVERIFIED'
+          assert d['world_unique'] == 'UNVERIFIED'
+          assert d['authority'] == 0
+          assert d['canonical'] is False
+          PY

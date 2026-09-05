@@ -1,0 +1,45 @@
+name: DeathEye Omega Convergence Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run DeathEye Omega convergence kernel
+        run: python research/deatheye_omega_convergence_kernel.py
+
+      - name: Assert convergence does not aggregate authority
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'research')
+          from deatheye_omega_convergence_kernel import run_convergence
+
+          result = run_convergence()
+          assert result['status'] == 'DEATHEYE_OMEGA_CONVERGENCE_READY'
+          assert result['minimal_fatal_cut']['cut_size'] == 1
+          assert result['minimal_fatal_cut']['layer'] == 'CONSTITUTION'
+          assert result['capability_aggregation'] is True
+          assert result['authority_aggregation'] is False
+          assert result['external_gates_closed'] == []
+          assert result['canonical_promotion'] is False
+          assert result['real_world_attack_authority'] == 0
+          assert result['real_world_actuation_authority'] == 0
+          print('CONVERGENCE_WITHOUT_AUTHORITY_EXPANSION')
+          PY
