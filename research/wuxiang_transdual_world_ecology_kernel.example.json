@@ -1,0 +1,31 @@
+{
+  "status": "WUXIANG_TRANSDUAL_WORLD_ECOLOGY_KERNEL_READY",
+  "layers": {
+    "81": "MULTI_WORLD_ECOLOGY_READY",
+    "82": "WORLD_FUSION_INTEGRITY_GATE_READY",
+    "83": "WORLD_FISSION_OPERATOR_READY",
+    "84": "CROSS_ONTOLOGY_TRANSLATION_LOSS_ACCOUNTING_READY",
+    "85": "META_GENESIS_RULE_EVOLUTION_READY",
+    "86": "META_EXTINCTION_RULE_EVOLUTION_READY",
+    "87": "LIFECYCLE_OPERATOR_PLURALITY_READY",
+    "88": "WUXIANG_TRANSDUAL_WORLD_ECOLOGY_KERNEL_READY"
+  },
+  "laws": [
+    "NoUniversalWorldChampionByDefault",
+    "FusionCannotEraseContradiction",
+    "FissionCannotEraseParentFailure",
+    "TranslationLossMustBeVisible",
+    "GenesisRuleCanBeRetired",
+    "ExtinctionRuleCanBeRetired",
+    "GenesisExtinctionBinaryIsNotSacred",
+    "RealityVetoSurvivesEveryLifecycleOperator"
+  ],
+  "external_state": "AWAITING_REAL_EXTERNAL_EVIDENCE",
+  "external_gates_closed": [],
+  "canonical_promotion": false,
+  "physical_world_creation_authority": 0,
+  "physical_world_destruction_authority": 0,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

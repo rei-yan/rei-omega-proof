@@ -1,0 +1,35 @@
+name: Reviewer Reproducibility Capsule Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/REVIEWER_REPRODUCIBILITY_CAPSULE.md'
+      - 'research/reviewer_reproducibility_capsule.py'
+      - 'research/reviewer_reproducibility_capsule.example.json'
+      - '.github/workflows/reviewer-reproducibility-capsule-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run reviewer reproducibility capsule sanity
+        run: python research/reviewer_reproducibility_capsule.py
+      - name: Verify example JSON parses and remains externally open
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('research/reviewer_reproducibility_capsule.example.json').read_text())
+          assert data['witness_state'] == 'AWAITING_INDEPENDENT_REPLAY'
+          assert data['external_gates_closed'] == []
+          assert data['network_policy'] == 'DENY'
+          print('REVIEWER_REPRODUCIBILITY_EXAMPLE_VALID')
+          PY

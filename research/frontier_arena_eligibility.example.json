@@ -1,0 +1,41 @@
+{
+  "status": "FRONTIER_ARENA_ELIGIBILITY_CONTRACT_READY",
+  "g6": "OPEN",
+  "world_best": "UNVERIFIED",
+  "world_unique": "UNVERIFIED",
+  "real_world_actuation_authority": 0,
+  "arenas": [
+    {
+      "arena_id": "SCIENTIFIC_HYPOTHESIS_AND_DISCOVERY",
+      "rei_status": "NOT_YET_ELIGIBLE",
+      "missing": ["frozen_external_task_interface", "source_access_policy", "submission_schema", "budget_envelope", "hidden_evidence_procedure", "independent_scoring_contract"]
+    },
+    {
+      "arena_id": "ALGORITHM_DISCOVERY_AND_EVOLUTION",
+      "rei_status": "NOT_ELIGIBLE",
+      "missing": ["general_program_evolution_interface", "executable_evaluator_contract", "budget_normalization"]
+    },
+    {
+      "arena_id": "WORLD_MODEL_AND_INTERACTIVE_SIMULATION",
+      "rei_status": "NOT_ELIGIBLE",
+      "missing": ["real_time_interactive_generation_interface", "visual_output_parity", "temporal_control_parity"]
+    },
+    {
+      "arena_id": "FORMAL_THEOREM_PROVING",
+      "rei_status": "NOT_ELIGIBLE_AS_GENERAL_PROVER",
+      "missing": ["external_theorem_input_interface", "general_proof_search_policy", "benchmark_submission_adapter"]
+    },
+    {
+      "arena_id": "CAUSAL_DISCOVERY",
+      "rei_status": "NOT_YET_ELIGIBLE",
+      "missing": ["benchmark_compatible_graph_output", "external_dataset_interface", "frozen_causal_metric_contract"]
+    }
+  ],
+  "hard_rules": {
+    "has_related_module_is_not_eligibility": true,
+    "adapter_must_freeze_before_hidden_eval": true,
+    "uncounted_human_assistance_is_invalid": true,
+    "uncounted_tool_access_is_invalid": true,
+    "eligibility_is_scoped_and_time_bounded": true
+  }
+}

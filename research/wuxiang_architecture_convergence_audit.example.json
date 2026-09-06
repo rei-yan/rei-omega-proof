@@ -1,0 +1,23 @@
+{
+  "protocol": "WUXIANG_ARCHITECTURE_CONVERGENCE_AUDIT",
+  "audited_candidate_extensions": 112,
+  "purpose": "apply existing quality-governor logic to the architecture itself before further growth",
+  "required_outcomes": {
+    "core_artifact_coverage_ratio": 1.0,
+    "automatic_pruning_authority": 0,
+    "canonical_promotion_authority": 0,
+    "external_validation_authority": 0,
+    "real_world_attack_authority": 0,
+    "real_world_actuation_authority": 0,
+    "external_evidence_may_not_be_self_certified": true,
+    "compression_review_is_not_deletion": true
+  },
+  "review_clusters": [
+    "EXTERNAL_EVIDENCE_PIPELINE",
+    "SUCCESSION_AND_REBIRTH",
+    "FALSIFICATION_AND_DEATHEYE",
+    "GENESIS_AND_REPRESENTATION"
+  ],
+  "growth_policy": "GROW_ONLY_IF_MARGINAL_CAPABILITY_EXCEEDS_COMPLEXITY_AND_VERIFICATION_TAX",
+  "external_state_if_no_independent_material": "AWAITING_REAL_EXTERNAL_EVIDENCE"
+}

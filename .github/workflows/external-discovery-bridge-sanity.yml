@@ -1,0 +1,26 @@
+name: External Discovery Bridge Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - rei-reality-ascension-limit
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run external discovery bridge sanity
+        run: python research/external_discovery_bridge_sanity.py
+      - name: Enforce claim boundaries
+        run: |
+          grep -q 'InternalSuccess != ExternalValidation' research/EXTERNAL_DISCOVERY_BRIDGE.md
+          grep -q 'HiddenSyntheticWin != G5_PASS' research/EXTERNAL_DISCOVERY_BRIDGE.md
+          grep -q 'RealWorldActuationAuthority = 0' research/EXTERNAL_DISCOVERY_BRIDGE.md
+          grep -q 'G4: OPEN' <(python research/external_discovery_bridge_sanity.py)
+          grep -q 'G5: OPEN' <(python research/external_discovery_bridge_sanity.py)

@@ -1,0 +1,43 @@
+name: Multi Generation Evolution League Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run identityless multi-generation league
+        run: python research/multi_generation_evolution_league.py
+
+      - name: Assert lineage history has zero authority
+        run: |
+          python - <<'PY'
+          import runpy
+          ns = runpy.run_path('research/multi_generation_evolution_league.py')
+          result = ns['run_league']()
+          assert result['status'] == 'IDENTITYLESS_MULTI_GENERATION_LEAGUE_READY'
+          assert result['winner_lineages'] == ['LINEAGE-B', 'LINEAGE-B', 'LINEAGE-D']
+          assert result['dynastic_privilege'] == 0
+          assert result['historical_champion_seed'] is False
+          assert result['external_gates_closed'] == []
+          assert result['canonical_promotion'] is False
+          assert result['real_world_attack_authority'] == 0
+          assert result['real_world_actuation_authority'] == 0
+          print('NO_HISTORICAL_CHAMPION_SEED')
+          print('IDENTITY_CONTINUITY_NOT_REQUIRED')
+          PY

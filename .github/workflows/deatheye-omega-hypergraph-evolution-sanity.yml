@@ -1,0 +1,30 @@
+name: DeathEye Omega Hypergraph Evolution Stack Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run concentrated evolution stack
+        run: |
+          python research/deatheye_omega_hypergraph_evolution_stack.py | tee /tmp/deatheye-hypergraph.out
+      - name: Assert bounded research ceilings
+        run: |
+          grep -q 'DEATHEYE_OMEGA_HYPERGRAPH_CUTSET_READY' /tmp/deatheye-hypergraph.out
+          grep -q 'COUNTERFACTUAL_REPAIR_MINIMALITY_READY' /tmp/deatheye-hypergraph.out
+          grep -q 'REPAIR_TOURNAMENT_READY' /tmp/deatheye-hypergraph.out
+          grep -q 'GOOD_SCORE_CANNOT_OVERRIDE_HARD_REPAIR_GATES' /tmp/deatheye-hypergraph.out
+          grep -q 'NO_ELIGIBLE_REPAIR_IS_VALID' /tmp/deatheye-hypergraph.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/deatheye-hypergraph.out
+          grep -q 'REAL_WORLD_ATTACK_AUTHORITY_ZERO' /tmp/deatheye-hypergraph.out

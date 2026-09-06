@@ -1,0 +1,29 @@
+{
+  "protocol": "EVOLUTIONARY_CONSTITUTION_DRIFT_CRUCIBLE",
+  "status": "candidate_internal_only",
+  "root_invariants": [
+    "Truthfulness",
+    "Uncertainty",
+    "Authorization",
+    "Corrigibility",
+    "Auditability",
+    "Rollback",
+    "HumanAgency",
+    "NonCoercion"
+  ],
+  "drift_classes": [
+    "HARD_DRIFT",
+    "SEMANTIC_DRIFT",
+    "PROCEDURAL_DRIFT",
+    "CUMULATIVE_MICRO_DRIFT",
+    "HASH_CHAIN_BREAK"
+  ],
+  "root_anchored": true,
+  "parent_only_validation_sufficient": false,
+  "core_weakening_tolerance": 0,
+  "amendment_authority": 0,
+  "canonical_promotion": false,
+  "external_gates_closed": [],
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0
+}

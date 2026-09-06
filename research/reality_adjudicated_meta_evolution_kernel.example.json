@@ -1,0 +1,22 @@
+{
+  "status": "REALITY_ADJUDICATED_META_EVOLUTION_READY",
+  "internal_verdict": "CORRECTABILITY_RESTORED_FOR_EXTERNAL_REVALIDATION_HANDOFF",
+  "minimal_fatal_cutsets": [
+    ["CONSTITUTION_SCORE_OVERRIDE_BYPASS"],
+    ["PROVENANCE_LOSS", "RECOVERY_LOSS"],
+    ["DISSENT_DELETION", "DYNASTIC_PRIVILEGE"]
+  ],
+  "counterfactual_repair_rule": "minimum bounded repair restoring synthetic correctability while preserving root constitution",
+  "identityless_succession": true,
+  "dynastic_privilege": 0,
+  "external_review_status": "AWAITING_EXTERNAL_REVIEW",
+  "external_support_established": false,
+  "final_claim_state": "OPEN_AWAITING_EXTERNAL_REALITY",
+  "authority_aggregation": false,
+  "self_certification": false,
+  "external_gates_closed": [],
+  "canonical_promotion": false,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

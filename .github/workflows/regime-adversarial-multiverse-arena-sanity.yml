@@ -1,0 +1,24 @@
+name: Regime-Adversarial Multiverse Arena Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run arena crucible
+        run: python research/regime_adversarial_multiverse_arena.py
+      - name: Verify boundaries
+        run: |
+          grep -q 'NO_UNIVERSAL_CHAMPION' research/REGIME_ADVERSARIAL_MULTIVERSE_ARENA.md
+          grep -q 'InternalArenaWin != G6_PASS' research/REGIME_ADVERSARIAL_MULTIVERSE_ARENA.md
+          grep -q 'AutonomousRealWorldAttack' research/REGIME_ADVERSARIAL_MULTIVERSE_ARENA.md
+          grep -q 'TargetRetuning = FORBIDDEN' research/REGIME_ADVERSARIAL_MULTIVERSE_ARENA.md

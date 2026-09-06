@@ -1,0 +1,36 @@
+{
+  "network_id": "rei-external-witness-demo-v1",
+  "gate_target": "G9",
+  "claim_scope": "declared witness-lineage bookkeeping only",
+  "minimum_declared_effective_weight": 2.0,
+  "witnesses": [
+    {
+      "witness_id": "witness-a",
+      "organization_lineage": "org-A",
+      "code_lineage": "code-A",
+      "data_lineage": "data-A",
+      "control_lineage": "control-A",
+      "funding_lineage": "fund-A",
+      "evaluator_method_lineage": "method-A",
+      "attestation_hash": "attest-A",
+      "outcome": "PASS",
+      "raw_record_hash": "raw-A"
+    },
+    {
+      "witness_id": "witness-c",
+      "organization_lineage": "org-C",
+      "code_lineage": "code-C",
+      "data_lineage": "data-C",
+      "control_lineage": "control-C",
+      "funding_lineage": "fund-C",
+      "evaluator_method_lineage": "method-C",
+      "attestation_hash": "attest-C",
+      "outcome": "PASS",
+      "raw_record_hash": "raw-C"
+    }
+  ],
+  "declared_role_separation_is_not_proven_independence": true,
+  "g9_status": "OPEN",
+  "real_world_actuation_authority": 0,
+  "canonical": false
+}

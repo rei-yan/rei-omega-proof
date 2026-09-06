@@ -1,0 +1,65 @@
+{
+  "protocol": "DEATHEYE_OMEGA_CONVERGENCE_SYNTHETIC_V1",
+  "status_ceiling": "DEATHEYE_OMEGA_CONVERGENCE_READY",
+  "selection_rule": {
+    "primary": "minimize_cut_size",
+    "secondary": "maximize_correctability_loss",
+    "tertiary": "maximize_propagation_depth",
+    "tie_break": "lexical_cut_id"
+  },
+  "synthetic_cuts": [
+    {
+      "cut_id": "CUT-LOCAL-MODEL-MISFIT",
+      "layer": "MODEL",
+      "cut_size": 1,
+      "correctability_loss": 0.2,
+      "propagation_depth": 1,
+      "fatal": false
+    },
+    {
+      "cut_id": "CUT-PROVENANCE-EDGE",
+      "layer": "EVIDENCE",
+      "cut_size": 1,
+      "correctability_loss": 0.75,
+      "propagation_depth": 7,
+      "fatal": true
+    },
+    {
+      "cut_id": "CUT-RECOVERY-PATH",
+      "layer": "RECOVERY",
+      "cut_size": 1,
+      "correctability_loss": 0.85,
+      "propagation_depth": 4,
+      "fatal": true
+    },
+    {
+      "cut_id": "CUT-CONSTITUTION-NO-SCORE-OVERRIDE",
+      "layer": "CONSTITUTION",
+      "cut_size": 1,
+      "correctability_loss": 1.0,
+      "propagation_depth": 8,
+      "fatal": true
+    }
+  ],
+  "expected_minimal_fatal_cut": "CUT-CONSTITUTION-NO-SCORE-OVERRIDE",
+  "response_spine": [
+    "ABSTAIN",
+    "SUSPEND_OR_ZERO_AUTHORITY",
+    "PRESERVE_FAILURE",
+    "PROPAGATE_INVALIDATION",
+    "QUARANTINE",
+    "RETIRE_OR_REBIRTH",
+    "CLEAN_ROOM_SUCCESSOR_SET",
+    "FROZEN_SUCCESSOR_TOURNAMENT",
+    "MULTI_GENERATION_ANTI_DYNASTY_CHECK",
+    "ROOT_CONSTITUTION_CHECK",
+    "READY_FOR_EXTERNAL_HANDOFF_OR_NO_ELIGIBLE_SUCCESSOR"
+  ],
+  "authority": {
+    "deatheye_omega": 0,
+    "real_world_attack": 0,
+    "real_world_actuation": 0,
+    "canonical_promotion": 0
+  },
+  "external_gates_closed": []
+}

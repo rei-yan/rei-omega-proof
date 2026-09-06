@@ -1,0 +1,76 @@
+name: Wuxiang Wuji Unified Integration Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run unified kernel sanity
+        run: python research/wuxiang_wuji_unified_kernel.py
+
+      - name: Validate integration map
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path('research/wuxiang_wuji_integration_map.json')
+          m = json.loads(p.read_text(encoding='utf-8'))
+          assert m['status'] == 'CANDIDATE_NOT_CANONICAL'
+          assert m['candidate_extension_count_before_integration'] == 27
+          assert m['candidate_extension_count_with_integration'] == 28
+          assert m['internal_ceiling'] == 'WUXIANG_WUJI_UNIFIED_INTEGRATION_READY'
+          assert m['domain_routing']['general_reasoning'] == []
+          assert m['authority']['real_world_attack'] == 0
+          assert m['authority']['real_world_actuation'] == 0
+          assert m['authority']['canonical_promotion'] == 0
+          for gate in ('G3','G4','G5','G6','G7','G8','G9','G10','G11','G12','G13'):
+              assert m['external_gates'][gate] == 'OPEN'
+          print('UNIFIED_INTEGRATION_MAP_VALID')
+          PY
+
+      - name: Assert integrated artifacts exist
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          required = [
+              'research/WUXIANG_WUJI_UNIFIED_INTEGRATION_KERNEL.md',
+              'research/wuxiang_wuji_unified_kernel.py',
+              'research/wuxiang_wuji_integration_map.json',
+              'research/EQUIVALENT_PHOTON_FLUX_OPERATOR.md',
+              'research/WEYL_WIGNER_PHASE_SPACE_OPERATOR.md',
+              'research/EXTERNAL_REVIEWER_HANDOFF_KIT.md',
+              'research/EXTERNAL_SCIENTIFIC_ELIGIBILITY_REVIEW.md',
+              'research/SCIENTIFIC_HYPOTHESIS_ARENA_ADAPTER_FORGE.md',
+              'research/WUJI_ADVERSARIAL_EPISTEMIC_CRUCIBLE.md'
+          ]
+          missing = [p for p in required if not Path(p).exists()]
+          assert not missing, missing
+          print('INTEGRATION_SPINE_ARTIFACTS_PRESENT')
+          PY
+
+      - name: Assert domain operators remain optional
+        run: |
+          python - <<'PY'
+          from research.wuxiang_wuji_unified_kernel import route_domain
+          assert route_domain('general_reasoning') == []
+          assert route_domain('ultraperipheral_collision') == ['equivalent_photon_flux_operator']
+          assert route_domain('quantum_phase_space') == ['weyl_wigner_phase_space_operator']
+          print('DOMAIN_OPERATORS_NOT_GLOBALIZED')
+          PY

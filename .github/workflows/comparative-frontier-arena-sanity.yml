@@ -1,0 +1,56 @@
+name: Comparative Frontier Arena Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/COMPARATIVE_FRONTIER_ARENA.md'
+      - 'research/comparative_frontier_arena.py'
+      - 'research/comparative_frontier_arena.example.json'
+      - 'research/wuxiang_epistemic_primitives.py'
+      - '.github/workflows/comparative-frontier-arena-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate arena example JSON
+        run: python -m json.tool research/comparative_frontier_arena.example.json >/dev/null
+      - name: Run Comparative Frontier Arena sanity
+        run: python research/comparative_frontier_arena.py
+      - name: Assert internal arena cannot self-pass G6
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'research')
+          import comparative_frontier_arena as arena
+          from wuxiang_epistemic_primitives import EvidenceDebt, open_critical_debt
+          result = arena.run_sanity()
+          assert result['arena_status'] == 'COMPARATIVE_FRONTIER_ARENA_READY'
+          assert result['g6_status'] == 'OPEN'
+          assert result['world_best'] == 'UNVERIFIED'
+          assert result['world_unique'] == 'UNVERIFIED'
+          assert result['canonical'] is False
+          assert result['real_world_actuation_authority'] == 0
+          assert result['rei_loss_preservation_test'] == 'REI_NOT_BEST_IN_SCOPE'
+          debt_id = result['comparative_defeat_debt_test']
+          assert debt_id.startswith('COMPARATIVE_DEFEAT:')
+          assert open_critical_debt((EvidenceDebt(debt_id, 'CRITICAL', 'OPEN', 'sanity'),), ('COMPARATIVE_DEFEAT',))
+          assert result['same_exposed_challenge_cannot_clear_debt'] is True
+          assert result['fresh_hidden_challenge_can_resolve_current_debt'] is True
+          assert result['defeat_portfolio_compression'] == 'STRUCTURAL_WEAKNESS_CANDIDATES_READY'
+          assert result['minimal_candidate_test'] == 'SCOPE_TRANSFER'
+          assert result['cluster_is_not_causality'] is True
+          assert result['intervention_supported_candidate'] == 'INTERVENTION_SUPPORTED_CANDIDATE'
+          assert result['root_cause_truth_claimed'] is False
+          assert result['prospective_prediction_survives'] == 'PROSPECTIVE_WEAKNESS_PREDICTION_SURVIVES_FOR_NOW'
+          assert result['prospective_wrong_prediction_is_falsified'] == 'PROSPECTIVE_WEAKNESS_PREDICTION_FALSIFIED'
+          assert result['prediction_timestamp_independence_verified'] is False
+          PY

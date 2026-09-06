@@ -1,0 +1,38 @@
+name: Temporal Regime Crucible Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/TEMPORAL_REGIME_CRUCIBLE.md'
+      - 'research/temporal_regime_crucible.py'
+      - '.github/workflows/temporal-regime-crucible-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run temporal-regime sanity
+        run: python research/temporal_regime_crucible.py
+      - name: Assert G7 and G8 remain externally open
+        run: |
+          python - <<'PY'
+          import runpy
+          ns = runpy.run_path('research/temporal_regime_crucible.py')
+          result = ns['run_sanity']()
+          assert result['crucible_status'] == 'TEMPORAL_REGIME_CRUCIBLE_READY'
+          assert result['g7_status'] == 'OPEN'
+          assert result['g8_status'] == 'OPEN'
+          assert result['regime_shift_test'] == 'REVALIDATION_REQUIRED'
+          assert result['history_preserved'] is True
+          assert result['posthoc_retune_test'] == 'INVALID_PROTOCOL'
+          assert result['real_world_actuation_authority'] == 0
+          assert result['canonical'] is False
+          PY
