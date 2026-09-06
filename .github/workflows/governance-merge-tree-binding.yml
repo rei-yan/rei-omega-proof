@@ -1,0 +1,92 @@
+name: Governance Merge-Tree Binding
+
+on:
+  pull_request:
+    branches:
+      - main
+      - rei-v193-reconcile
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  validate-exact-merge-tree:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact pull-request merge tree
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Verify checkout binds exact base and head
+        shell: bash
+        env:
+          EXPECTED_MERGE: ${{ github.sha }}
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          actual_merge="$(git rev-parse HEAD)"
+          test "$actual_merge" = "$EXPECTED_MERGE"
+          read -r merge parent1 parent2 extra <<< "$(git rev-list --parents -n 1 HEAD)"
+          test -z "${extra:-}"
+          test "$merge" = "$EXPECTED_MERGE"
+          test "$parent1" = "$EXPECTED_BASE"
+          test "$parent2" = "$EXPECTED_HEAD"
+          printf 'VALIDATED_MERGE_SHA=%s\n' "$merge"
+          printf 'VALIDATED_BASE_SHA=%s\n' "$parent1"
+          printf 'VALIDATED_HEAD_SHA=%s\n' "$parent2"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run nine-system contract sanity
+        run: python research/nine_system_sanity.py
+
+      - name: Run canonical mainline mutation control
+        run: python research/canonical_mainline_observation_sanity.py
+
+      - name: Run bounded Wuxiang sanity
+        run: python research/wuxiang_supreme_consolidation_sanity.py
+
+      - name: Run poisoned candidate rule regression
+        run: python research/poisoned_candidate_trial.py
+
+      - name: Require poisoned rule mutation score 1.000
+        run: python research/poisoned_candidate_trial_mutation.py
+
+      - name: Parse hardened PowerShell runtime and updater
+        shell: pwsh
+        run: |
+          $paths = @(
+            'runtime/REI-Canonical-Mainline-Observation-V1.ps1',
+            'runtime/rei_cycle_v193.ps1',
+            'runtime/Safe-AutoUpdate-V193.ps1'
+          )
+          foreach ($path in $paths) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path), [ref]$tokens, [ref]$errors)
+            if ($errors.Count -gt 0) { throw "$path parse failed: $($errors[0].Message)" }
+          }
+          Write-Host 'POWERSHELL_PARSE=PASS'
+
+      - name: Mark exact merge tree governance-validated
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'success',
+              context: 'rei/validated-merge-tree',
+              description: 'Exact PR merge tree passed governance binding checks'
+            })
