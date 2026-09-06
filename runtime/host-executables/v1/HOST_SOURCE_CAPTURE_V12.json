@@ -1,0 +1,68 @@
+{
+    "schema_version":  1,
+    "capture_id":  "REI_HOST_SOURCE_CAPTURE_V12",
+    "captured_at_utc":  "2026-09-06T02:53:08.9193285Z",
+    "source_receipt_generated_at_utc":  "2026-09-06T02:27:32.8171987Z",
+    "source_host":  "REI",
+    "base_source":  "LOCAL_CACHED_REMOTE_TRACKING_REF",
+    "base_commit":  "68e01afc530a6e65a6a4362473a01c5f3062f7a0",
+    "active_runtime_branch":  "shadow-node",
+    "candidate_branch":  "rei-v193-reconcile",
+    "components":  [
+                       {
+                           "id":  "shadow",
+                           "host_path":  "C:\\REI\\rei_shadow_closed_loop_v2.py",
+                           "sha256":  "eccc9242a65ec3ea13b36b0534d7f8db97bc3d8ac547a27f374ccc0fb6d8134d",
+                           "bytes":  62162,
+                           "repository_path":  "runtime/host-executables/v1/rei_shadow_closed_loop_v2.py"
+                       },
+                       {
+                           "id":  "context-sync",
+                           "host_path":  "C:\\REI-Shadow\\REI-LocalSync.ps1",
+                           "sha256":  "e1888ac2b3b0f71541b51e39729e0461004d331c982838fc5cd519245f7d330a",
+                           "bytes":  9929,
+                           "repository_path":  "runtime/host-executables/v1/REI-LocalSync.ps1"
+                       },
+                       {
+                           "id":  "local-model",
+                           "host_path":  "C:\\REI-Shadow\\REI-LocalModel-VNext.ps1",
+                           "sha256":  "53d3ae5383e1932c6966b2024c23c229e28d240b58144b063257bfdf6874eb66",
+                           "bytes":  8430,
+                           "repository_path":  "runtime/host-executables/v1/REI-LocalModel-VNext.ps1"
+                       },
+                       {
+                           "id":  "wheel-pull",
+                           "host_path":  "C:\\REI-Shadow\\sync_wheel_to_local.py",
+                           "sha256":  "47c7d8938732907cd9e21b791cd3e8139298e215ddd261f3e1aa184aae83e5b8",
+                           "bytes":  8473,
+                           "repository_path":  "runtime/host-executables/v1/sync_wheel_to_local.py"
+                       },
+                       {
+                           "id":  "observer",
+                           "host_path":  "C:\\REI-Shadow\\vnext_observer.py",
+                           "sha256":  "e0aebda298f045984c6137ee8a054c0d62e7e13eda1babb1395297ed92674fed",
+                           "bytes":  18374,
+                           "repository_path":  "runtime/host-executables/v1/vnext_observer.py"
+                       },
+                       {
+                           "id":  "bridge",
+                           "host_path":  "C:\\REI-Shadow\\bridge_to_wheel_vnext.py",
+                           "sha256":  "e97556f6d00668750c613ba40246d2e1c9c011f7fa2b6375de3ac6aef134c7e8",
+                           "bytes":  12414,
+                           "repository_path":  "runtime/host-executables/v1/bridge_to_wheel_vnext.py"
+                       },
+                       {
+                           "id":  "git-sync",
+                           "host_path":  "C:\\REI-Shadow\\sync_shadow_to_github.py",
+                           "sha256":  "659efb31777e39624bfd86af7d3eeae30e4283c460d48fb43ac1e1a01213e55e",
+                           "bytes":  12128,
+                           "repository_path":  "runtime/host-executables/v1/sync_shadow_to_github.py"
+                       }
+                   ],
+    "authority_boundary":  {
+                               "reality_validated":  false,
+                               "independent_replication":  false,
+                               "ascension_granted":  false,
+                               "canonical_promotion":  false
+                           }
+}

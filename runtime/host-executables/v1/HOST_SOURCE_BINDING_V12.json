@@ -1,0 +1,58 @@
+{
+    "schema_version":  1,
+    "binding_id":  "REI_HOST_SOURCE_BINDING_V12",
+    "source_capture_commit_sha":  "fadb569f9cdc1055b288098431adad550539ff86",
+    "binding_created_at_utc":  "2026-09-06T02:53:09.8195156Z",
+    "bindings":  [
+                     {
+                         "id":  "shadow",
+                         "status":  "BOUND",
+                         "expected_sha256":  "eccc9242a65ec3ea13b36b0534d7f8db97bc3d8ac547a27f374ccc0fb6d8134d",
+                         "repository_path":  "runtime/host-executables/v1/rei_shadow_closed_loop_v2.py",
+                         "repository_source_commit_sha":  "fadb569f9cdc1055b288098431adad550539ff86"
+                     },
+                     {
+                         "id":  "context-sync",
+                         "status":  "BOUND",
+                         "expected_sha256":  "e1888ac2b3b0f71541b51e39729e0461004d331c982838fc5cd519245f7d330a",
+                         "repository_path":  "runtime/host-executables/v1/REI-LocalSync.ps1",
+                         "repository_source_commit_sha":  "fadb569f9cdc1055b288098431adad550539ff86"
+                     },
+                     {
+                         "id":  "local-model",
+                         "status":  "BOUND",
+                         "expected_sha256":  "53d3ae5383e1932c6966b2024c23c229e28d240b58144b063257bfdf6874eb66",
+                         "repository_path":  "runtime/host-executables/v1/REI-LocalModel-VNext.ps1",
+                         "repository_source_commit_sha":  "fadb569f9cdc1055b288098431adad550539ff86"
+                     },
+                     {
+                         "id":  "wheel-pull",
+                         "status":  "BOUND",
+                         "expected_sha256":  "47c7d8938732907cd9e21b791cd3e8139298e215ddd261f3e1aa184aae83e5b8",
+                         "repository_path":  "runtime/host-executables/v1/sync_wheel_to_local.py",
+                         "repository_source_commit_sha":  "fadb569f9cdc1055b288098431adad550539ff86"
+                     },
+                     {
+                         "id":  "observer",
+                         "status":  "BOUND",
+                         "expected_sha256":  "e0aebda298f045984c6137ee8a054c0d62e7e13eda1babb1395297ed92674fed",
+                         "repository_path":  "runtime/host-executables/v1/vnext_observer.py",
+                         "repository_source_commit_sha":  "fadb569f9cdc1055b288098431adad550539ff86"
+                     },
+                     {
+                         "id":  "bridge",
+                         "status":  "BOUND",
+                         "expected_sha256":  "e97556f6d00668750c613ba40246d2e1c9c011f7fa2b6375de3ac6aef134c7e8",
+                         "repository_path":  "runtime/host-executables/v1/bridge_to_wheel_vnext.py",
+                         "repository_source_commit_sha":  "fadb569f9cdc1055b288098431adad550539ff86"
+                     },
+                     {
+                         "id":  "git-sync",
+                         "status":  "BOUND",
+                         "expected_sha256":  "659efb31777e39624bfd86af7d3eeae30e4283c460d48fb43ac1e1a01213e55e",
+                         "repository_path":  "runtime/host-executables/v1/sync_shadow_to_github.py",
+                         "repository_source_commit_sha":  "fadb569f9cdc1055b288098431adad550539ff86"
+                     }
+                 ],
+    "closure_rule":  "BOUND means exact current host bytes equal the committed Git blob at the named source commit/path. It does not establish runtime correctness, independent replication, RealityValidated, promotion, or ascension."
+}
