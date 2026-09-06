@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "runtime" / "nine-system-contract-v1.json"
 INTERFACE_MAP = ROOT / "research" / "NINE_SYSTEM_INTERFACE_MAP_V1.json"
 GOD_SOURCE_OVERLAY = ROOT / "research" / "NINE_SYSTEM_GOD_SOURCE_OVERLAY_V1.json"
+MAINLINE_GUARD = ROOT / "runtime" / "REI-Canonical-Mainline-Observation-V1.ps1"
 EXPECTED_FIELDS = ["input", "state", "decision", "output", "failure", "evidence"]
 
 
@@ -61,9 +62,6 @@ def main() -> int:
             assert (ROOT / rel).exists(), f"missing anchor for system {system['id']}: {rel}"
         assert isinstance(system["promotion_blockers"], list)
 
-    # God Source Phase 1 is synchronized as an additive overlay so the 9/9 base
-    # interface map remains a stable historical contract while candidate maturity
-    # can advance only after its own fail-closed CI gate passes.
     source = next(s for s in mapped if s["id"] == 7)
     source_blockers = " | ".join(source["promotion_blockers"])
     assert source["maturity"] == source_overlay["precondition_maturity"]
@@ -104,7 +102,9 @@ def main() -> int:
     assert gate["no_authority_expansion"] is True
     assert gate["rollback_available"] is True
     assert gate["ledger_traceability"] is True
-    assert gate["canonical_mainline_touched"] is False
+    assert gate["candidate_runtime_mainline_observation_required"] is True
+    assert "canonical_mainline_touched" not in gate, "static touched declaration must not masquerade as observation"
+    assert MAINLINE_GUARD.exists(), "runtime mainline observation guard is required"
     assert gate["existing_runtime_regression"] is False
     assert gate["god_proof_independent_check"] == "PENDING"
     assert gate["reality_validated"] is False
@@ -119,12 +119,14 @@ def main() -> int:
         "RealityVetoRemainsAbsolute",
         "CandidateArchitectureMayBeRejected",
         "MappedDoesNotEqualImplemented",
+        "DeclaredMainlineStateDoesNotEqualObservedMainlineState",
     }
     assert required_rules.issubset(rules)
 
     print("NINE_SYSTEM_INTERFACE_MAP_9_OF_9")
     print("GOD_SOURCE_PHASE1_OVERLAY_SYNCED")
     print("GOD_SOURCE_EXTERNAL_BINDINGS_REMAIN_PENDING")
+    print("CANONICAL_MAINLINE_OBSERVATION_REQUIRED")
     print("NINE_SYSTEM_SANITY_SUCCESS")
     print("ASCENSION_REMAINS_PENDING")
     return 0
