@@ -29,6 +29,7 @@ REQUIRED_INTERNAL_ANCHORS = [
     ROOT / "research" / "CLAIM_SCOPE_EVIDENCE_GRAPH.md",
     ROOT / "research" / "GOD_SOURCE_UNIFIED_REGISTRY_V1.md",
     ROOT / "runtime" / "Safe-AutoUpdate-V193.ps1",
+    ROOT / "runtime" / "REI-Canonical-Mainline-Observation-V1.ps1",
     ROOT / "runtime" / "continuous-reality-contract-v1.json",
     GOD_SOURCE_REGISTRY,
     GOD_SOURCE_CONTRACT,
@@ -61,10 +62,12 @@ def main() -> int:
     assert gate["no_authority_expansion"] is True
     assert gate["rollback_available"] is True
     assert gate["ledger_traceability"] is True
-    assert gate["canonical_mainline_touched"] is False
+    assert gate["candidate_runtime_mainline_observation_required"] is True
+    assert "canonical_mainline_touched" not in gate
     assert gate["existing_runtime_regression"] is False
 
-    # Self-certification must remain impossible.
+    # Self-certification must remain impossible. Mainline non-touch is now a
+    # runtime observation requirement, not an internally self-certified fact.
     assert contract["canonical_mainline_write_permission"] is False
     assert contract["automatic_ascension_permission"] is False
     assert contract["automatic_authority_expansion_permission"] is False
@@ -123,7 +126,8 @@ def main() -> int:
         "ascension_granted": False,
         "blockers": blockers,
         "authority_expansion": False,
-        "canonical_mainline_touched": False,
+        "canonical_mainline_observation_required": True,
+        "canonical_mainline_observation_status": "RUNTIME_EVIDENCE_REQUIRED",
     }
 
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
