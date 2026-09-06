@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "manifest_id": "REI_HOST_EXECUTABLE_MANIFEST_V1",
+  "candidate_pull_request": 28,
+  "candidate_head_ref": "rei-v193-reconcile",
+  "purpose": "Enumerate the host-side executables invoked by the synchronized v1.9.3 runtime so their exact deployed bytes can be hashed and bound to version-controlled source.",
+  "authority_boundary": {
+    "reality_validated": false,
+    "independent_replication": false,
+    "ascension_granted": false,
+    "canonical_write_permission": false,
+    "promotion_permission": false
+  },
+  "components": [
+    {
+      "id": "shadow",
+      "host_path": "C:\\REI\\rei_shadow_closed_loop_v2.py",
+      "required": true
+    },
+    {
+      "id": "context-sync",
+      "host_path": "C:\\REI-Shadow\\REI-LocalSync.ps1",
+      "required": true
+    },
+    {
+      "id": "local-model",
+      "host_path": "C:\\REI-Shadow\\REI-LocalModel-VNext.ps1",
+      "required": true
+    },
+    {
+      "id": "wheel-pull",
+      "host_path": "C:\\REI-Shadow\\sync_wheel_to_local.py",
+      "required": true
+    },
+    {
+      "id": "observer",
+      "host_path": "C:\\REI-Shadow\\vnext_observer.py",
+      "required": true
+    },
+    {
+      "id": "bridge",
+      "host_path": "C:\\REI-Shadow\\bridge_to_wheel_vnext.py",
+      "required": true
+    },
+    {
+      "id": "git-sync",
+      "host_path": "C:\\REI-Shadow\\sync_shadow_to_github.py",
+      "required": true
+    }
+  ]
+}
