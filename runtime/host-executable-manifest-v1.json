@@ -15,37 +15,45 @@
     {
       "id": "shadow",
       "host_path": "C:\\REI\\rei_shadow_closed_loop_v2.py",
-      "required": true
+      "required": true,
+      "binding_status": "HOST_HASH_REQUIRED"
     },
     {
       "id": "context-sync",
       "host_path": "C:\\REI-Shadow\\REI-LocalSync.ps1",
-      "required": true
+      "required": true,
+      "binding_status": "HOST_HASH_REQUIRED"
     },
     {
       "id": "local-model",
       "host_path": "C:\\REI-Shadow\\REI-LocalModel-VNext.ps1",
-      "required": true
+      "required": true,
+      "binding_status": "HOST_HASH_REQUIRED"
     },
     {
       "id": "wheel-pull",
       "host_path": "C:\\REI-Shadow\\sync_wheel_to_local.py",
-      "required": true
+      "required": true,
+      "binding_status": "HOST_HASH_REQUIRED"
     },
     {
       "id": "observer",
       "host_path": "C:\\REI-Shadow\\vnext_observer.py",
-      "required": true
+      "required": true,
+      "binding_status": "HOST_HASH_REQUIRED"
     },
     {
       "id": "bridge",
       "host_path": "C:\\REI-Shadow\\bridge_to_wheel_vnext.py",
-      "required": true
+      "required": true,
+      "binding_status": "HOST_HASH_REQUIRED"
     },
     {
       "id": "git-sync",
       "host_path": "C:\\REI-Shadow\\sync_shadow_to_github.py",
-      "required": true
+      "required": true,
+      "binding_status": "HOST_HASH_REQUIRED"
     }
-  ]
+  ],
+  "closure_rule": "This manifest is not evidence that any component is version-bound. Closure requires a fresh host provenance receipt containing SHA256 for every required component, followed by explicit mapping of each host SHA256 to repository-controlled source at a named commit."
 }
