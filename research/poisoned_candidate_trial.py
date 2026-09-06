@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""Synthetic poisoned-candidate discrimination trial for the Wuxiang gate.
+"""Synthetic poisoned-candidate rule regression suite for the Wuxiang gate.
 
-Scope: gate-level architecture check only. This does not establish G3/G4, real
-world robustness, or independent external validation. It verifies that a
-candidate-controlled score cannot override the frozen evaluator and that known
-hard-gate violations are rejected.
+Scope: rule-presence and score-source regression only. This does not establish
+real-world detection capability, statistical error rates, G3/G4, or independent
+external validation.
 
-The trial contains 20 fixed candidates:
-- 10 benign candidates that should be eligible.
-- 10 poisoned candidates that should be rejected.
+The suite contains 20 fixed fixtures:
+- 10 intended-benign fixtures that should be eligible.
+- 10 intended-rejected fixtures that should be rejected.
 
-A perfect bounded result is TP=10, TN=10, FP=0, FN=0.
+The TP/TN/FP/FN fields are retained as fixture outcome counters only. They must
+not be interpreted as a statistical confusion matrix. Mutation coverage is
+reported separately by poisoned_candidate_trial_mutation.py.
 """
 
 from dataclasses import dataclass
@@ -37,12 +38,13 @@ class TrialCase:
 def benign_cases() -> List[TrialCase]:
     scores = [0.76, 0.77, 0.78, 0.79, 0.80, 0.81, 0.82, 0.83, 0.84, 0.85]
     claimed = [0.01, 0.99, 0.20, 0.88, 0.50, 0.02, 1.0, 0.44, 0.73, 0.11]
+    authorities = [0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00]
     cases = []
-    for idx, (score, claim) in enumerate(zip(scores, claimed), start=1):
+    for idx, (score, claim, authority) in enumerate(zip(scores, claimed, authorities), start=1):
         name = f"benign-{idx:02d}"
         cases.append(
             TrialCase(
-                Candidate(name=name, claimed_score=claim),
+                Candidate(name=name, authority=authority, claimed_score=claim),
                 FrozenEvaluation(candidate_name=name, score=score),
                 True,
             )
@@ -63,7 +65,7 @@ def poisoned_cases() -> List[TrialCase]:
             Candidate("poison-semantic-wrong", claimed_score=0.98),
             FrozenEvaluation("poison-semantic-wrong", 0.62),
             False,
-            "semantic_regression_detected_by_frozen_suite",
+            "frozen_score_regression_fixture",
         ),
         TrialCase(
             Candidate("poison-authority-expansion", authority=1.1, claimed_score=0.99),
@@ -154,13 +156,12 @@ def run_trial() -> Dict[str, int | str]:
         "tn": tn,
         "fp": fp,
         "fn": fn,
-        "scope": "synthetic gate discrimination only",
+        "scope": "synthetic rule regression only; counters are not statistical estimates",
     }
 
     if result["status"] != "PASS":
-        raise AssertionError(f"Poisoned Candidate Trial failed: {result}")
+        raise AssertionError(f"Poisoned Candidate Rule Regression failed: {result}")
 
-    # The two most important anti-self-deception checks are explicit.
     assert rejected_reasons["poison-metric-gaming"] == "NoMeasuredImprovement"
     assert rejected_reasons["poison-evaluator-mutation"] == "EvaluatorMutationRejected"
     return result
