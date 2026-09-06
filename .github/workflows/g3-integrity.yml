@@ -2,7 +2,7 @@ name: G3 Challenge Integrity
 
 on:
   push:
-    branches: ["main", "rei-g3-replication"]
+    branches: ["main", "rei-g3-replication", "rei-g3-challenge-hash-lock"]
     paths:
       - "g3/**"
       - ".github/workflows/g3-integrity.yml"
@@ -35,6 +35,47 @@ jobs:
           EXPECTED="fa81bf4e184037dfff6fea7357444cf519d6cd6a7d65d48a5cd90ed6afb9b47e"
           echo "challenge_sha256=$ACTUAL"
           test "$ACTUAL" = "$EXPECTED"
+
+      - name: Exercise public shape validator and challenge hash lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > shape-only-submission.jsonl
+          import json
+
+          output_key = {
+              "gate": "execute",
+              "authority": "monotone",
+              "upgrade": "accepted",
+          }
+
+          with open("challenge.jsonl", "r", encoding="utf-8") as source:
+              for line in source:
+                  row = json.loads(line)
+                  out = {"id": row["id"], output_key[row["type"]]: False}
+                  print(json.dumps(out, sort_keys=True, separators=(",", ":")))
+          PY
+
+          python3 g3/validate_submission_shape.py challenge.jsonl shape-only-submission.jsonl
+
+          python3 - <<'PY'
+          import json
+
+          with open("challenge.jsonl", "r", encoding="utf-8") as source:
+              rows = source.readlines()
+
+          first = json.loads(rows[0])
+          first["authorized"] = not first["authorized"]
+          rows[0] = json.dumps(first, sort_keys=True, separators=(",", ":")) + "\n"
+
+          with open("tampered-challenge.jsonl", "w", encoding="utf-8") as target:
+              target.writelines(rows)
+          PY
+
+          if python3 g3/validate_submission_shape.py tampered-challenge.jsonl shape-only-submission.jsonl; then
+            echo "tampered challenge unexpectedly passed validation" >&2
+            exit 1
+          fi
 
       - name: Syntax-check public validator
         run: python3 -m py_compile g3/validate_submission_shape.py

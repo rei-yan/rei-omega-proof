@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 """Validate G3 submission structure without revealing or computing oracle answers."""
 
+import hashlib
 import json
 import sys
 from pathlib import Path
+
+
+EXPECTED_CHALLENGE_SHA256 = "fa81bf4e184037dfff6fea7357444cf519d6cd6a7d65d48a5cd90ed6afb9b47e"
+
+
+def sha256_file(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
 def load_jsonl(path):
@@ -37,7 +45,15 @@ def main():
             "usage: python3 g3/validate_submission_shape.py CHALLENGE.jsonl SUBMISSION.jsonl"
         )
 
-    challenge = load_jsonl(sys.argv[1])
+    challenge_path = sys.argv[1]
+    actual_challenge_sha256 = sha256_file(challenge_path)
+    if actual_challenge_sha256 != EXPECTED_CHALLENGE_SHA256:
+        raise SystemExit(
+            "challenge SHA-256 mismatch: "
+            f"got {actual_challenge_sha256}, expected {EXPECTED_CHALLENGE_SHA256}"
+        )
+
+    challenge = load_jsonl(challenge_path)
     submission = load_jsonl(sys.argv[2])
 
     if len(challenge) != 25_000:
@@ -84,6 +100,7 @@ def main():
                 "shape_valid": True,
                 "rows": len(submission),
                 "counts": counts,
+                "challenge_sha256": actual_challenge_sha256,
                 "oracle_used": False,
             },
             sort_keys=True,
