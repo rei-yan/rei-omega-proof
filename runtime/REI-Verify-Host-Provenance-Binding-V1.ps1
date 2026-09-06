@@ -20,10 +20,10 @@ function Fail([string]$Reason, [int]$Code = 2) {
 }
 
 if (-not (Test-Path -LiteralPath $ReceiptPath -PathType Leaf)) {
-    Fail "Host provenance receipt missing: $ReceiptPath"
+    Fail ("Host provenance receipt missing: {0}" -f $ReceiptPath)
 }
 if (-not (Test-Path -LiteralPath $BindingPath -PathType Leaf)) {
-    Fail "Binding map missing: $BindingPath"
+    Fail ("Binding map missing: {0}" -f $BindingPath)
 }
 
 try {
@@ -45,7 +45,7 @@ $receiptById = @{}
 foreach ($component in @($receipt.components)) {
     $id = [string]$component.id
     if ([string]::IsNullOrWhiteSpace($id)) { Fail 'Receipt contains component with empty id' }
-    if ($receiptById.ContainsKey($id)) { Fail "Duplicate receipt component id: $id" }
+    if ($receiptById.ContainsKey($id)) { Fail ("Duplicate receipt component id: {0}" -f $id) }
     $receiptById[$id] = $component
 }
 
@@ -53,7 +53,7 @@ $bindingById = @{}
 foreach ($entry in @($binding.bindings)) {
     $id = [string]$entry.id
     if ([string]::IsNullOrWhiteSpace($id)) { Fail 'Binding map contains component with empty id' }
-    if ($bindingById.ContainsKey($id)) { Fail "Duplicate binding component id: $id" }
+    if ($bindingById.ContainsKey($id)) { Fail ("Duplicate binding component id: {0}" -f $id) }
     $bindingById[$id] = $entry
 }
 
@@ -63,11 +63,11 @@ $matched = 0
 
 foreach ($id in $requiredIds) {
     if (-not $receiptById.ContainsKey($id)) {
-        $failures.Add("receipt_missing:$id") | Out-Null
+        $failures.Add(("receipt_missing:{0}" -f $id)) | Out-Null
         continue
     }
     if (-not $bindingById.ContainsKey($id)) {
-        $failures.Add("binding_missing:$id") | Out-Null
+        $failures.Add(("binding_missing:{0}" -f $id)) | Out-Null
         continue
     }
 
@@ -75,7 +75,7 @@ foreach ($id in $requiredIds) {
     $entry = $bindingById[$id]
 
     if (-not [bool]$component.exists) {
-        $failures.Add("host_file_missing:$id") | Out-Null
+        $failures.Add(("host_file_missing:{0}" -f $id)) | Out-Null
         continue
     }
 
@@ -86,23 +86,23 @@ foreach ($id in $requiredIds) {
     $status = [string]$entry.status
 
     if ($status -ne 'BOUND') {
-        $failures.Add("binding_not_bound:$id:$status") | Out-Null
+        $failures.Add(("binding_not_bound:{0}:{1}" -f $id, $status)) | Out-Null
         continue
     }
     if ([string]::IsNullOrWhiteSpace($repoPath)) {
-        $failures.Add("repository_path_missing:$id") | Out-Null
+        $failures.Add(("repository_path_missing:{0}" -f $id)) | Out-Null
         continue
     }
     if ([string]::IsNullOrWhiteSpace($commitSha) -or $commitSha -notmatch '^[0-9a-fA-F]{40}$') {
-        $failures.Add("repository_commit_invalid:$id") | Out-Null
+        $failures.Add(("repository_commit_invalid:{0}" -f $id)) | Out-Null
         continue
     }
     if ([string]::IsNullOrWhiteSpace($expectedSha) -or $expectedSha -notmatch '^[0-9a-f]{64}$') {
-        $failures.Add("expected_sha256_invalid:$id") | Out-Null
+        $failures.Add(("expected_sha256_invalid:{0}" -f $id)) | Out-Null
         continue
     }
     if ($hostSha -ne $expectedSha) {
-        $failures.Add("sha256_mismatch:$id:host=$hostSha:expected=$expectedSha") | Out-Null
+        $failures.Add(("sha256_mismatch:{0}:host={1}:expected={2}" -f $id, $hostSha, $expectedSha)) | Out-Null
         continue
     }
 
