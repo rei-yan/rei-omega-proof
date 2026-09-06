@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "binding_id": "REI_HOST_EXECUTABLE_BINDING_V1",
+  "candidate_pull_request": 28,
+  "candidate_head_ref": "rei-v193-reconcile",
+  "status": "UNBOUND",
+  "rule": "A host component is version-bound only when its fresh host SHA256 equals the SHA256 of repository-controlled source at an explicit repository path and commit SHA. File names, branch names, CI success, or host path presence are insufficient.",
+  "bindings": [
+    {"id":"shadow","repository_path":null,"repository_commit_sha":null,"expected_sha256":null,"status":"UNBOUND"},
+    {"id":"context-sync","repository_path":null,"repository_commit_sha":null,"expected_sha256":null,"status":"UNBOUND"},
+    {"id":"local-model","repository_path":null,"repository_commit_sha":null,"expected_sha256":null,"status":"UNBOUND"},
+    {"id":"wheel-pull","repository_path":null,"repository_commit_sha":null,"expected_sha256":null,"status":"UNBOUND"},
+    {"id":"observer","repository_path":null,"repository_commit_sha":null,"expected_sha256":null,"status":"UNBOUND"},
+    {"id":"bridge","repository_path":null,"repository_commit_sha":null,"expected_sha256":null,"status":"UNBOUND"},
+    {"id":"git-sync","repository_path":null,"repository_commit_sha":null,"expected_sha256":null,"status":"UNBOUND"}
+  ],
+  "authority_boundary": {
+    "reality_validated": false,
+    "independent_replication": false,
+    "ascension_granted": false,
+    "canonical_write_permission": false,
+    "promotion_permission": false
+  }
+}
