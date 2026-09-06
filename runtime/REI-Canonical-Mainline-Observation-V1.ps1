@@ -39,7 +39,7 @@ if ($Mode -eq 'Compare') {
   Assert-Sha $BeforeSha 'BeforeSha'
   Assert-Sha $AfterSha 'AfterSha'
   if ($BeforeSha.ToLowerInvariant() -ne $AfterSha.ToLowerInvariant()) {
-    Write-Error "CANONICAL_MAINLINE_TOUCHED_BY_RUNTIME before=$BeforeSha after=$AfterSha"
+    Write-Host "CANONICAL_MAINLINE_TOUCHED_BY_RUNTIME before=$BeforeSha after=$AfterSha"
     exit 2
   }
   Write-Host "CANONICAL_MAINLINE_UNTOUCHED_BY_RUNTIME sha=$BeforeSha"
