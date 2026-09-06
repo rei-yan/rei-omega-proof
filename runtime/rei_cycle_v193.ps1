@@ -15,6 +15,7 @@ $GitSyncScript = Join-Path $Root 'sync_shadow_to_github.py'
 $ContextState = Join-Path $Root 'context\sync_state.json'
 $ObserverState = Join-Path $Root 'state\vnext_observer\latest.json'
 $RuntimeRoot = Join-Path $Root 'runtime-v191'
+$CanonicalMainlineGuard = Join-Path $RuntimeRoot 'REI-Canonical-Mainline-Observation-V1.ps1'
 $StateDir = Join-Path $RuntimeRoot 'state'
 $CheckpointRoot = 'C:\REI_Resilience_Layer_v1\checkpoints'
 $Lock = Join-Path $RuntimeRoot 'cycle.lock'
@@ -30,10 +31,14 @@ $CandidateHeadRef = 'rei-v193-reconcile'
 $ProtocolVersion = 'REI-CLP/3.0-observer'
 $script:CycleMutex = $null
 $script:CycleMutexOwned = $false
+$script:CanonicalMainlineBefore = ''
+$script:CanonicalMainlineAfter = ''
+$script:CanonicalMainlineObservation = 'NOT_OBSERVED'
+$script:CanonicalMainlineTouched = $null
 
 function Log([string]$m) {
   $line = "$(Get-Date -Format o) $m"
-  Add-Content -Encoding UTF8 $Log $line
+  Add-Content -Encoding UTF8 $Log -Value $line
   Write-Host $line
 }
 
@@ -127,12 +132,27 @@ function Invoke-PowerShell([string]$name,[string]$script,[string[]]$arguments=@(
   if ($LASTEXITCODE -ne 0) { throw "$name exited $LASTEXITCODE" }
 }
 
+function Get-CanonicalMainlineSnapshot {
+  if (-not (Test-Path -LiteralPath $CanonicalMainlineGuard)) {
+    throw "Canonical mainline observation guard missing: $CanonicalMainlineGuard"
+  }
+  $output = @(& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $CanonicalMainlineGuard -Mode Snapshot -Repo (Join-Path $Root 'repo'))
+  if ($LASTEXITCODE -ne 0) { throw 'Canonical mainline snapshot failed closed' }
+  if ($output.Count -eq 0) { throw 'Canonical mainline snapshot returned no SHA' }
+  $sha = ([string]$output[$output.Count - 1]).Trim()
+  if ($sha -notmatch '^[0-9a-fA-F]{40}$') { throw "Canonical mainline snapshot invalid: $sha" }
+  return $sha.ToLowerInvariant()
+}
+
 function FailClosed([string]$reason) {
   New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
   $state = [ordered]@{
     contract_version=$ContractVersion; schema_version=$SchemaVersion; status='FAIL_CLOSED'; reason=$reason;
-    observer_source_sha=(Get-SourceSha); observer_only=$true; promotion='NO';
-    reality_validated=$false; canonical_mainline_touched=$false;
+    observer_source_sha=(Get-SourceSha); observer_only=$true; promotion='NO'; reality_validated=$false;
+    canonical_mainline_touched=$script:CanonicalMainlineTouched;
+    canonical_mainline_observation_status=$script:CanonicalMainlineObservation;
+    canonical_mainline_before_sha=$script:CanonicalMainlineBefore;
+    canonical_mainline_after_sha=$script:CanonicalMainlineAfter;
     candidate_pull_request=$CandidatePullRequest; candidate_head_ref=$CandidateHeadRef;
     timestamp_utc=[DateTime]::UtcNow.ToString('o')
   }
@@ -147,13 +167,14 @@ function Record-OverlapSkip {
   $state = [ordered]@{
     contract_version=$ContractVersion; schema_version=$SchemaVersion; status='SKIPPED_OVERLAP';
     reason='Another synchronized v1.9.3 runtime cycle currently owns the Windows mutex';
-    observer_source_sha=(Get-SourceSha); observer_only=$true; promotion='NO';
-    reality_validated=$false; canonical_mainline_touched=$false;
+    observer_source_sha=(Get-SourceSha); observer_only=$true; promotion='NO'; reality_validated=$false;
+    canonical_mainline_touched=$null; canonical_mainline_observation_status='NOT_APPLICABLE_OVERLAP';
+    canonical_mainline_before_sha=''; canonical_mainline_after_sha='';
     candidate_pull_request=$CandidatePullRequest; candidate_head_ref=$CandidateHeadRef;
     timestamp_utc=[DateTime]::UtcNow.ToString('o')
   }
   $state | ConvertTo-Json -Depth 10 | Set-Content -Encoding UTF8 $OverlapState
-  Log 'SKIP_OVERLAP: another synchronized runtime cycle is active; existing cycle left untouched'
+  Log 'SKIP_OVERLAP: another synchronized v1.9.3 runtime cycle is active; existing cycle left untouched'
 }
 
 $script:PythonExe = Resolve-Python
@@ -258,8 +279,23 @@ try {
   Log 'CROSS_CHECK -> VNEXT BRIDGE'
   Invoke-Python 'VNextBridge' $BridgeScript @('--home',$Root)
 
+  $script:CanonicalMainlineObservation = 'OBSERVING_GIT_SYNC'
+  $script:CanonicalMainlineBefore = Get-CanonicalMainlineSnapshot
+  Log "CANONICAL_MAINLINE_BEFORE_GIT_SYNC=$script:CanonicalMainlineBefore"
+
   Log 'LEDGER_COMMIT -> GIT_SYNC'
   Invoke-Python 'GitSync' $GitSyncScript @('--home',$Root,'--repo',(Join-Path $Root 'repo'))
+
+  $script:CanonicalMainlineAfter = Get-CanonicalMainlineSnapshot
+  Log "CANONICAL_MAINLINE_AFTER_GIT_SYNC=$script:CanonicalMainlineAfter"
+  & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $CanonicalMainlineGuard -Mode Compare -BeforeSha $script:CanonicalMainlineBefore -AfterSha $script:CanonicalMainlineAfter
+  if ($LASTEXITCODE -ne 0) {
+    $script:CanonicalMainlineTouched = $true
+    $script:CanonicalMainlineObservation = 'BREACH_DETECTED'
+    FailClosed 'Canonical mainline changed during guarded GitSync interval'
+  }
+  $script:CanonicalMainlineTouched = $false
+  $script:CanonicalMainlineObservation = 'VERIFIED_UNCHANGED'
 
   $shadowLedger = Join-Path $Root 'shadow_ledger.jsonl'
   $wheelInbox = Join-Path $Root 'divine_wheel_inbox.jsonl'
@@ -314,8 +350,11 @@ try {
     cycle_status='SUCCESS_RUNTIME_VERIFIED'; compatibility_hash=$compatHash;
     observer_source_sha=$sourceSha; candidate_pull_request=$CandidatePullRequest; candidate_head_ref=$CandidateHeadRef;
     god_line_source_cycle=$godLine.cycle; checkpoint_id=$cycleId; rollback_id=$cycleId;
-    observer_only=$true; canonical_mainline_touched=$false; reality_validated=$false;
-    promotion='NO'; components=$records; finish_utc=[DateTime]::UtcNow.ToString('o')
+    observer_only=$true; canonical_mainline_touched=$script:CanonicalMainlineTouched;
+    canonical_mainline_observation_status=$script:CanonicalMainlineObservation;
+    canonical_mainline_before_sha=$script:CanonicalMainlineBefore;
+    canonical_mainline_after_sha=$script:CanonicalMainlineAfter;
+    reality_validated=$false; promotion='NO'; components=$records; finish_utc=[DateTime]::UtcNow.ToString('o')
   }
   $final | ConvertTo-Json -Depth 12 | Set-Content -Encoding UTF8 (Join-Path $StateDir 'last-cycle.json')
   Log 'WATCHDOG_CONFIRM -> RECOVERY_CONFIRM -> CYCLE_FINISH'
