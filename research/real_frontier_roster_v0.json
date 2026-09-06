@@ -1,0 +1,108 @@
+{
+  "snapshot_date": "2026-08-09",
+  "status": "PARTIALLY_POPULATED_NOT_FROZEN",
+  "g6": "OPEN",
+  "world_best": "UNVERIFIED",
+  "world_unique": "UNVERIFIED",
+  "real_world_actuation_authority": 0,
+  "candidates": [
+    {
+      "id": "google_ai_co_scientist_2025",
+      "name": "Google AI co-scientist",
+      "organization": "Google Research / Google DeepMind / Google Cloud AI",
+      "source_date": "2025-02-19",
+      "source_url": "https://research.google/blog/accelerating-scientific-breakthroughs-with-an-ai-co-scientist/",
+      "source_class": "first_party_research_post",
+      "identity": "multi-agent scientific collaborator built with Gemini 2.0",
+      "scope": ["hypothesis_generation", "research_proposal_generation", "scientific_reasoning", "multi_agent_refinement"],
+      "access_state": "trusted_tester_program_reported",
+      "roster_state": "SOURCE_VERIFIED",
+      "comparability": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "alphaevolve_2025_2026",
+      "name": "AlphaEvolve",
+      "organization": "Google DeepMind",
+      "source_date": "2025-05-14",
+      "source_update_date": "2026-05-07",
+      "source_url": "https://deepmind.google/blog/alphaevolve-a-gemini-powered-coding-agent-for-designing-advanced-algorithms/",
+      "source_update_url": "https://deepmind.google/blog/alphaevolve-impact/",
+      "source_class": "first_party_research_post",
+      "identity": "Gemini-powered evolutionary coding agent",
+      "scope": ["algorithm_discovery", "algorithm_optimization", "evolutionary_search", "executable_evaluation"],
+      "access_state": "public_technical_description",
+      "roster_state": "SOURCE_VERIFIED",
+      "comparability": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "genie3_2025",
+      "name": "Genie 3",
+      "organization": "Google DeepMind",
+      "source_date": "2025-08-05",
+      "source_url": "https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/",
+      "source_class": "first_party_research_post",
+      "identity": "general-purpose interactive world model",
+      "scope": ["world_model", "interactive_simulation", "real_time_generation", "environment_consistency"],
+      "access_state": "research_prototype_project_genie",
+      "roster_state": "SOURCE_VERIFIED",
+      "comparability": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "robin_2026",
+      "name": "Robin",
+      "organization": "multi-institution research team",
+      "source_date": "2026-05-19",
+      "source_url": "https://www.nature.com/articles/s41586-026-10652-y",
+      "source_class": "peer_reviewed_primary_research",
+      "identity": "multi-agent scientific discovery system",
+      "scope": ["literature_search", "hypothesis_generation", "experiment_proposal", "data_analysis", "result_interpretation", "hypothesis_update"],
+      "access_state": "paper_reported",
+      "roster_state": "SOURCE_VERIFIED",
+      "comparability": "REVIEW_REQUIRED"
+    }
+  ],
+  "evaluation_anchors": [
+    {
+      "id": "lean_ai_formalization_leaderboard",
+      "name": "Lean AI formalization leaderboard",
+      "source_url": "https://lean-lang.org/eval/",
+      "source_class": "official_benchmark",
+      "role": "benchmark_anchor_not_automatic_competitor"
+    },
+    {
+      "id": "causalrivers_2025",
+      "name": "CausalRivers",
+      "source_url": "https://arxiv.org/abs/2503.17452",
+      "source_class": "primary_preprint",
+      "role": "causal_discovery_benchmark_anchor"
+    },
+    {
+      "id": "autoresearchbench_2026",
+      "name": "AutoResearchBench",
+      "source_url": "https://arxiv.org/abs/2604.25256",
+      "source_class": "primary_preprint",
+      "role": "scientific_literature_discovery_benchmark_anchor"
+    },
+    {
+      "id": "researchclawbench_2026",
+      "name": "ResearchClawBench",
+      "source_url": "https://arxiv.org/abs/2606.07591",
+      "source_class": "primary_preprint",
+      "role": "end_to_end_autonomous_research_benchmark_anchor"
+    },
+    {
+      "id": "sciagentarena_2026",
+      "name": "SciAgentArena",
+      "source_url": "https://arxiv.org/abs/2606.12736",
+      "source_class": "primary_preprint",
+      "role": "scientific_agent_benchmark_anchor"
+    }
+  ],
+  "hard_rules": {
+    "source_verified_is_not_comparable": true,
+    "cross_domain_win_is_not_universal_superiority": true,
+    "no_overall_cross_domain_average": true,
+    "no_candidate_is_frozen_frontier_competitor_yet": true,
+    "external_coverage_audit_required": true
+  }
+}

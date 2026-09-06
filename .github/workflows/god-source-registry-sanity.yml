@@ -1,0 +1,54 @@
+name: God Source Unified Registry Sanity
+
+on:
+  push:
+    branches: ["rei-v193-reconcile"]
+    paths:
+      - "runtime/god-source-registry-v1.json"
+      - "runtime/god-source-contract-v1.json"
+      - "runtime/god-source-receipt-schema-v1.json"
+      - "runtime/nine-system-contract-v1.json"
+      - "research/GOD_SOURCE_UNIFIED_REGISTRY_V1.md"
+      - "research/god_source_registry_sanity.py"
+      - ".github/workflows/god-source-registry-sanity.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "runtime/god-source-registry-v1.json"
+      - "runtime/god-source-contract-v1.json"
+      - "runtime/god-source-receipt-schema-v1.json"
+      - "runtime/nine-system-contract-v1.json"
+      - "research/GOD_SOURCE_UNIFIED_REGISTRY_V1.md"
+      - "research/god_source_registry_sanity.py"
+      - ".github/workflows/god-source-registry-sanity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  god-source-phase1-sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate God Source Phase 1 registry
+        run: python research/god_source_registry_sanity.py
+
+      - name: Assert authority ceiling and external-binding hold
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '"source_power_does_not_equal_source_authority": true' runtime/god-source-registry-v1.json
+          grep -q '"binding_state": "EXTERNAL_UNBOUND"' runtime/god-source-registry-v1.json
+          grep -q '"source_may_grant_ascension": false' runtime/god-source-contract-v1.json
+          grep -q '"may_grant_ascension": false' runtime/god-source-receipt-schema-v1.json
+          grep -q 'ExternalBindings = PENDING' research/GOD_SOURCE_UNIFIED_REGISTRY_V1.md
+          grep -q 'RealityValidated = FALSE' research/GOD_SOURCE_UNIFIED_REGISTRY_V1.md
+          grep -q 'Ascension = NO' research/GOD_SOURCE_UNIFIED_REGISTRY_V1.md

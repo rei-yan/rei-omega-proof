@@ -1,0 +1,39 @@
+name: External Reviewer Handoff Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/EXTERNAL_REVIEWER_HANDOFF_KIT.md'
+      - 'research/external_reviewer_handoff.py'
+      - 'research/external_reviewer_attestation.template.json'
+      - 'research/external_reviewer_handoff_sanity.py'
+      - 'research/EXTERNAL_SCIENTIFIC_ELIGIBILITY_REVIEW.md'
+      - 'research/external_scientific_eligibility_review.py'
+      - 'research/external_scientific_eligibility_review_request.example.json'
+      - 'research/FRONTIER_ARENA_ELIGIBILITY_CONTRACT.md'
+      - 'research/SCIENTIFIC_HYPOTHESIS_ARENA_ADAPTER_FORGE.md'
+      - '.github/workflows/external-reviewer-handoff-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate empty external attestation template
+        run: python -m json.tool research/external_reviewer_attestation.template.json >/dev/null
+      - name: Run handoff package sanity crucible
+        run: python research/external_reviewer_handoff_sanity.py
+      - name: Anti-self-certification assertions
+        run: |
+          grep -q 'CanBuildPacket != CanSignEligibility' research/EXTERNAL_REVIEWER_HANDOFF_KIT.md
+          grep -q 'HandoffReady != ExternalEligibility' research/EXTERNAL_REVIEWER_HANDOFF_KIT.md
+          grep -q 'external_attestation' research/EXTERNAL_REVIEWER_HANDOFF_KIT.md
+          grep -q 'RealWorldActuationAuthority = 0' research/EXTERNAL_REVIEWER_HANDOFF_KIT.md
+          grep -q 'G6=OPEN' <(python research/external_reviewer_handoff_sanity.py)

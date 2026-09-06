@@ -1,0 +1,36 @@
+name: RDDO Sanity
+
+on:
+  push:
+    branches: ["rei-v193-reconcile"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rddo-sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run deterministic RDDO sanity
+        working-directory: research
+        run: python rddo_sanity.py
+
+      - name: Verify observer-only markers
+        shell: bash
+        run: |
+          grep -q 'observer_only: bool = True' research/rddo_reference.py
+          grep -q 'promotion_capability: bool = False' research/rddo_reference.py
+          grep -q 'reality_validated: bool = False' research/rddo_reference.py
+          grep -q 'recursiveDifferenceMayPromoteCanonical' Rei_omega_proof/RecursiveDifferenceObserver.lean
+          grep -q 'recursiveDifferenceImpliesRealityValidation' Rei_omega_proof/RecursiveDifferenceObserver.lean

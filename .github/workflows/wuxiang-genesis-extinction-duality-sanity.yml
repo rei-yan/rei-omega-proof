@@ -1,0 +1,36 @@
+name: Wuxiang Genesis Extinction Duality Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run Genesis-Extinction duality kernel
+        run: |
+          python research/wuxiang_genesis_extinction_duality_kernel.py | tee /tmp/genesis-extinction.out
+      - name: Assert bounded Genesis-Extinction semantics
+        run: |
+          grep -q 'WORLD_SCHEMA_GENESIS_READY' /tmp/genesis-extinction.out
+          grep -q 'FALSIFIABILITY_AT_BIRTH_READY' /tmp/genesis-extinction.out
+          grep -q 'WORLD_LINEAGE_PROVENANCE_BINDING_READY' /tmp/genesis-extinction.out
+          grep -q 'MINIMAL_WORLD_DEATH_CUTSET_READY' /tmp/genesis-extinction.out
+          grep -q 'EXTINCTION_WITHOUT_ERASURE_READY' /tmp/genesis-extinction.out
+          grep -q 'REGENESIS_FROM_RUINS_READY' /tmp/genesis-extinction.out
+          grep -q 'GENESIS_EXTINCTION_SYMMETRY_READY' /tmp/genesis-extinction.out
+          grep -q 'WUXIANG_GENESIS_EXTINCTION_DUALITY_KERNEL_READY' /tmp/genesis-extinction.out
+          grep -q 'CREATION_WITHOUT_FALSIFIABILITY_IS_REJECTED' /tmp/genesis-extinction.out
+          grep -q 'EXTINCTION_WITHOUT_FAILURE_MEMORY_IS_REJECTED' /tmp/genesis-extinction.out
+          grep -q 'REGENESIS_WITHOUT_DEFEAT_INHERITANCE_IS_REJECTED' /tmp/genesis-extinction.out
+          grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/genesis-extinction.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/genesis-extinction.out

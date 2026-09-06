@@ -1,0 +1,37 @@
+name: Wuxiang Universal Falsifiable Object Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run universal falsifiable object kernel
+        run: |
+          python research/wuxiang_universal_falsifiable_object_kernel.py | tee /tmp/universal-object.out
+      - name: Assert unified bounded lifecycle semantics
+        run: |
+          grep -q 'UNIVERSAL_CLAIM_BEARING_OBJECT_READY' /tmp/universal-object.out
+          grep -q 'UNIFIED_EVIDENCE_BINDING_READY' /tmp/universal-object.out
+          grep -q 'UNIFIED_CHALLENGE_FATALITY_CONTRACT_READY' /tmp/universal-object.out
+          grep -q 'UNIFIED_RETIREMENT_SEMANTICS_READY' /tmp/universal-object.out
+          grep -q 'UNIFIED_DEFEAT_INHERITANCE_READY' /tmp/universal-object.out
+          grep -q 'UNIFIED_SUCCESSOR_ADMISSION_READY' /tmp/universal-object.out
+          grep -q 'CROSS_TYPE_LIFECYCLE_EQUIVALENCE_READY' /tmp/universal-object.out
+          grep -q 'WUXIANG_UNIVERSAL_FALSIFIABLE_OBJECT_KERNEL_READY' /tmp/universal-object.out
+          grep -q 'TYPE_DOES_NOT_GRANT_EPISTEMIC_PRIVILEGE' /tmp/universal-object.out
+          grep -q 'FATAL_CHALLENGE_REVOKES_SUPPORT_ACROSS_TYPES' /tmp/universal-object.out
+          grep -q 'DEFEAT_MEMORY_SURVIVES_RETIREMENT' /tmp/universal-object.out
+          grep -q 'SUCCESSOR_SUPPORT_RESETS_TO_ZERO' /tmp/universal-object.out
+          grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/universal-object.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/universal-object.out

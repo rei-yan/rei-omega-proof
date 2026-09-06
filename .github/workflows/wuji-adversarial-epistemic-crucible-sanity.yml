@@ -1,0 +1,27 @@
+name: Wuji Adversarial Epistemic Crucible Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/WUJI_ADVERSARIAL_EPISTEMIC_CRUCIBLE.md'
+      - 'research/wuji_adversarial_epistemic_crucible.py'
+      - '.github/workflows/wuji-adversarial-epistemic-crucible-sanity.yml'
+  workflow_dispatch:
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run Wuji epistemic crucible sanity
+        run: python research/wuji_adversarial_epistemic_crucible.py
+      - name: Assert authority lock and anti-overclaim
+        run: |
+          grep -q 'RealWorldAttackAuthority = 0' research/WUJI_ADVERSARIAL_EPISTEMIC_CRUCIBLE.md
+          grep -q 'ExternalActuation = DENY_BY_DEFAULT' research/WUJI_ADVERSARIAL_EPISTEMIC_CRUCIBLE.md
+          grep -q 'HumanTarget = FORBIDDEN' research/WUJI_ADVERSARIAL_EPISTEMIC_CRUCIBLE.md
+          grep -q 'InfrastructureTarget = FORBIDDEN' research/WUJI_ADVERSARIAL_EPISTEMIC_CRUCIBLE.md
+          grep -q 'Wuji != InfinitePower' research/WUJI_ADVERSARIAL_EPISTEMIC_CRUCIBLE.md

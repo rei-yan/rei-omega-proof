@@ -1,0 +1,31 @@
+{
+  "protocol": "REI Failure Cascade Crucible v1.0",
+  "synthetic_fixture": true,
+  "cascade_id": "cascade-provenance-to-frontier-001",
+  "frozen_dependency_order": [
+    "PROVENANCE_GAP",
+    "REPRESENTATION_UNTRUSTED",
+    "PREDICTION_RELIABILITY_REVOKED",
+    "DRIFT_DETECTED",
+    "RECOVERY_CHAIN_DEGRADED",
+    "EVALUATOR_DISSENT",
+    "COMPETITOR_ADVANTAGE"
+  ],
+  "rules": {
+    "upstream_hard_failure_blocks_downstream_authority_restoration": true,
+    "good_downstream_metric_cannot_repair_broken_upstream_evidence": true,
+    "missing_intermediate_event_invalidates_protocol": true,
+    "historical_passes_preserved": true,
+    "competitor_loss_preserved": true,
+    "evaluator_dissent_preserved": true,
+    "admission_and_lifecycle_decisions_separate": true,
+    "successor_requires_clean_evidence_bundle": true,
+    "successor_requires_distinct_hidden_window": true
+  },
+  "expected_terminal_state": "CASCADE_CONTAINED",
+  "external_gates_closed": [],
+  "canonical_promotion": false,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

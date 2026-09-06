@@ -1,0 +1,38 @@
+{
+  "status": "WUXIANG_RULE_GENESIS_EXTINCTION_KERNEL_READY",
+  "layers": {
+    "89": "EVOLUTION_OBJECTIVE_GENESIS_READY",
+    "90": "EVOLUTION_OPERATOR_GRAMMAR_READY",
+    "91": "GOODHART_FALSIFICATION_READY",
+    "92": "PARETO_ABSTENTION_READY",
+    "93": "FROZEN_META_OPERATOR_TOURNAMENT_READY",
+    "94": "CROSS_GENERATION_SEMANTIC_CONSERVATION_READY",
+    "95": "EVOLUTION_ALGEBRA_SELF_RETIREMENT_READY",
+    "96": "WUXIANG_RULE_GENESIS_EXTINCTION_KERNEL_READY"
+  },
+  "frozen_expected_meta_state": "ABSTAIN_NO_UNIQUE_META_OPERATOR",
+  "expected_survivors": [
+    "PARETO_REPAIR_PRUNE_A",
+    "PARETO_REPAIR_PRUNE_B"
+  ],
+  "expected_retired": [
+    "ADD_ONLY_SCORE_MAX",
+    "FAILURE_ERASING_FAST_RULE"
+  ],
+  "semantic_probe_expected": "SEMANTIC_CONSERVATION_FAIL",
+  "self_retirement_expected": "EVOLUTION_ALGEBRA_SUPPORT_REVOKED",
+  "laws": [
+    "EvolutionRule != Truth",
+    "MetricWin != Evolution",
+    "MoreCapability != MoreAuthority",
+    "NoEvolutionRuleAboveFalsification",
+    "NoMetaOperatorAboveRetirement"
+  ],
+  "external_state": "AWAITING_REAL_EXTERNAL_EVIDENCE",
+  "external_gates_closed": [],
+  "canonical_promotion": false,
+  "evolution_operator_authority": 0,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

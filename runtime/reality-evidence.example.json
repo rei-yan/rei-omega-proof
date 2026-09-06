@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "evidence_id": "example-20260905-001",
+  "observed_at_utc": "2026-09-05T04:00:00Z",
+  "source_type": "human",
+  "subject": "example prospective runtime outcome",
+  "outcome": "Observed result goes here. This artifact records an observation; it does not certify truth or promotion eligibility.",
+  "provenance": "Replace with the real source, witness, system identifier, benchmark run, external model review, or prospective trial reference.",
+  "related_cycle_id": "OPTIONAL_RUNTIME_CYCLE_ID",
+  "candidate_sha": "OPTIONAL_CANDIDATE_SHA",
+  "notes": "Example only. Copy into C:\\REI-Shadow\\reality-inbox with a unique filename only when it represents a real observation.",
+  "reality_validated": false,
+  "promotion_authority": false
+}

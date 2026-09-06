@@ -1,0 +1,32 @@
+name: Scientific Hypothesis Adapter Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/SCIENTIFIC_HYPOTHESIS_ARENA_ADAPTER_FORGE.md'
+      - 'research/scientific_hypothesis_adapter.py'
+      - 'research/scientific_hypothesis_adapter_manifest.example.json'
+      - 'research/scientific_hypothesis_adapter_sanity.py'
+      - '.github/workflows/scientific-hypothesis-adapter-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate example manifest JSON
+        run: python -m json.tool research/scientific_hypothesis_adapter_manifest.example.json >/dev/null
+      - name: Run frozen adapter sanity crucible
+        run: python research/scientific_hypothesis_adapter_sanity.py
+      - name: Anti-self-certification assertions
+        run: |
+          grep -q 'READY_FOR_EXTERNAL_ELIGIBILITY_REVIEW' research/SCIENTIFIC_HYPOTHESIS_ARENA_ADAPTER_FORGE.md
+          grep -q 'It may not self-issue' research/SCIENTIFIC_HYPOTHESIS_ARENA_ADAPTER_FORGE.md
+          grep -q 'RealWorldActuationAuthority = 0' research/SCIENTIFIC_HYPOTHESIS_ARENA_ADAPTER_FORGE.md

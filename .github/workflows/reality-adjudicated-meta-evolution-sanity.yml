@@ -1,0 +1,19 @@
+name: Reality Adjudicated Meta Evolution Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run reality-adjudicated meta-evolution sanity
+        run: python research/reality_adjudicated_meta_evolution_kernel.py

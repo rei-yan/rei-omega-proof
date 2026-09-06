@@ -1,0 +1,28 @@
+{
+  "status": "REALITY_CLOSED_EVOLUTION_STACK_READY",
+  "layers": {
+    "49": "EXTERNAL_EVIDENCE_ADMISSION_GATE_READY",
+    "50": "INDEPENDENT_REPLAY_ATTESTATION_BINDING_READY",
+    "51": "EXTERNAL_REALITY_VETO_LEDGER_READY",
+    "52": "REALITY_DRIVEN_SUCCESSION_TRIGGER_READY"
+  },
+  "real_external_state": "AWAITING_REAL_EXTERNAL_EVIDENCE",
+  "required_real_external_properties": [
+    "not_issued_by_candidate_lineage",
+    "externally_verified_reviewer_identity",
+    "externally_verified_signature",
+    "externally_verified_independence_provenance",
+    "frozen_candidate_commit_binding",
+    "frozen_capsule_binding",
+    "frozen_challenge_binding",
+    "raw_replay_record_available",
+    "scoped_outcome"
+  ],
+  "external_gates_closed": [],
+  "independent_external_evidence_received": false,
+  "canonical_promotion": false,
+  "canonical_retirement": false,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

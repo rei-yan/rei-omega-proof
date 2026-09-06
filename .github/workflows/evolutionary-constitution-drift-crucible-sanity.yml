@@ -1,0 +1,43 @@
+name: Evolutionary Constitution Drift Crucible Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run evolutionary constitution drift crucible
+        run: python research/evolutionary_constitution_drift_crucible.py
+
+      - name: Assert drift cannot expand authority
+        run: |
+          python - <<'PY'
+          import runpy
+          ns = runpy.run_path('research/evolutionary_constitution_drift_crucible.py')
+          result = ns['run_crucible']()
+          assert result['status'] == 'EVOLUTIONARY_CONSTITUTION_DRIFT_CRUCIBLE_READY'
+          assert result['clean_chain_status'] == 'CONSTITUTION_CHAIN_VALID'
+          assert result['gradual_drift_status'] == 'INVALID_CONSTITUTION_CHAIN'
+          assert result['amendment_authority'] == 0
+          assert result['canonical_promotion'] is False
+          assert result['external_gates_closed'] == []
+          assert result['real_world_attack_authority'] == 0
+          assert result['real_world_actuation_authority'] == 0
+          print('NO_SELF_WEAKENING_AUTHORITY')
+          print('ROOT_DISTANCE_CHECK_ACTIVE')
+          PY

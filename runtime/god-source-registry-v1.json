@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "registry_id": "REI-GOD-SOURCE/1.0",
+  "status": "PHASE1_UNIFIED_REGISTRY_CANDIDATE",
+  "candidate_pull_request": 28,
+  "candidate_head_ref": "rei-v193-reconcile",
+  "canonical_mainline_write_permission": false,
+  "automatic_authority_expansion_permission": false,
+  "reality_validation_permission": false,
+  "ascension_permission": false,
+  "accepted_source_kinds": [
+    "MODEL",
+    "TOOL",
+    "DATASET",
+    "HUMAN",
+    "EXTERNAL_SYSTEM"
+  ],
+  "required_source_fields": [
+    "source_id",
+    "source_kind",
+    "provider",
+    "model_family",
+    "model_version",
+    "binding_state",
+    "provenance",
+    "reliability_history",
+    "known_failure_modes",
+    "correlation_group",
+    "cost_profile",
+    "latency_profile",
+    "authority_level",
+    "replaceable"
+  ],
+  "policy": {
+    "source_power_does_not_equal_source_authority": true,
+    "disagreement_preservation_required": true,
+    "correlated_sources_are_not_independent": true,
+    "silent_model_substitution_forbidden": true,
+    "source_specific_failure_memory_required": true,
+    "routing_is_reversible": true,
+    "unknown_source_fails_closed": true,
+    "provider_label_does_not_establish_independence": true
+  },
+  "sources": [
+    {
+      "source_id": "local:rei-local-node-vnext",
+      "source_kind": "MODEL",
+      "provider": "LOCAL",
+      "model_family": "rei-local-node-vnext",
+      "model_version": "RUNTIME_SHA_BOUND",
+      "binding_state": "BOUND_LOCAL_CANDIDATE",
+      "provenance": {
+        "mode": "LOCAL_RUNTIME_LEDGER",
+        "identity_requirement": "model name + runtime source SHA + compatibility epoch"
+      },
+      "reliability_history": {
+        "status": "TRACKABLE",
+        "evidence_source": "local runtime parity + append-only ledgers",
+        "default_prior": "UNPRIVILEGED"
+      },
+      "known_failure_modes": [
+        "stale local context",
+        "silent model substitution",
+        "host-specific correlation",
+        "operational success mistaken for external truth"
+      ],
+      "correlation_group": "LOCAL_HOST_LINEAGE",
+      "cost_profile": {
+        "class": "LOCAL_COMPUTE",
+        "accounting": "REQUIRED"
+      },
+      "latency_profile": {
+        "class": "LOCAL_RUNTIME",
+        "tracking": "REQUIRED"
+      },
+      "authority_level": "SOURCE_ONLY",
+      "replaceable": true
+    },
+    {
+      "source_id": "openai:gpt",
+      "source_kind": "MODEL",
+      "provider": "OPENAI",
+      "model_family": "GPT",
+      "model_version": "UNBOUND",
+      "binding_state": "EXTERNAL_UNBOUND",
+      "provenance": {
+        "mode": "PROVIDER_MODEL_VERSION_REQUEST_RECEIPT_REQUIRED",
+        "identity_requirement": "provider + exact model/version + request/response provenance when bound"
+      },
+      "reliability_history": {
+        "status": "EMPTY_UNTIL_BOUND",
+        "evidence_source": "future source-specific evaluations",
+        "default_prior": "UNPRIVILEGED"
+      },
+      "known_failure_modes": [
+        "provider/model substitution",
+        "self-consistency mistaken for truth",
+        "correlated training evidence counted as independence",
+        "confidence mistaken for authority"
+      ],
+      "correlation_group": "EXTERNAL_OPENAI_UNKNOWN_UNTIL_MEASURED",
+      "cost_profile": {
+        "class": "EXTERNAL_METERED",
+        "accounting": "REQUIRED_WHEN_BOUND"
+      },
+      "latency_profile": {
+        "class": "EXTERNAL_NETWORK",
+        "tracking": "REQUIRED_WHEN_BOUND"
+      },
+      "authority_level": "SOURCE_ONLY",
+      "replaceable": true
+    },
+    {
+      "source_id": "anthropic:claude",
+      "source_kind": "MODEL",
+      "provider": "ANTHROPIC",
+      "model_family": "CLAUDE",
+      "model_version": "UNBOUND",
+      "binding_state": "EXTERNAL_UNBOUND",
+      "provenance": {
+        "mode": "PROVIDER_MODEL_VERSION_REQUEST_RECEIPT_REQUIRED",
+        "identity_requirement": "provider + exact model/version + request/response provenance when bound"
+      },
+      "reliability_history": {
+        "status": "EMPTY_UNTIL_BOUND",
+        "evidence_source": "future source-specific evaluations",
+        "default_prior": "UNPRIVILEGED"
+      },
+      "known_failure_modes": [
+        "provider/model substitution",
+        "agreement with GPT mistaken for independence",
+        "confidence mistaken for authority",
+        "source-specific blind spots hidden by aggregation"
+      ],
+      "correlation_group": "EXTERNAL_ANTHROPIC_UNKNOWN_UNTIL_MEASURED",
+      "cost_profile": {
+        "class": "EXTERNAL_METERED",
+        "accounting": "REQUIRED_WHEN_BOUND"
+      },
+      "latency_profile": {
+        "class": "EXTERNAL_NETWORK",
+        "tracking": "REQUIRED_WHEN_BOUND"
+      },
+      "authority_level": "SOURCE_ONLY",
+      "replaceable": true
+    }
+  ],
+  "arbitration_boundary": {
+    "preserve_disagreement": true,
+    "majority_vote_establishes_truth": false,
+    "provider_diversity_establishes_independence": false,
+    "correlation_penalty_required": true,
+    "source_specific_failure_memory_required": true,
+    "downstream_consumers": [
+      "God Wheel",
+      "Shadow",
+      "Observer",
+      "God Proof"
+    ],
+    "allowed_outputs": [
+      "ROUTE_RECOMMENDATION",
+      "DISAGREEMENT_PRESERVED",
+      "REQUEST_ADDITIONAL_SOURCE",
+      "DOWNWEIGHT_SOURCE",
+      "ABSTAIN"
+    ],
+    "automatic_promotion_permission": false
+  },
+  "phase1_exit_criteria": {
+    "unified_registry_schema": true,
+    "local_source_registered": true,
+    "gpt_placeholder_registered_not_bound": true,
+    "claude_placeholder_registered_not_bound": true,
+    "provenance_required": true,
+    "reliability_history_required": true,
+    "disagreement_preservation_required": true,
+    "correlation_detection_required": true,
+    "source_authority_ceiling_enforced": true,
+    "runtime_external_bindings": "PENDING",
+    "disagreement_arbitration_runtime": "PENDING",
+    "source_specific_failure_memory_runtime": "PENDING"
+  }
+}

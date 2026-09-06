@@ -1,0 +1,34 @@
+name: Real Frontier Roster v0 Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/REAL_FRONTIER_ROSTER_POPULATION_V0.md'
+      - 'research/real_frontier_roster_v0.json'
+      - 'research/real_frontier_roster_v0_sanity.py'
+      - '.github/workflows/real-frontier-roster-v0-sanity.yml'
+  workflow_dispatch:
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate roster registry and comparability guard
+        run: python research/real_frontier_roster_v0_sanity.py
+      - name: Prevent self-certification
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('research/real_frontier_roster_v0.json').read_text())
+          assert d['g6']=='OPEN'
+          assert d['world_best']=='UNVERIFIED'
+          assert d['world_unique']=='UNVERIFIED'
+          assert all(c['roster_state'] != 'FROZEN_FRONTIER_COMPETITOR' for c in d['candidates'])
+          assert d['real_world_actuation_authority']==0
+          print('anti-self-certification: PASS')
+          PY

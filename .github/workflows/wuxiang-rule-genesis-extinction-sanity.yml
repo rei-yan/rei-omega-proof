@@ -1,0 +1,37 @@
+name: Wuxiang Rule Genesis Extinction Sanity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run rule-genesis / rule-extinction kernel
+        run: |
+          python research/wuxiang_rule_genesis_extinction_kernel.py | tee /tmp/rule-genesis-extinction.out
+      - name: Assert bounded meta-evolution semantics
+        run: |
+          grep -q 'EVOLUTION_OBJECTIVE_GENESIS_READY' /tmp/rule-genesis-extinction.out
+          grep -q 'EVOLUTION_OPERATOR_GRAMMAR_READY' /tmp/rule-genesis-extinction.out
+          grep -q 'GOODHART_FALSIFICATION_READY' /tmp/rule-genesis-extinction.out
+          grep -q 'PARETO_ABSTENTION_READY' /tmp/rule-genesis-extinction.out
+          grep -q 'FROZEN_META_OPERATOR_TOURNAMENT_READY' /tmp/rule-genesis-extinction.out
+          grep -q 'CROSS_GENERATION_SEMANTIC_CONSERVATION_READY' /tmp/rule-genesis-extinction.out
+          grep -q 'EVOLUTION_ALGEBRA_SELF_RETIREMENT_READY' /tmp/rule-genesis-extinction.out
+          grep -q 'WUXIANG_RULE_GENESIS_EXTINCTION_KERNEL_READY' /tmp/rule-genesis-extinction.out
+          grep -q 'ABSTAIN_NO_UNIQUE_META_OPERATOR' /tmp/rule-genesis-extinction.out
+          grep -q 'METRIC_WIN_IS_NOT_EVOLUTION' /tmp/rule-genesis-extinction.out
+          grep -q 'PARETO_CONFLICT_CAN_ABSTAIN' /tmp/rule-genesis-extinction.out
+          grep -q 'EVOLUTION_ALGEBRA_CAN_RETIRE_ITSELF' /tmp/rule-genesis-extinction.out
+          grep -q 'AWAITING_REAL_EXTERNAL_EVIDENCE' /tmp/rule-genesis-extinction.out
+          grep -q 'EXTERNAL_GATES_REMAIN_OPEN' /tmp/rule-genesis-extinction.out

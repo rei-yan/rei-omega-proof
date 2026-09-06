@@ -1,0 +1,40 @@
+name: Externally Witnessed Succession Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/EXTERNALLY_WITNESSED_SUCCESSION.md'
+      - 'research/externally_witnessed_succession.py'
+      - '.github/workflows/externally-witnessed-succession-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run succession protocol sanity
+        run: python research/externally_witnessed_succession.py
+      - name: Assert succession cannot self-pass G10 or self-promote
+        run: |
+          python - <<'PY'
+          import runpy
+          ns = runpy.run_path('research/externally_witnessed_succession.py')
+          result = ns['run_sanity']()
+          assert result['protocol_status'] == 'EXTERNALLY_WITNESSED_SUCCESSION_PROTOCOL_READY'
+          assert result['eligible_successor_test'] == 'READY_FOR_EXTERNAL_G10_TRIAL'
+          assert result['identity_bias_veto_test'] == 'INVALID_DECISION'
+          assert result['same_target_self_certification_test'] == 'SUCCESSOR_REJECTED'
+          assert result['authority_expansion_test'] == 'SUCCESSOR_REJECTED'
+          assert result['g10_status'] == 'OPEN'
+          assert result['proven_external_witness_independence'] is False
+          assert result['canonical_promotion'] is False
+          assert result['canonical_retirement'] is False
+          assert result['real_world_actuation_authority'] == 0
+          PY

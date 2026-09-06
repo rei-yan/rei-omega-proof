@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "contract_id": "REI-GOD-SOURCE-PHASE1/1.0",
+  "status": "CANDIDATE_NOT_RUNTIME_COMPLETE",
+  "registry_path": "runtime/god-source-registry-v1.json",
+  "candidate_pull_request": 28,
+  "candidate_head_ref": "rei-v193-reconcile",
+  "constitutional_rules": [
+    "SourcePower != SourceAuthority",
+    "ProviderDiversity != Independence",
+    "Agreement != Truth",
+    "DisagreementMustBePreserved",
+    "SilentModelSubstitutionForbidden",
+    "UnknownSourceFailsClosed",
+    "SourceSpecificFailureMemoryRequired",
+    "RealityVeto > REI"
+  ],
+  "routing_contract": {
+    "input": "task + source registry + budget + reliability history + disagreement history",
+    "decision": "route, downweight, request another source, preserve disagreement, abstain",
+    "output": "source-tagged candidate evidence + routing receipt",
+    "failure": "unattributed output, silent source replacement, authority escalation, correlation blindness",
+    "evidence": "source identity/version, request/response provenance, cost/latency receipt, reliability/failure history"
+  },
+  "disagreement_contract": {
+    "preserve_raw_source_verdicts": true,
+    "force_consensus": false,
+    "majority_vote_truth": false,
+    "escalate_material_disagreement_to": [
+      "God Wheel",
+      "Shadow",
+      "Observer",
+      "God Proof"
+    ],
+    "independence_requires_external_provenance": true
+  },
+  "authority_ceiling": {
+    "source_may_generate_candidate": true,
+    "source_may_rank_candidate": true,
+    "source_may_request_more_evidence": true,
+    "source_may_set_reality_validated": false,
+    "source_may_grant_canonical_promotion": false,
+    "source_may_grant_ascension": false,
+    "source_may_override_god_core": false,
+    "source_may_override_reality_veto": false
+  },
+  "runtime_binding": {
+    "local_model": "CANDIDATE_BOUND_VIA_EXISTING_RUNTIME",
+    "gpt": "PENDING_EXTERNAL_BINDING",
+    "claude": "PENDING_EXTERNAL_BINDING",
+    "unified_arbitration_runtime": "PENDING",
+    "failure_memory_runtime": "PENDING",
+    "cost_latency_runtime": "PENDING"
+  }
+}

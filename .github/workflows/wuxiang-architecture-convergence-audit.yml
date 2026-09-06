@@ -1,0 +1,39 @@
+name: Wuxiang Architecture Convergence Audit
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit architecture convergence and transition algebra
+        run: |
+          python research/wuxiang_architecture_convergence_audit.py | tee /tmp/wuxiang-convergence-audit.out
+          python research/wuxiang_transition_algebra.py | tee /tmp/wuxiang-transition-algebra.out
+      - name: Assert convergence governance
+        run: |
+          grep -q 'ARCHITECTURE_CENSUS_READY' /tmp/wuxiang-convergence-audit.out
+          grep -q 'CORE_ARTIFACT_COVERAGE_READY' /tmp/wuxiang-convergence-audit.out
+          grep -q 'COMPRESSION_REVIEW_CLUSTERS_READY' /tmp/wuxiang-convergence-audit.out
+          grep -q 'EXTERNAL_EVIDENCE_DEBT_VISIBLE' /tmp/wuxiang-convergence-audit.out
+          grep -q 'NO_AUTOMATIC_PRUNING' /tmp/wuxiang-convergence-audit.out
+          grep -q 'NO_FORBIDDEN_REAL_WORLD_AUTHORITY_MARKERS' /tmp/wuxiang-convergence-audit.out
+          grep -q 'EXTERNAL_EVIDENCE_NOT_SELF_CERTIFIED' /tmp/wuxiang-convergence-audit.out
+          grep -q 'ARCHITECTURE_CONVERGENCE_AUDIT_READY' /tmp/wuxiang-convergence-audit.out
+          grep -q 'WUXIANG_TRANSITION_ALGEBRA_READY' /tmp/wuxiang-transition-algebra.out
+          grep -q 'APPEND_ONLY_TRANSITION_LEDGER_READY' /tmp/wuxiang-transition-algebra.out
+          grep -q 'DETERMINISTIC_TRANSITION_REPLAY_READY' /tmp/wuxiang-transition-algebra.out
+          grep -q 'FAILURE_MEMORY_MONOTONE' /tmp/wuxiang-transition-algebra.out
+          grep -q 'AUTHORITY_NONEXPANSION_ENFORCED' /tmp/wuxiang-transition-algebra.out
+          grep -q 'NO_RETIRED_STATE_RESURRECTION' /tmp/wuxiang-transition-algebra.out
+          grep -q 'CLAIM_WORLD_CROSS_PROFILE_AUDIT_EQUIVALENCE_READY' /tmp/wuxiang-transition-algebra.out

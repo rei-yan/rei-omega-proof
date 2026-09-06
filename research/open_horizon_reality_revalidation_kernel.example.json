@@ -1,0 +1,36 @@
+{
+  "status": "OPEN_HORIZON_REALITY_REVALIDATION_KERNEL_READY",
+  "layers": {
+    "53": "EVIDENCE_LEASE_EXPIRY_READY",
+    "54": "SCOPE_NON_TRANSFER_GATE_READY",
+    "55": "CONTRADICTION_ESCALATION_READY",
+    "56": "EVIDENCE_SUPERSESSION_LEDGER_READY",
+    "57": "REVIEWER_INDEPENDENCE_GRAPH_READY",
+    "58": "PROSPECTIVELY_FROZEN_REALITY_CHALLENGE_READY",
+    "59": "REALITY_DRIVEN_RETIREMENT_STATE_MACHINE_READY",
+    "60": "OPEN_HORIZON_REVALIDATION_READY"
+  },
+  "allowed_support_states": [
+    "SUPPORTED_FOR_NOW",
+    "EXPIRED",
+    "SUSPENDED",
+    "MIXED_EXTERNAL_EVIDENCE_ABSTAIN",
+    "INCONCLUSIVE",
+    "AWAITING_REAL_EXTERNAL_EVIDENCE"
+  ],
+  "laws": [
+    "ExternalPass != PermanentSupport",
+    "EvidenceScope >= ClaimScope",
+    "ExternalPassCannotEraseMaterialFail",
+    "DeclaredDiversity != ProvenIndependence",
+    "ExternalFailure != AutomaticSuccessorPromotion",
+    "CurrentInternalLimit != PermanentLimit"
+  ],
+  "real_external_state": "AWAITING_REAL_EXTERNAL_EVIDENCE",
+  "external_gates_closed": [],
+  "canonical_promotion": false,
+  "final_truth": false,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

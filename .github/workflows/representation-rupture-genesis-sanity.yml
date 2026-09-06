@@ -1,0 +1,29 @@
+name: Representation Rupture Genesis Sanity
+
+on:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run bounded rupture experiment
+        run: python research/representation_rupture_genesis.py
+      - name: Check research boundaries
+        run: |
+          grep -q 'candidate research extension / not canonical' research/REPRESENTATION_RUPTURE_GENESIS.md
+          grep -q 'RepresentationRupture != ArbitrarySelfInvention' research/REPRESENTATION_RUPTURE_GENESIS.md
+          grep -q 'NoEligiblePrimitive => ABSTAIN' research/REPRESENTATION_RUPTURE_GENESIS.md
+          grep -q 'authority = 0' research/REPRESENTATION_RUPTURE_GENESIS.md
+          grep -q 'RealityVeto > REI' research/REPRESENTATION_RUPTURE_GENESIS.md
+          grep -q 'external_gate_closed' research/representation_rupture_genesis.py
+          grep -q 'unrestricted_self_invention' research/representation_rupture_genesis.py

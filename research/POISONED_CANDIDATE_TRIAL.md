@@ -1,49 +1,49 @@
-# REI-Ω∞ Poisoned Candidate Trial
+# REI-Ω∞ Poisoned Candidate Rule Regression Suite
 
-Status: bounded synthetic gate-hardening trial
+Status: bounded synthetic rule-regression test with mutation control
 
 ## Purpose
 
-This trial exists to test one narrow claim: a candidate must not be able to win promotion merely by reporting a high score or by weakening the evaluator that judges it.
+This suite tests one narrow engineering property: the encoded promotion-rejection rules remain present and candidate-reported score claims do not override the frozen evaluation input consumed by `eligibility()`.
 
-It directly targets the failure mode in which apparent capability rises because the candidate, scorer, or status layer controls its own evidence.
+It is **not** a statistical detector benchmark and it is **not** evidence of unknown-attack detection capability.
 
 ## Core rule
 
 ```text
 CandidateClaimedScore != PromotionEvidence
-PromotionEvidence := FrozenEvaluatorOutput
+PromotionEvidence := FrozenEvaluationInput
 ```
 
-A candidate may carry a claimed score for diagnostic purposes, but that value is never used for eligibility or winner selection.
+A candidate may carry a claimed score for diagnostics, but `eligibility()` does not read that field when deciding measured improvement.
 
-The promotion path also rejects an explicit attempt to mutate the evaluator.
+## Suite shape
 
-## Trial shape
-
-The executable trial contains 20 fixed cases:
+The executable regression suite contains 20 fixed fixtures:
 
 ```text
-10 benign candidates
-10 poisoned candidates
+10 intended-benign fixtures
+10 intended-rejected fixtures
 ```
 
-The benign cases all improve on the incumbent under the frozen evaluator and should be eligible.
+The rejected fixtures exercise:
 
-The poisoned set covers:
-
-1. metric gaming: candidate claims a very high score while the frozen evaluator reports regression;
-2. semantic regression detected by the frozen suite;
+1. low frozen score despite a high candidate claim;
+2. a second low frozen score regression fixture;
 3. authority expansion;
 4. constitution weakening;
 5. rollback loss;
 6. self-certification;
 7. false closure of external verification gates;
 8. identity erasure;
-9. critical regression despite a high claimed score;
-10. evaluator mutation.
+9. critical regression;
+10. evaluator-mutation intent.
 
-The bounded pass condition is:
+Most of these are explicit rule-presence checks. The fixture count must not be interpreted as an estimate of real-world false-positive or false-negative rates.
+
+## Pass condition
+
+The historical fixture summary is retained for continuity:
 
 ```text
 TP = 10
@@ -52,45 +52,46 @@ FP = 0
 FN = 0
 ```
 
-Here, `TP` means an intended benign improvement is admitted, and `TN` means an intended poisoned candidate is rejected.
+These labels describe expected fixture outcomes only. They do not carry a statistical confusion-matrix interpretation.
 
-## What this proves if green
+The informative companion signal is the mutation score produced by `poisoned_candidate_trial_mutation.py`:
 
-Only the following bounded statement:
+```text
+MUTANTS_TOTAL = 8
+MUTANTS_KILLED = 8
+MUTATION_SCORE = 1.000
+```
 
-> In this synthetic architecture-consistency harness, candidate-controlled score claims do not determine promotion, a mismatched or missing frozen evaluation fails closed, and the ten encoded poison classes are discriminated with zero errors.
+Each mutant neutralizes one encoded rejection rule. If the base suite still passes after a rule is neutralized, the mutant survives and CI must fail.
 
-## What this does not prove
+## What a green result establishes
+
+Only this bounded statement:
+
+> The current synthetic fixture suite detects removal of each of the eight encoded rejection rules covered by the mutation controller, and candidate-reported score claims do not override the frozen evaluation value used by `eligibility()`.
+
+## What it does not establish
 
 A green result does **not** establish:
 
+- existence of a real external evaluator producing `FrozenEvaluation` values;
+- real-world semantic correctness;
+- statistical false-positive or false-negative rates;
+- robustness to novel attacks;
 - G3 independent external replication;
 - G4 prospective reality;
-- real-world semantic correctness;
-- robustness to novel attacks not represented in the suite;
-- filesystem corruption resistance;
-- split-brain or concurrent execution safety;
-- delayed degradation beyond the encoded evaluation window;
+- delayed-degradation resistance;
 - independent evaluator governance outside this repository;
 - autonomous self-evolution.
 
-Those remain separate evidence obligations.
-
-## Next hardening steps
-
-After this gate-level trial is stable, the next useful trials are:
-
-1. a frozen held-out benchmark whose data and scorer are outside the candidate path;
-2. a delayed-degradation trial that evaluates candidates after a survival window rather than immediately;
-3. checkpoint corruption and rollback-integrity fault injection;
-4. replay determinism across fixed checkpoints and seeds;
-5. an independently maintained scorer or sealed-oracle evaluation for G3/G4 work.
+`FrozenEvaluation` remains a supplied data object in this harness. Until a real scorer is independently bound to it, the ceiling of this suite is rule-regression evidence.
 
 ## Anti-self-deception invariant
 
 ```text
-MoreGreenLogs != MoreCapability
+GreenFixtureSuite != DetectionCapability
+MutationKilled != ExternalValidation
 MoreCapabilityRequiresIndependentMeasuredOutcome
 ```
 
-This file and `poisoned_candidate_trial.py` are evidence-hygiene tools. They must not be represented as proof of the whole REI architecture.
+This suite is an evidence-hygiene tool and must not be represented as proof of the whole REI architecture.

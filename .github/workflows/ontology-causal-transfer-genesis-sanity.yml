@@ -1,0 +1,30 @@
+name: Ontology Causal Transfer Genesis Sanity
+
+on:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+  pull_request:
+    paths:
+      - 'research/ONTOLOGY_CAUSAL_TRANSFER_GENESIS.md'
+      - 'research/ontology_causal_transfer_genesis.py'
+      - '.github/workflows/ontology-causal-transfer-genesis-sanity.yml'
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run finite synthetic ontology/causal/transfer crucible
+        run: python research/ontology_causal_transfer_genesis.py
+      - name: Assert research boundaries remain explicit
+        run: |
+          grep -F 'OntologyRupture != ArbitraryObjectCreation' research/ONTOLOGY_CAUSAL_TRANSFER_GENESIS.md
+          grep -F 'CausalGrammarGenesis != UniversalCausalKnowledge' research/ONTOLOGY_CAUSAL_TRANSFER_GENESIS.md
+          grep -F 'TransferSuccessOnOneTarget != UniversalTransfer' research/ONTOLOGY_CAUSAL_TRANSFER_GENESIS.md
+          grep -F 'NoEligibleOntology => ABSTAIN' research/ONTOLOGY_CAUSAL_TRANSFER_GENESIS.md
+          grep -F 'RealityVeto > OntologyPreference' research/ONTOLOGY_CAUSAL_TRANSFER_GENESIS.md
+          grep -F 'WorldChangingImpact = MaximumControl' research/ONTOLOGY_CAUSAL_TRANSFER_GENESIS.md

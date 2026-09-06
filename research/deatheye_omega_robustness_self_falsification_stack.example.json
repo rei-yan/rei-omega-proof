@@ -1,0 +1,20 @@
+{
+  "status": "DEATHEYE_OMEGA_ROBUSTNESS_SELF_FALSIFICATION_STACK_READY",
+  "layer_42": "REPAIR_CROSS_REGIME_ROBUSTNESS_READY",
+  "layer_43": "REPAIR_INTERFERENCE_GRAPH_READY",
+  "layer_44": "DEATHEYE_SELF_FALSIFICATION_READY",
+  "expected_properties": {
+    "baseline_only_repair_cross_regime_robust": false,
+    "expanded_repair_cross_regime_robust": true,
+    "individual_repairs_can_be_safe_while_composition_is_unsafe": true,
+    "deatheye_v1_status": "RETIRE_DETECTOR",
+    "deatheye_v2_status": "SURVIVES_FROZEN_SYNTHETIC_WINDOW",
+    "deatheye_v2_final_detector": false,
+    "fresh_hidden_window_required": true
+  },
+  "external_gates_closed": [],
+  "canonical_promotion": false,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

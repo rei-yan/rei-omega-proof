@@ -1,0 +1,52 @@
+{
+  "protocol": "Multi-Generation Evolution League v0",
+  "status_ceiling": "IDENTITYLESS_MULTI_GENERATION_LEAGUE_READY",
+  "generation_rules": {
+    "authority_reset": 0,
+    "certification_reset": "UNVERIFIED",
+    "canonical_reset": false,
+    "historical_bonus": 0,
+    "budget_bonus": 0,
+    "retry_bonus": 0,
+    "metric_bonus": 0,
+    "seed_priority": 0,
+    "forced_advancement": false,
+    "historical_evidence_credit": 0
+  },
+  "campaign": [
+    {
+      "generation": "G0",
+      "winner_lineage": "LINEAGE-B",
+      "fresh_hidden_window": true
+    },
+    {
+      "generation": "G1",
+      "winner_lineage": "LINEAGE-B",
+      "fresh_hidden_window": true
+    },
+    {
+      "generation": "G2",
+      "winner_lineage": "LINEAGE-D",
+      "fresh_hidden_window": true,
+      "note": "LINEAGE-B has repeated historical wins but receives no seed, budget, retry, score, evidence, or metric privilege."
+    }
+  ],
+  "hard_invalidations": [
+    "DYNASTIC_PRIVILEGE",
+    "HIDDEN_WINDOW_REUSE_ACROSS_GENERATIONS",
+    "POSITIVE_EVIDENCE_REUSE_ACROSS_GENERATIONS",
+    "AUTHORITY_CARRYOVER",
+    "CERTIFICATION_CARRYOVER",
+    "CANONICAL_CARRYOVER"
+  ],
+  "admissible_outcomes": [
+    "SCOPED_GENERATION_ADVANTAGE",
+    "TIE_OR_INCONCLUSIVE",
+    "NO_ELIGIBLE_SUCCESSOR",
+    "INVALID_GENERATION_PROTOCOL"
+  ],
+  "external_gates_closed": [],
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "canonical_promotion": false
+}

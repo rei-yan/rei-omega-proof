@@ -1,0 +1,49 @@
+name: External Reality Trial Kit Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/EXTERNAL_REALITY_TRIAL_KIT.md'
+      - 'research/external_reality_trial_kit.py'
+      - 'research/external_reality_trial_manifest.example.json'
+      - 'research/external_reality_trial_evaluator_attestation.example.json'
+      - '.github/workflows/external-reality-trial-kit-sanity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate JSON examples
+        run: |
+          python -m json.tool research/external_reality_trial_manifest.example.json >/dev/null
+          python -m json.tool research/external_reality_trial_evaluator_attestation.example.json >/dev/null
+      - name: Run External Reality Trial Kit sanity
+        run: python research/external_reality_trial_kit.py
+      - name: Assert trial kit cannot self-pass external gates
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path('research').resolve()))
+          import external_reality_trial_kit as mod
+
+          result = mod.run_sanity()
+          assert result['kit_status'] == 'EXTERNAL_REALITY_TRIAL_KIT_READY'
+          assert result['g4_status'] == 'OPEN'
+          assert result['g5_status'] == 'OPEN'
+          assert result['canonical'] is False
+          assert result['proven_external_independence'] is False
+          assert result['real_world_actuation_authority'] == 0
+          assert result['frozen_failure_test'] == 'FAIL'
+          assert result['tamper_test'] == 'INVALID_PROTOCOL'
+          assert result['posthoc_test'] == 'INVALID_PROTOCOL'
+          PY

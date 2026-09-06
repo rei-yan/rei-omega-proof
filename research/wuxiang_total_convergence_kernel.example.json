@@ -1,0 +1,27 @@
+{
+  "status": "WUXIANG_TOTAL_CONVERGENCE_KERNEL_READY",
+  "layers": {
+    "45": "DETECTOR_ECOLOGY_TOURNAMENT_READY",
+    "46": "MATERIAL_DISSENT_PRESERVATION_READY",
+    "47": "BLIND_SPOT_CHALLENGE_GENESIS_READY",
+    "48": "WUXIANG_TOTAL_CONVERGENCE_KERNEL_READY"
+  },
+  "expected_properties": {
+    "original_window_can_have_multiple_surviving_detectors": true,
+    "no_unique_detector_champion_is_valid": true,
+    "material_counterexample_blocks_majority_pass": true,
+    "brittle_exact_edge_detector_fails_derived_blind_spot_challenge": true,
+    "derived_blind_spot_challenge_is_not_independent_hidden_evidence": true,
+    "repair_tournament_has_internal_winner": true,
+    "repair_is_cross_regime_robust": true,
+    "repair_composition_is_safe": true,
+    "final_internal_decision": "ABSTAIN_PENDING_EXTERNAL_REALITY"
+  },
+  "external_gates_closed": [],
+  "external_reality_verdict": "OPEN",
+  "canonical_promotion": false,
+  "permanent_champion": false,
+  "real_world_attack_authority": 0,
+  "real_world_actuation_authority": 0,
+  "external_actuation": "DENY_BY_DEFAULT"
+}

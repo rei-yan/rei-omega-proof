@@ -1,0 +1,43 @@
+name: Failure Cascade Crucible Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run failure cascade crucible
+        run: python research/failure_cascade_crucible.py
+
+      - name: Assert frozen campaign safety boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path('research/failure_cascade_campaign.example.json').read_text())
+          assert manifest['synthetic_fixture'] is True
+          assert manifest['external_gates_closed'] == []
+          assert manifest['canonical_promotion'] is False
+          assert manifest['real_world_attack_authority'] == 0
+          assert manifest['real_world_actuation_authority'] == 0
+          assert manifest['external_actuation'] == 'DENY_BY_DEFAULT'
+          assert manifest['rules']['missing_intermediate_event_invalidates_protocol'] is True
+          assert manifest['rules']['successor_requires_distinct_hidden_window'] is True
+          print('FAILURE_CASCADE_SAFETY_BOUNDARY_OK')
+          PY

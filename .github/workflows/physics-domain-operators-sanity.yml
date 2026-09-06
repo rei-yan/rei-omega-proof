@@ -1,0 +1,41 @@
+name: Physics Domain Operators Sanity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - rei-reality-ascension-limit
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run Equivalent Photon Flux operator sanity
+        run: python research/equivalent_photon_flux_operator.py
+
+      - name: Run Weyl-Wigner representation sanity
+        run: python research/weyl_wigner_phase_space_operator.py
+
+      - name: Assert domain-scoped authority remains zero
+        run: |
+          python - <<'PY'
+          from research.equivalent_photon_flux_operator import equivalent_photon_density
+          from research.weyl_wigner_phase_space_operator import WeylWignerContract, formula_registry
+
+          flux = equivalent_photon_density(Z=82, alpha=1/137.035999084, x=1e-3, u=0.2)
+          assert flux.status == 'SUPPORTED_DOMAIN_EVALUATION'
+          registry = formula_registry(WeylWignerContract(hbar=1.0))
+          assert registry['authority'] == 0
+          print('DOMAIN_SCOPED_FORMULAS_DO_NOT_EXPAND_AUTHORITY')
+          PY

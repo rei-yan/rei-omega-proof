@@ -1,0 +1,35 @@
+name: Frontier Roster Freeze Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'research/FRONTIER_ROSTER_FREEZE.md'
+      - 'research/frontier_roster_freeze.py'
+      - 'research/frontier_roster_registry.example.json'
+      - '.github/workflows/frontier-roster-freeze-sanity.yml'
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate roster example JSON
+        run: python -m json.tool research/frontier_roster_registry.example.json > /dev/null
+      - name: Run roster freeze sanity
+        run: python research/frontier_roster_freeze.py
+      - name: Assert protocol cannot self-pass G6
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          out = subprocess.check_output(['python', 'research/frontier_roster_freeze.py'], text=True)
+          d = json.loads(out)
+          assert d['protocol_status'] == 'FRONTIER_ROSTER_FREEZE_PROTOCOL_READY'
+          assert d['g6'] == 'OPEN'
+          assert d['world_best'] == 'UNVERIFIED'
+          assert d['world_unique'] == 'UNVERIFIED'
+          assert d['authority'] == 0
+          assert d['canonical'] is False
+          PY
