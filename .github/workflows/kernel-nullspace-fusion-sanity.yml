@@ -1,0 +1,45 @@
+name: Kernel Null-Space Fusion Sanity
+
+on:
+  push:
+    branches: ["rei-kernel-nullspace-fusion-v1"]
+  pull_request:
+    branches: ["rei-mechanical-metallurgy-fusion-v1"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kernel-nullspace-sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run deterministic Kernel Null-Space sanity
+        working-directory: research
+        run: python kernel_nullspace_sanity.py
+
+      - name: Verify authority and epistemic boundaries
+        shell: bash
+        run: |
+          grep -q 'observer_only: bool = True' research/kernel_nullspace_reference.py
+          grep -q 'promotion_capability: bool = False' research/kernel_nullspace_reference.py
+          grep -q 'actuation_capability: bool = False' research/kernel_nullspace_reference.py
+          grep -q 'causal_truth_capability: bool = False' research/kernel_nullspace_reference.py
+          grep -q 'reality_validated: bool = False' research/kernel_nullspace_reference.py
+          grep -q 'NullSpaceDirection != HiddenFailureTruth' research/KERNEL_NULLSPACE_FUSION_V1.md
+          grep -q 'RecoveryCredit != HistoryErasure' research/KERNEL_NULLSPACE_FUSION_V1.md
+
+      - name: Verify stacked Mechanical Metallurgy lineage remains present
+        shell: bash
+        run: |
+          test -f research/MECHANICAL_METALLURGY_FUSION_V1.md
+          test -f runtime/mechanical-metallurgy-fusion-contract-v1.json
+          grep -q 'historical_damage_erased_by_recovery' research/mechanical_metallurgy_reference.py

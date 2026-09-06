@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "contract_id": "REI-KERNEL-NULLSPACE-FUSION/1.0",
+  "status": "CANDIDATE_STACKED_ON_MECHANICAL_METALLURGY_V1",
+  "observer_only": true,
+  "promotion_capability": false,
+  "actuation_capability": false,
+  "causal_truth_capability": false,
+  "reality_validated": false,
+  "canonical_write_permission": false,
+  "host_deployment_established": false,
+  "max_default_dimension": 64,
+  "required_outputs": [
+    "rank",
+    "nullity",
+    "pivot_columns",
+    "free_columns",
+    "nullspace_basis",
+    "max_basis_residual",
+    "unobservable_subspace_present",
+    "hidden_component_norm",
+    "hidden_fraction"
+  ],
+  "hard_rules": [
+    "NullSpaceDirectionDoesNotEqualHiddenFailureTruth",
+    "RankDeficiencyDoesNotEqualPathology",
+    "UnobservableUnderOperatorDoesNotEqualUnobservableInReality",
+    "KernelMembershipDoesNotEqualCausality",
+    "MathematicalInvisibilityDoesNotEqualPhysicalInvisibility",
+    "HiddenFractionHighDoesNotEqualRealDamage",
+    "ObserverPassDoesNotEqualPromotion",
+    "RepositoryIntegrationDoesNotEqualHostDeployment",
+    "RecoveryCreditDoesNotEqualHistoryErasure"
+  ],
+  "nine_system_mapping": {
+    "神核": "epistemic and authority boundary",
+    "神轮": "bounded null-space adversarial hypothesis generation",
+    "神线": "operator, basis, tolerance and provenance transport",
+    "神座": "bounded governance consumption only",
+    "神域": "domain-specific observation operators including damage-state operators",
+    "神界": "multi-operator and multi-evaluator kernel comparison",
+    "神源": "row/source provenance and source-specific failure memory",
+    "无相终式": "evidence-qualified observation-operator recomposition",
+    "神证": "blind-spot attacks, independent operator reveal and non-regression proof"
+  },
+  "mechanical_metallurgy_coupling": {
+    "purpose": "detect supplied damage/state components invisible to the current observation operator",
+    "fatigue_history_must_remain_visible": true,
+    "recovery_may_erase_history": false,
+    "null_space_is_failure_proof": false
+  },
+  "local_adoption_requirements": [
+    "candidate_review_complete",
+    "candidate_ci_success",
+    "guarded_deployment",
+    "fresh_windows_host_parity",
+    "same_epoch_component_compatibility",
+    "canonical_mainline_untouched",
+    "post_deployment_durability_evidence"
+  ]
+}
