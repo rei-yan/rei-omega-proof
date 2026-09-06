@@ -1,0 +1,58 @@
+name: Mechanical Metallurgy Fusion Sanity
+
+on:
+  push:
+    branches: ["rei-mechanical-metallurgy-fusion-v1"]
+  pull_request:
+    branches: ["rei-v193-reconcile"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mechanical-metallurgy-fusion-sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run deterministic Mechanical Metallurgy Fusion sanity
+        working-directory: research
+        run: python mechanical_metallurgy_sanity.py
+
+      - name: Verify authority and analogy boundaries
+        shell: bash
+        run: |
+          grep -q 'analogy_only: bool = True' research/mechanical_metallurgy_reference.py
+          grep -q 'physical_material_claim: bool = False' research/mechanical_metallurgy_reference.py
+          grep -q 'observer_only: bool = True' research/mechanical_metallurgy_reference.py
+          grep -q 'promotion_capability: bool = False' research/mechanical_metallurgy_reference.py
+          grep -q 'actuation_capability: bool = False' research/mechanical_metallurgy_reference.py
+          grep -q 'reality_validated: bool = False' research/mechanical_metallurgy_reference.py
+          grep -q 'historical_damage_erased_by_recovery: bool = False' research/mechanical_metallurgy_reference.py
+          python -m json.tool runtime/mechanical-metallurgy-fusion-contract-v1.json > /dev/null
+
+      - name: Verify nine-system mapping is complete
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          contract = json.loads(Path('runtime/mechanical-metallurgy-fusion-contract-v1.json').read_text())
+          mapping = contract['nine_system_mapping']
+          assert len(mapping) == 9, mapping
+          assert contract['adds_new_pillar'] is False
+          assert contract['nine_pillar_integrity_required'] is True
+          assert contract['canonical_mainline_write_permission'] is False
+          assert contract['automatic_promotion_permission'] is False
+          assert contract['automatic_actuation_permission'] is False
+          assert contract['reality_validation_authority'] is False
+          print('MECHANICAL_METALLURGY_NINE_SYSTEM_MAPPING_SUCCESS')
+          PY
