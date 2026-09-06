@@ -1,5 +1,5 @@
 # REI-Ω v1.9.3 Safe Auto-Update installer
-# Installs a guarded polling task. Polling never bypasses CI/canary/checkpoint/rollback gates.
+# Installs a guarded polling task. Polling never bypasses exact-tree CI/canary/checkpoint/rollback gates.
 
 param(
   [int]$IntervalMinutes = 15,
@@ -29,9 +29,11 @@ if ($current.cycle_status -ne 'SUCCESS_RUNTIME_VERIFIED') {
 New-Item -ItemType Directory -Force -Path $RuntimeRoot | Out-Null
 & git -C $Repo fetch origin $RemoteBranch --quiet
 if ($LASTEXITCODE -ne 0) { throw 'git fetch failed' }
+$candidate = (& git -C $Repo rev-parse "origin/$RemoteBranch").Trim()
+if ($LASTEXITCODE -ne 0 -or $candidate -notmatch '^[0-9a-fA-F]{40}$') { throw 'Unable to resolve immutable candidate SHA' }
 
-$content = & git -C $Repo show "origin/$RemoteBranch`:runtime/Safe-AutoUpdate-V193.ps1"
-if ($LASTEXITCODE -ne 0) { throw 'Unable to retrieve Safe-AutoUpdate-V193.ps1' }
+$content = & git -C $Repo show "$candidate`:runtime/Safe-AutoUpdate-V193.ps1"
+if ($LASTEXITCODE -ne 0) { throw 'Unable to retrieve Safe-AutoUpdate-V193.ps1 from resolved candidate SHA' }
 $content | Set-Content -Encoding UTF8 $Updater
 
 $tokens = $null
@@ -58,7 +60,8 @@ $registered = Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop
 Write-Host "Registered: $($registered.TaskName)" -ForegroundColor Green
 Write-Host "Principal: $($registered.Principal.UserId)" -ForegroundColor Green
 Write-Host "Poll interval: $IntervalMinutes minutes" -ForegroundColor Green
-Write-Host 'Gate chain: FETCH -> G2 -> CHECKPOINT -> STAGE -> SYNTAX -> CANARY -> SWITCH -> FIRST CYCLE -> VERIFY/ROLLBACK' -ForegroundColor Cyan
+Write-Host "Updater source SHA: $candidate" -ForegroundColor Green
+Write-Host 'Gate chain: FETCH -> EXACT PR MERGE BINDING -> G2 SAME-BASE -> CHECKPOINT -> IMMUTABLE STAGE -> SYNTAX/MUTATION CONTROL -> CANARY -> SWITCH -> FIRST CYCLE -> VERIFY/ROLLBACK' -ForegroundColor Cyan
 
 if (-not $NoStart) {
   Start-ScheduledTask -TaskName $TaskName

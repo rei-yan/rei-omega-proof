@@ -33,7 +33,7 @@
     "no_authority_expansion": true,
     "rollback_available": true,
     "ledger_traceability": true,
-    "canonical_mainline_touched": false,
+    "candidate_runtime_mainline_observation_required": true,
     "existing_runtime_regression": false,
     "god_proof_independent_check": "PENDING",
     "reality_validated": false,
@@ -48,6 +48,7 @@
     "RealityVetoRemainsAbsolute",
     "MoreSystemsDoesNotEqualMoreIntelligence",
     "CandidateArchitectureMayBeRejected",
-    "MappedDoesNotEqualImplemented"
+    "MappedDoesNotEqualImplemented",
+    "DeclaredMainlineStateDoesNotEqualObservedMainlineState"
   ]
 }
