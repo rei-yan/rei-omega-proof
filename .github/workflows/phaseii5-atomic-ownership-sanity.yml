@@ -1,0 +1,56 @@
+name: Phase II.5 Atomic Ownership Sanity
+
+on:
+  pull_request:
+    paths:
+      - 'runtime/REI-PhaseII5-AtomicOwnership-Patch-v1.ps1'
+      - 'runtime/REI-PostReboot-Parity-Check-v1.ps1'
+      - 'research/REI_PHASEII5_ATOMIC_OWNERSHIP_THROUGH_DELETE.md'
+      - 'research/REI_PHASEII3_SUPERSEDED_ANNOTATION_20260906.md'
+      - 'research/phaseii5_atomic_ownership_sanity.py'
+      - '.github/workflows/phaseii5-atomic-ownership-sanity.yml'
+  workflow_dispatch:
+
+jobs:
+  static-sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python contract sanity
+        run: python research/phaseii5_atomic_ownership_sanity.py
+
+      - name: PowerShell parser sanity
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            'runtime/REI-PhaseII5-AtomicOwnership-Patch-v1.ps1',
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -ne 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host 'PHASEII5_PATCH_PARSER_SANITY=PASS'
+
+          $tokens2 = $null
+          $errors2 = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            'runtime/REI-PostReboot-Parity-Check-v1.ps1',
+            [ref]$tokens2,
+            [ref]$errors2
+          ) | Out-Null
+          if ($errors2.Count -ne 0) {
+            $errors2 | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host 'POST_REBOOT_PARITY_CHECK_PARSER_SANITY=PASS'
+
+      - name: Authority boundary reminder
+        run: |
+          echo 'CI_GREEN != WindowsRuntimeProof'
+          echo 'HOST_DEPLOYMENT_VERIFIED=False'
+          echo 'REALITY_VALIDATED=False'
