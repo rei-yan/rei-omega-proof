@@ -1,0 +1,20 @@
+﻿name: Forecast Immutability Sanity
+
+on:
+  push:
+    branches: [ "rei-v3-alpha1-forecast-immutability", "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate-ledger-pipeline:
+    runs-on: windows-latest
+    
+    steps:
+      - name: 检出代码 (Checkout Repository)
+        uses: actions/checkout@v4
+
+      - name: 运行预测账本防御测试 (Run Forecast Pipeline Test)
+        shell: pwsh
+        run: |
+          .\runtime\Test-ReiForecastPipeline.ps1
