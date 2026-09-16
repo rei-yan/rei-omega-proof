@@ -33,10 +33,13 @@ Get-Content -Raw .\runtime\forecast-ledger-schema-v1.sql | .\runtime\sqlite3.exe
 $sqlOutput | .\runtime\sqlite3.exe $DbPath
 
 Write-Host "[4/4] 测试 COMMITTED 状态的不可变性拦截..." -ForegroundColor Cyan
-$committedState = $testForecast.Clone()
+# 手动复制有序字典
+$committedState = [ordered]@{}
+foreach ($key in $testForecast.Keys) { $committedState[$key] = $testForecast[$key] }
 $committedState["status"] = "COMMITTED"
 
-$tamperedState = $committedState.Clone()
+$tamperedState = [ordered]@{}
+foreach ($key in $committedState.Keys) { $tamperedState[$key] = $committedState[$key] }
 $tamperedState["probability"] = 0.99
 
 try {
