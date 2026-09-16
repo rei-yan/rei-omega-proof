@@ -5,13 +5,9 @@ Write-Host "[1/4] 引入验证与账本引擎..." -ForegroundColor Cyan
 . .\runtime\REI-Forecast-Validator-v1.ps1
 . .\runtime\REI-Forecast-Ledger-v1.ps1
 
-# 使用动态时间戳后缀，确保重复运行不会发生主键冲突
-$runId = Get-Date -Format "yyyyMMddHHmmssfff"
-$testForecastId = "FC-AUTO-TEST-$runId"
-
-Write-Host "[2/4] 测试 DRAFT 状态预测的规范化与 SQL 生成 (ID: $testForecastId)..." -ForegroundColor Cyan
+Write-Host "[2/4] 测试 DRAFT 状态预测的规范化与 SQL 生成..." -ForegroundColor Cyan
 $testForecast = [ordered]@{
-    forecast_id          = $testForecastId
+    forecast_id          = "FC-AUTO-TEST-001"
     schema_version       = 1
     created_at_utc       = "2026-09-15T20:00:00Z"
     cutoff_at_utc        = "2026-09-15T23:59:59Z"
@@ -37,6 +33,7 @@ Get-Content -Raw .\runtime\forecast-ledger-schema-v1.sql | .\runtime\sqlite3.exe
 $sqlOutput | .\runtime\sqlite3.exe $DbPath
 
 Write-Host "[4/4] 测试 COMMITTED 状态的不可变性拦截..." -ForegroundColor Cyan
+# 手动复制有序字典
 $committedState = [ordered]@{}
 foreach ($key in $testForecast.Keys) { $committedState[$key] = $testForecast[$key] }
 $committedState["status"] = "COMMITTED"
