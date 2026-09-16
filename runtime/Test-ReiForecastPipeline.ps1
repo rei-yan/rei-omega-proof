@@ -1,15 +1,20 @@
-﻿# REI Forecast Pipeline Integration Test
+﻿# REI Forecast Pipeline Integration Test (Full Chain)
 $ErrorActionPreference = "Stop"
 
-Write-Host "[1/4] 引入验证与账本引擎..." -ForegroundColor Cyan
+Write-Host "[1/5] 引入验证、账本与证据提取引擎..." -ForegroundColor Cyan
 . .\runtime\REI-Forecast-Validator-v1.ps1
 . .\runtime\REI-Forecast-Ledger-v1.ps1
+. .\runtime\REI-Evidence-Extractor-v1.ps1
+
+Write-Host "[2/5] 提取真实证据束 (Evidence Bundle)..." -ForegroundColor Cyan
+$evidence = Get-ReiEvidenceBundleHash
+Write-Host "-> 当前现实锚点: $($evidence.Hash)" -ForegroundColor DarkGray
 
 # 使用动态时间戳后缀，确保重复运行不会发生主键冲突
 $runId = Get-Date -Format "yyyyMMddHHmmssfff"
 $testForecastId = "FC-AUTO-TEST-$runId"
 
-Write-Host "[2/4] 测试 DRAFT 状态预测的规范化与 SQL 生成 (ID: $testForecastId)..." -ForegroundColor Cyan
+Write-Host "[3/5] 测试 DRAFT 状态预测的规范化与 SQL 生成 (ID: $testForecastId)..." -ForegroundColor Cyan
 $testForecast = [ordered]@{
     forecast_id          = $testForecastId
     schema_version       = 1
@@ -20,7 +25,7 @@ $testForecast = [ordered]@{
     target_type          = "binary"
     probability          = 0.50
     abstain              = $false
-    evidence_bundle_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    evidence_bundle_hash = $evidence.Hash  # <--- 动态注入刚才提取的真实哈希！
     model_id             = "rei-local-node-vnext"
     status               = "DRAFT"
 }
@@ -28,15 +33,12 @@ $testForecast = [ordered]@{
 $sqlOutput = Write-ReiForecastLedger -Forecast $testForecast
 if ([string]::IsNullOrWhiteSpace($sqlOutput)) { throw "PIPELINE_ERROR: Failed to generate SQL." }
 
-Write-Host "[3/4] 测试 SQLite 数据库落盘..." -ForegroundColor Cyan
+Write-Host "[4/5] 测试 SQLite 数据库落盘..." -ForegroundColor Cyan
 $DbPath = "C:\REI-Shadow\state\forecast_ledger.db"
-$StateDir = Split-Path $DbPath
-if (-not (Test-Path $StateDir)) { New-Item -ItemType Directory -Path $StateDir | Out-Null }
-
 Get-Content -Raw .\runtime\forecast-ledger-schema-v1.sql | .\runtime\sqlite3.exe $DbPath
 $sqlOutput | .\runtime\sqlite3.exe $DbPath
 
-Write-Host "[4/4] 测试 COMMITTED 状态的不可变性拦截..." -ForegroundColor Cyan
+Write-Host "[5/5] 测试 COMMITTED 状态的不可变性拦截..." -ForegroundColor Cyan
 $committedState = [ordered]@{}
 foreach ($key in $testForecast.Keys) { $committedState[$key] = $testForecast[$key] }
 $committedState["status"] = "COMMITTED"
@@ -50,7 +52,7 @@ try {
     throw "PIPELINE_ERROR: Immutability check failed to catch tampering."
 } catch {
     if ($_.Exception.Message -match "IMMUTABILITY_VIOLATION") {
-        Write-Host "【流水线通过】所有核心测试用例执行完毕，契约防御有效！" -ForegroundColor Green
+        Write-Host "【流水线通过】全链路测试（含物理证据绑定）执行完毕！契约防御有效！" -ForegroundColor Green
     } else {
         throw $_
     }
