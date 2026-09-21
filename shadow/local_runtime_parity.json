@@ -8,7 +8,7 @@
   "committed_checkpoint": "checkpoint_20260915_093342_207105_committed.json",
   "core_committed": false,
   "human_review_required": true,
-  "observed_at_utc": "2026-09-21T17:33:33.964334+00:00",
+  "observed_at_utc": "2026-09-21T18:33:35.390044+00:00",
   "reality_validated": false,
   "receipt_type": "LOCAL_RUNTIME_PARITY",
   "rollback_checkpoint": "checkpoint_20260915_093342_207105_pre_cycle.json",
